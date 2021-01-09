@@ -3,15 +3,24 @@ import youtube_dl
 from flask import Flask, render_template, redirect, url_for, request, send_file
 from mutagen.easyid3 import EasyID3
 from mutagen.mp3 import MP3
-
+from configparser import ConfigParser
 
 app = Flask(__name__)
 
 MUSIC_PATH='/tmp/music/quick_download/'
 
 @app.route('/')
-def hello_world():
-    return render_template('index.html')
+def index():
+    config = ConfigParser()
+    config.read("/etc/mediaserver/youtubedl.ini")
+    data = [{'name':'name'}]
+    data.clear()
+
+    for section_name in config.sections():
+        if section_name != "GLOBAL":
+            data.append({'name':config[section_name]['name'] })
+
+    return render_template('index.html', playlists_data=data)
 
 @app.route('/download',methods = ['POST', 'GET'])
 def login():
@@ -23,6 +32,39 @@ def login():
    else:
       app.logger.debug("error")
       return redirect('/')
+
+
+@app.route('/playlists',methods = ['POST', 'GET'])
+def playlist():
+   if request.method == 'POST':
+       config = ConfigParser()
+       config.read("/etc/mediaserver/youtubedl.ini")
+       
+       select = request.form.get('playlists')
+       
+       if 'add' in request.form:
+           app.logger.debug("add")
+           playlist_name = request.form['playlist_name']
+           link = request.form['link']
+           config[playlist_name]={}
+           config[playlist_name]['name']=playlist_name
+           config[playlist_name]['link']=link
+
+
+       if 'remove' in request.form:
+           app.logger.debug("remove")
+           for i in data_2:
+               if i['name'] == str(select):
+                   app.logger.debug(i['name'])
+                   config.remove_section(str(select))
+
+       with open("/etc/mediaserver/youtubedl.ini",'w') as fp:
+           config.write(fp)
+
+       return redirect('/')
+   else:
+       app.logger.debug("error")
+       return redirect('/')
 
 
 def download_mp3(url):
