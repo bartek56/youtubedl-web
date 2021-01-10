@@ -8,6 +8,9 @@ from configparser import ConfigParser
 app = Flask(__name__)
 
 MUSIC_PATH='/tmp/music/quick_download/'
+VIDEO_PATH='/tmp/video/quick_download/'
+PLAYLISTS_PATH='/tmp/music/Youtube list/'
+CONFIG_FILE='/etc/mediaserver/youtubedl_test.ini'
 
 @app.route('/')
 def index():
@@ -26,9 +29,27 @@ def index():
 def login():
    if request.method == 'POST':
       link = request.form['link']
-      app.logger.debug("link %s",link)
-      path = download_mp3(link)
-      return send_file(path, as_attachment=True)
+      app.logger.debug("link: %s",link)
+      option = request.form['quickdownload']
+      if option == 'mp3':
+          app.logger.debug("mp3")
+          path = download_mp3(link)
+      elif option == '360p':
+          app.logger.debug("360p")
+          path = download_360p(link)
+      elif option == '720p':
+          app.logger.debug("720p")
+          path = download_720p(link)
+      elif option == '4k':
+          app.logger.debug("4k")
+          path = download_4k(link)
+
+      downloadToHost = request.form.getlist('download_file')
+      if downloadToHost:
+          app.logger.debug("download To Host")
+          return send_file(path, as_attachment=True)
+
+      return redirect('/')
    else:
       app.logger.debug("error")
       return redirect('/')
@@ -40,8 +61,7 @@ def playlist():
        config = ConfigParser()
        config.read("/etc/mediaserver/youtubedl.ini")
        
-       select = request.form.get('playlists')
-       
+       select = request.form.get('playlists')       
        if 'add' in request.form:
            app.logger.debug("add")
            playlist_name = request.form['playlist_name']
@@ -94,6 +114,61 @@ def download_mp3(url):
         
     fileNameWithPath = add_metadata_song(album, artist, songTitle)
     return fileNameWithPath
+
+
+def download_4k(url):
+    path=VIDEO_PATH
+    if not os.path.exists(path):
+      os.makedirs(path)
+    
+    info = "[INFO] start download video [high quality] from link %s "%(url)
+#    print (bcolors.OKGREEN + info + bcolors.ENDC)
+
+    ydl_opts = {
+          'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best',
+          'addmetadata': True,
+          'outtmpl': path+'/'+'%(title)s_4k.%(ext)s',
+          'ignoreerrors': True
+          }  
+    result = youtube_dl.YoutubeDL(ydl_opts).extract_info(url)
+    return "%s/%s_4k.%s"%(path,result['title'],result['ext'])
+
+
+def download_720p(url):
+    path=VIDEO_PATH
+    if not os.path.exists(path):
+      os.makedirs(path)
+    
+    info = "[INFO] start download video [medium quality] from link %s "%(url)
+#    print (bcolors.OKGREEN + info + bcolors.ENDC)
+
+    ydl_opts = {
+          'format': 'bestvideo[height=720]/mp4',
+          'addmetadata': True,
+          'outtmpl': path+'/'+'%(title)s_720p.%(ext)s',
+          'ignoreerrors': True
+          }  
+    result = youtube_dl.YoutubeDL(ydl_opts).extract_info(url)
+    return "%s/%s_720p.%s"%(path,result['title'],result['ext'])
+
+
+def download_360p(url):
+    path=VIDEO_PATH
+    if not os.path.exists(path):
+      os.makedirs(path)
+    
+    info = "[INFO] start download video [low quality] from link %s "%(url)
+#    print (bcolors.OKGREEN + info + bcolors.ENDC)
+
+    ydl_opts = {
+          'format': 'worse[height<=360]/mp4',
+          'addmetadata': True,
+          'outtmpl': path+'/'+'%(title)s_360p.%(ext)s',
+          'ignoreerrors': True
+          }
+
+    result = youtube_dl.YoutubeDL(ydl_opts).extract_info(url)
+    return "%s/%s_360p.%s"%(path,result['title'],result['ext'])
 
 
 def add_metadata_song(albumName, artist, songName):

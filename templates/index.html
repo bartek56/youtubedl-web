@@ -22,8 +22,8 @@
                         <input type="radio" id="quickdownloadMP3" name="quickdownload" value="mp3" checked>
                         <label for="quickdownloadMP3">MP3</label>
 
-                        <input type="radio" id="quickdownload480p" name="quickdownload" value="480p">
-                        <label for="quickdownload480p">480p</label>
+                        <input type="radio" id="quickdownload360p" name="quickdownload" value="360p">
+                        <label for="quickdownload360p">360p</label>
 
                         <input type="radio" id="quickdownload720p" name="quickdownload" value="720p">
                         <label for="quickdownload720p">720p</label>
@@ -32,9 +32,15 @@
                         <label for="quickdownload4k">4k</label>
 
                     </div>
+                    <br>
+                    <input type="checkbox" name="download_file" value="true">
+                    <label for="download_file">Download to Your desktop</label>
+                    <br>
+
                     <p><input type = "submit" value = "download" /></p>
                 </form>
 			</div>
+
             <div id="right" class="grid-container">
                 <form action = "/playlists" method="POST">
                     <p>Download playlists:</p>
