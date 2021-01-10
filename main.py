@@ -6,14 +6,14 @@ from configparser import ConfigParser
 
 app = Flask(__name__)
 
-f = open("/etc/mediaserver/minidlna.conf","r")
-content = f.readlines()
 
 CONFIG_FILE='/etc/mediaserver/youtubedl.ini'
 MUSIC_PATH=''
 VIDEO_PATH=''
 PLAYLISTS_PATH=''
 
+f = open("/etc/mediaserver/minidlna.conf","r")
+content = f.readlines()
 
 for x in content:
     if "media_dir=A" in x:
@@ -31,9 +31,9 @@ for x in content:
         VIDEO_PATH=VIDEO_PATH.replace('\r','')
 
 
-MUSIC_PATH='/tmp/music/quick_download/'
-VIDEO_PATH='/tmp/video/quick_download/'
-PLAYLISTS_PATH='/tmp/music/Youtube list/'
+#MUSIC_PATH='/tmp/music/quick_download/'
+#VIDEO_PATH='/tmp/video/quick_download/'
+#PLAYLISTS_PATH='/tmp/music/Youtube list/'
 
 @app.route('/favicon.ico')
 @app.route('/')
@@ -51,6 +51,7 @@ def index():
 
 @app.route('/download',methods = ['POST', 'GET'])
 def login():
+   path='' 
    if request.method == 'POST':
       link = request.form['link']
       app.logger.debug("link: %s",link)
@@ -70,7 +71,12 @@ def login():
 
       downloadToHost = request.form.getlist('download_file')
       if downloadToHost:
-          app.logger.debug("download To Host")
+          if not os.path.isfile(path):
+              path = path.replace("|", "_")
+              path = path.replace("\"", "'")
+              path = path.replace(":", "-")
+          
+          app.logger.debug("download To Host %s", path)
           return send_file(path, as_attachment=True)
 
       return redirect('/')
