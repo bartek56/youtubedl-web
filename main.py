@@ -112,8 +112,7 @@ def download_mp3(url):
     artist = result['artist']
     album = result['album']
         
-    fileNameWithPath = metadata_mp3.add_metadata_song(MUSIC_PATH, album, artist, songTitle)
-    return fileNameWithPath
+    return metadata_mp3.add_metadata_song(MUSIC_PATH, album, artist, songTitle)
 
 
 def download_4k(url):
