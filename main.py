@@ -6,16 +6,40 @@ from configparser import ConfigParser
 
 app = Flask(__name__)
 
+f = open("/etc/mediaserver/minidlna.conf","r")
+content = f.readlines()
+
+CONFIG_FILE='/etc/mediaserver/youtubedl.ini'
+MUSIC_PATH=''
+VIDEO_PATH=''
+PLAYLISTS_PATH=''
+
+
+for x in content:
+    if "media_dir=A" in x:
+        parameter = x.split("A,")
+        musicPath = parameter[1]
+        musicPath=musicPath.replace('\n','')
+        musicPath=musicPath.replace('\r','')
+        MUSIC_PATH="%s/quick download/"%(musicPath)
+        PLAYLISTS_PATH="%s/Youtube list/"%(musicPath)
+    if "media_dir=V" in x:
+        parameter = x.split("V,")
+        musicPath = parameter[1]
+        VIDEO_PATH="%s/quick download/"%(musicPath)
+        VIDEO_PATH=VIDEO_PATH.replace('\n','')
+        VIDEO_PATH=VIDEO_PATH.replace('\r','')
+
+
 MUSIC_PATH='/tmp/music/quick_download/'
 VIDEO_PATH='/tmp/video/quick_download/'
 PLAYLISTS_PATH='/tmp/music/Youtube list/'
-CONFIG_FILE='/etc/mediaserver/youtubedl_test.ini'
 
 @app.route('/favicon.ico')
 @app.route('/')
 def index():
     config = ConfigParser()
-    config.read("/etc/mediaserver/youtubedl.ini")
+    config.read(CONFIG_FILE)
     data = [{'name':'name'}]
     data.clear()
 
@@ -59,7 +83,7 @@ def login():
 def playlist():
    if request.method == 'POST':
        config = ConfigParser()
-       config.read("/etc/mediaserver/youtubedl.ini")
+       config.read(CONFIG_FILE)
        
        select = request.form.get('playlists')       
        if 'add' in request.form:
@@ -78,7 +102,7 @@ def playlist():
                    app.logger.debug(i['name'])
                    config.remove_section(str(select))
 
-       with open("/etc/mediaserver/youtubedl.ini",'w') as fp:
+       with open(CONFIG_FILE,'w') as fp:
            config.write(fp)
 
        return redirect('/')
