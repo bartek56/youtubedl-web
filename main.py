@@ -169,3 +169,6 @@ def download_360p(url):
     result = youtube_dl.YoutubeDL(ydl_opts).extract_info(url)
     return "%s/%s_360p.%s"%(path,result['title'],result['ext'])
 
+if __name__ == '__main__':
+    app.run(host='0.0.0.0',port=9080)
+
