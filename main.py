@@ -11,6 +11,7 @@ VIDEO_PATH='/tmp/video/quick_download/'
 PLAYLISTS_PATH='/tmp/music/Youtube list/'
 CONFIG_FILE='/etc/mediaserver/youtubedl_test.ini'
 
+@app.route('/favicon.ico')
 @app.route('/')
 def index():
     config = ConfigParser()
