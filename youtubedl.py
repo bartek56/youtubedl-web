@@ -127,6 +127,8 @@ def download_mp3(url):
 
     ydl_opts = {
           'format': 'bestaudio/best',
+          'download_archive': path+'/downloaded_songs.txt',
+          'no-playlist': True,
           'addmetadata': True,
           'outtmpl': path+'/'+'%(title)s.%(ext)s',
           'postprocessors': [{
