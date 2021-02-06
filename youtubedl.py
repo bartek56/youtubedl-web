@@ -5,7 +5,7 @@ from flask import Flask, render_template, redirect, url_for, request, send_file,
 from configparser import ConfigParser
 
 app = Flask(__name__)
-log = logging.create_logger(app)
+#log = logging.create_logger(app)
 
 
 CONFIG_FILE='/etc/mediaserver/youtubedl.ini'
@@ -62,19 +62,19 @@ def login():
    path='' 
    if request.method == 'POST':
       link = request.form['link']
-      log.logger.debug("link: %s",link)
+#      log.logger.debug("link: %s",link)
       option = request.form['quickdownload']
       if option == 'mp3':
-          log.logger.debug("mp3")
+#          log.logger.debug("mp3")
           path = download_mp3(link)
       elif option == '360p':
-          log.logger.debug("360p")
+#          log.logger.debug("360p")
           path = download_360p(link)
       elif option == '720p':
-          log.logger.debug("720p")
+#          log.logger.debug("720p")
           path = download_720p(link)
       elif option == '4k':
-          log.logger.debug("4k")
+#          log.logger.debug("4k")
           path = download_4k(link)
 
       downloadToHost = request.form.getlist('download_file')
@@ -84,12 +84,12 @@ def login():
               path = path.replace("\"", "'")
               path = path.replace(":", "-")
           
-          log.logger.debug("download To Host %s", path)
+#          log.logger.debug("download To Host %s", path)
           return send_file(path, as_attachment=True)
 
       return redirect('/')
    else:
-      log.logger.debug("error")
+#      log.logger.debug("error")
       return redirect('/')
 
 
@@ -100,10 +100,10 @@ def playlist():
        config.read(CONFIG_FILE)
        
        select = request.form.get('playlists')
-       log.logger.debug(select)
+#       log.logger.debug(select)
 
        if 'add' in request.form:
-           log.logger.debug("add")
+#           log.logger.debug("add")
            playlist_name = request.form['playlist_name']
            link = request.form['link']
            config[playlist_name]={}
@@ -111,10 +111,10 @@ def playlist():
            config[playlist_name]['link']=link
 
        if 'remove' in request.form:
-           log.logger.debug("remove")
+ #          log.logger.debug("remove")
            for i in config.sections():
                if i == str(select):
-                   log.logger.debug(i)
+#                   log.logger.debug(i)
                    config.remove_section(str(select))
 
        with open(CONFIG_FILE,'w') as fp:
@@ -123,7 +123,7 @@ def playlist():
        return redirect('playlists.html')
 
    else:
-       log.logger.debug("error")
+#       log.logger.debug("error")
        return redirect('playlists.html')
 
 
@@ -133,8 +133,8 @@ def download_mp3(url):
     if not os.path.exists(path):
       os.makedirs(path)
     
-    info = "[INFO] start download MP3 from link %s "%(url)
-    log.logger.debug(info)
+#    info = "[INFO] start download MP3 from link %s "%(url)
+#    log.logger.debug(info)
 
     ydl_opts = {
           'format': 'bestaudio/best',
@@ -163,8 +163,8 @@ def download_4k(url):
     if not os.path.exists(path):
       os.makedirs(path)
     
-    info = "[INFO] start download video [high quality] from link %s "%(url)
-    log.logger.debug(info)
+#    info = "[INFO] start download video [high quality] from link %s "%(url)
+#    log.logger.debug(info)
 
     ydl_opts = {
           'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best',
@@ -181,8 +181,8 @@ def download_720p(url):
     if not os.path.exists(path):
       os.makedirs(path)
     
-    info = "[INFO] start download video [medium quality] from link %s "%(url)
-    log.logger.debug(info)
+#    info = "[INFO] start download video [medium quality] from link %s "%(url)
+#    log.logger.debug(info)
 
     ydl_opts = {
           'format': 'bestvideo[height=720]/mp4',
@@ -199,8 +199,8 @@ def download_360p(url):
     if not os.path.exists(path):
       os.makedirs(path)
     
-    info = "[INFO] start download video [low quality] from link %s "%(url)
-    log.logger.debug(info)
+#    info = "[INFO] start download video [low quality] from link %s "%(url)
+#    log.logger.debug(info)
 
     ydl_opts = {
           'format': 'worse[height<=360]/mp4',
