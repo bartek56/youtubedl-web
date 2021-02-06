@@ -1,70 +1,51 @@
 <!DOCTYPE HTML>
 <html>
-    <head>
-	    <meta charset="utf-8" />
-        <title>Media Server</title>
-        <meta name="description" content="Youtubedl-web" />
-        <meta name="keywords" content="Youtubedl-web" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-        <link rel="stylesheet" href="../static/style.css" />	
-    </head>
-    <body id="background">
 
-        <div id="container">
-            <div id="menu">
-                <center> <h2>Youtubedl-web</h2>  </center>
+<head>
+    <meta charset="utf-8" />
+    <title>Media Server</title>
+    <meta name="description" content="Youtubedl-web" />
+    <meta name="keywords" content="Youtubedl-web" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <link rel="stylesheet" href="../static/bootstrap-5.0.0/css/bootstrap.css" />
+</head>
+
+<body>
+    <script src="../static/bootstrap-5.0.0/js/bootstrap.js"></script>
+
+
+    {% include 'header.html' %}
+
+
+    <section class="layout-hero text-center">
+
+        <form action="/youtubedl/download" method="post">
+            <p>Quick download</p>
+            <p><input type="text" name="link" size="30" /></p>
+            <div>
+                <input type="radio" id="quickdownloadMP3" name="quickdownload" value="mp3" checked>
+                <label for="quickdownloadMP3">MP3</label>
+
+                <input type="radio" id="quickdownload360p" name="quickdownload" value="360p">
+                <label for="quickdownload360p">360p</label>
+
+                <input type="radio" id="quickdownload720p" name="quickdownload" value="720p">
+                <label for="quickdownload720p">720p</label>
+
+                <input type="radio" id="quickdownload4K" name="quickdownload" value="4k">
+                <label for="quickdownload4k">4k</label>
+
             </div>
-            <div id="left">
-                <form action = "/youtubedl/download" method = "post">
-                    <p>Quick download</p>
-                    <p><input type = "text" name = "link" size="30" /></p>
-                    <div>
-                        <input type="radio" id="quickdownloadMP3" name="quickdownload" value="mp3" checked>
-                        <label for="quickdownloadMP3">MP3</label>
+            <br>
+            <input type="checkbox" name="download_file" value="true">
+            <label for="download_file">Download to Your desktop</label>
+            <br>
 
-                        <input type="radio" id="quickdownload360p" name="quickdownload" value="360p">
-                        <label for="quickdownload360p">360p</label>
+            <p><input type="submit" value="download" /></p>
+        </form>
 
-                        <input type="radio" id="quickdownload720p" name="quickdownload" value="720p">
-                        <label for="quickdownload720p">720p</label>
+    </section>
 
-                        <input type="radio" id="quickdownload4K" name="quickdownload" value="4k">
-                        <label for="quickdownload4k">4k</label>
+</body>
 
-                    </div>
-                    <br>
-                    <input type="checkbox" name="download_file" value="true">
-                    <label for="download_file">Download to Your desktop</label>
-                    <br>
-
-                    <p><input type = "submit" value = "download" /></p>
-                </form>
-			</div>
-
-            <div id="right" class="grid-container">
-                <form action = "/youtubedl/playlists" method="POST">
-                    <p>Download playlists:</p>
-                    <table>
-                        <tr>
-                                <td><label for="fname">Name:</label></td>
-                                <td><input type="text" id="playlist_name" name="playlist_name"></td>
-                        </tr>
-                        <tr>
-                                <td><label for="lname">link:</label></td>
-                                <td><input type="text" id="link" name="link"><br></td>
-                        </tr>
-                    </table>
-                    <p><input type="submit" name="add" value="add" /></p><br>
-
-		            <select name="playlists" id="playlists" size="5" style="width: 250px;">
-                        {% for o in playlists_data %}
-                        <option value="{{ o.name }}">{{ o.name }}</option>
-                        {% endfor %}
-                    </select>
-
-                    <p><input type="submit" name="remove" value="remove" /></p>
-                </form>
-            </div> 
-        </div>  <!-- end container   -->
-   </body>
 </html>
