@@ -58,38 +58,46 @@ def playlists():
 
 @app.route('/download',methods = ['POST', 'GET'])
 def login():
-   path=''
-   info = {"path": "path", "album": "album"}
+    path=''
+    info = {"path": "path"}
 
-   info["title"]="title"
-   if request.method == 'POST':
-      link = request.form['link']
-      app.logger.debug("link: %s",link)
-      option = request.form['quickdownload']
-      if option == 'mp3':
-          app.logger.debug("mp3")
-          info = download_mp3(link)
-          path = info["path"]
-          del info["path"]
-      elif option == '360p':
-          app.logger.debug("360p")
-          path = download_360p(link)
-      elif option == '720p':
-          app.logger.debug("720p")
-          path = download_720p(link)
-      elif option == '4k':
-          app.logger.debug("4k")
-          path = download_4k(link)
-
-      if not os.path.isfile(path):
-          path = path.replace("|", "_")
-          path = path.replace("\"", "'")
-          path = path.replace(":", "-")
-          
-      return render_template('download.html', full_path=path, file_info=info)
-   else:
-      app.logger.debug("error")
-      return redirect('/')
+    if request.method == 'POST':
+        link = request.form['link']
+        app.logger.debug("link: %s",link)
+        option = request.form['quickdownload']
+        if option == 'mp3':
+            app.logger.debug("mp3")
+            info = download_mp3(link)
+            path = info["path"]
+            del info["path"]
+            info["Type"] = "MP3 audio"
+        elif option == '360p':
+            app.logger.debug("360p")
+            info = download_360p(link)
+            path = info["path"]
+            del info["path"]
+            info["Type"] = "video"
+        elif option == '720p':
+            app.logger.debug("720p")
+            info = download_720p(link)
+            path = info["path"]
+            del info["path"]
+            info["Type"] = "video"
+        elif option == '4k':
+            app.logger.debug("4k")
+            info = download_4k(link)
+            path = info["path"]
+            del info["path"]
+            info["Type"] = "video"
+    if not os.path.isfile(path):
+        path = path.replace("|", "_")
+        path = path.replace("\"", "'")
+        path = path.replace(":", "-")
+    if os.path.isfile(path):
+        return render_template('download.html', full_path=path, file_info=info)
+    else:
+        app.logger.debug("error")
+        return redirect('/')
 
 @app.route('/download_file',methods = ['POST', 'GET'])
 def downloadFile():
@@ -162,9 +170,9 @@ def download_mp3(url):
     artist = result['artist']
     album = result['album']
 
-    path = metadata_mp3.add_metadata_song(MUSIC_PATH, album, artist, songTitle)
+    full_path = metadata_mp3.add_metadata_song(MUSIC_PATH, album, artist, songTitle)
     
-    metadata = {"path": path}
+    metadata = {"path": full_path}
     app.logger.debug(metadata)
     if(artist is not None):
         metadata["artist"] = artist
@@ -190,7 +198,12 @@ def download_4k(url):
           'ignoreerrors': True
           }  
     result = youtube_dl.YoutubeDL(ydl_opts).extract_info(url)
-    return "%s/%s_4k.%s"%(path,result['title'],result['ext'])
+    full_path= "%s/%s_4k.%s"%(path,result['title'],result['ext'])
+
+
+    metadata = {"title": result['title'], 
+                 "path": full_path }
+    return metadata
 
 
 def download_720p(url):
@@ -208,7 +221,11 @@ def download_720p(url):
           'ignoreerrors': True
           }  
     result = youtube_dl.YoutubeDL(ydl_opts).extract_info(url)
-    return "%s/%s_720p.%s"%(path,result['title'],result['ext'])
+
+    full_path = "%s/%s_720p.%s"%(path,result['title'],result['ext'])
+    metadata = {"title": result['title'], 
+                 "path": full_path }
+    return metadata
 
 
 def download_360p(url):
@@ -227,7 +244,11 @@ def download_360p(url):
           }
 
     result = youtube_dl.YoutubeDL(ydl_opts).extract_info(url)
-    return "%s/%s_360p.%s"%(path,result['title'],result['ext'])
+    full_path = "%s/%s_360p.%s"%(path,result['title'],result['ext'])
+
+    metadata = {"title": result['title'], 
+                 "path": full_path }
+    return metadata
 
 if __name__ == '__main__':
     app.run()
