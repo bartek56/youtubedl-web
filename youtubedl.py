@@ -76,21 +76,25 @@ def login():
           app.logger.debug("4k")
           path = download_4k(link)
 
-      downloadToHost = request.form.getlist('download_file')
-      if downloadToHost:
-          if not os.path.isfile(path):
-              path = path.replace("|", "_")
-              path = path.replace("\"", "'")
-              path = path.replace(":", "-")
+      if not os.path.isfile(path):
+          path = path.replace("|", "_")
+          path = path.replace("\"", "'")
+          path = path.replace(":", "-")
           
-          app.logger.debug("download To Host %s", path)
-          return send_file(path, as_attachment=True)
-
-      return redirect('/')
+      return render_template('download.html', file_info=path)
    else:
       app.logger.debug("error")
       return redirect('/')
 
+@app.route('/download_file',methods = ['POST', 'GET'])
+def downloadFile():
+   path='' 
+   if request.method == 'POST':
+      path = request.form['path']
+      return send_file(path, as_attachment=True)
+   else:
+      app.logger.debug("error")
+      return redirect('/')
 
 @app.route('/playlists',methods = ['POST', 'GET'])
 def playlist():

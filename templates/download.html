@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="../static/bootstrap-5.0.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../static/style.css">
+    <title>Media Server</title>
+</head>
+
+<body>
+    {% include 'header.html' %}
+
+
+    <section class="layout-hero text-center">
+        <form action="/youtubedl/download_file" method="POST">
+            <p>Download file:</p>
+                    <label for="lname">{{ file_info }}</label>
+                    <input type="hidden" id="path" name="link" value="{{ file_info }}" ><br>
+            <p><input type="submit" name="download" value="download" /></p><br>
+<!--
+            <select name="playlists" id="playlists" size="5" style="width: 250px;">
+                {% for o in playlists_data %}
+                <option value="{{ o.name }}">{{ o.name }}</option>
+                {% endfor %}
+            </select>
+-->
+        </form>
+
+    </section>
+
+    <script src="../static/bootstrap-5.0.0/js/bootstrap.js"></script>
+</body>
+
+</html>

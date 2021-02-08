@@ -7,14 +7,31 @@
     <link rel="stylesheet" href="../static/bootstrap-5.0.0/css/bootstrap.min.css" />
     <link rel="stylesheet" href="../static/style.css">
     <title>Media Server</title>
+    <script src="../static/bootstrap-5.0.0/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
 </head>
 
 <body>
     {% include 'header.html' %}
+    <script>
+        $(document).ready(function () {
+            $("#btnFetch").click(function () {
+                // disable button
+                $(this).prop("disabled", true);
+
+                // add spinner to button
+                $(this).html(
+                    `<span class="spinner-border spinner-border-sm" role="status" ></span>`
+                );
+
+                $("#downloadForm").submit();
+            });
+        });
+    </script>
 
     <section class="layout-hero text-center">
 
-        <form action="/youtubedl/download" method="post">
+        <form id="downloadForm" action="/youtubedl/download" method="post">
             <p>Quick download</p>
             <p><input type="text" name="link" size="30" /></p>
             <div>
@@ -29,18 +46,16 @@
 
                 <input type="radio" id="quickdownload4K" name="quickdownload" value="4k">
                 <label for="quickdownload4k">4k</label>
-
             </div>
             <br>
             <input type="checkbox" name="download_file" value="true">
             <label for="download_file">Download to Your desktop</label>
             <br>
 
-            <p><input type="submit" value="download" /></p>
+            <p><button id="btnFetch" type="submit" value="download">Download </button></p>
         </form>
 
     </section>
-    <script src="../static/bootstrap-5.0.0/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
