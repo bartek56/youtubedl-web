@@ -58,14 +58,19 @@ def playlists():
 
 @app.route('/download',methods = ['POST', 'GET'])
 def login():
-   path='' 
+   path=''
+   info = {"path": "path", "album": "album"}
+
+   info["title"]="title"
    if request.method == 'POST':
       link = request.form['link']
       app.logger.debug("link: %s",link)
       option = request.form['quickdownload']
       if option == 'mp3':
           app.logger.debug("mp3")
-          path = download_mp3(link)
+          info = download_mp3(link)
+          path = info["path"]
+          del info["path"]
       elif option == '360p':
           app.logger.debug("360p")
           path = download_360p(link)
@@ -81,7 +86,7 @@ def login():
           path = path.replace("\"", "'")
           path = path.replace(":", "-")
           
-      return render_template('download.html', file_info=path)
+      return render_template('download.html', full_path=path, file_info=info)
    else:
       app.logger.debug("error")
       return redirect('/')
@@ -156,8 +161,18 @@ def download_mp3(url):
     songTitle = result['title'] 
     artist = result['artist']
     album = result['album']
-        
-    return metadata_mp3.add_metadata_song(MUSIC_PATH, album, artist, songTitle)
+
+    path = metadata_mp3.add_metadata_song(MUSIC_PATH, album, artist, songTitle)
+    
+    metadata = {"path": path}
+    app.logger.debug(metadata)
+    if(artist is not None):
+        metadata["artist"] = artist
+    metadata["title"] = songTitle    
+    if(album is not None):
+        metadata["album"] = album
+
+    return metadata
 
 
 def download_4k(url):
