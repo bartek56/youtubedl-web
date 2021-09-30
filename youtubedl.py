@@ -1,7 +1,8 @@
 import os
 import youtube_dl
 import metadata_mp3
-from flask import Flask, render_template, redirect, url_for, request, send_file, logging
+import subprocess
+from flask import Flask, render_template, redirect, url_for, request, send_file, logging, jsonify
 from configparser import ConfigParser
 
 app = Flask(__name__)
@@ -40,6 +41,123 @@ for x in content:
 @app.route('/index.html')
 def index():
     return render_template('index.html')
+
+@app.route('/alarm.html')
+def alarm():
+
+    f = open("/etc/mediaserver/alarm.timer","r")
+    content = f.readlines()
+
+    mondayChecked = ""
+    tuesdayChecked = ""
+    wednesdayChecked = ""
+    thursdayChecked = ""
+    fridayChecked = ""
+    saturdayChecked = ""
+    sundayChecked = ""
+
+    for x in content:
+        if "OnCalendar" in x:
+            parameter = x.split("=")
+            parameter2 = parameter[1].split(" ")
+            weekDays = parameter2[0]
+            time = parameter2[1].rstrip()
+
+            if "Mon" in weekDays:
+                mondayChecked = "checked"
+            if "Tue" in weekDays:
+                tuesdayChecked = "checked"
+            if "Wed" in weekDays:
+                wednesdayChecked = "checked"
+            if "Thu" in weekDays:
+                thursdayChecked = "checked"
+            if "Fri" in weekDays:
+                fridayChecked = "checked"
+            if "Sat" in weekDays:
+                saturdayChecked = "checked"
+            if "Sun" in weekDays:
+                sundayChecked = "checked"
+    f.close() 
+
+    f = open("/etc/mediaserver/alarm.sh","r")
+    content = f.readlines()
+
+    for x in content:
+        if len(x)>1:
+            if "minVolume" in x:
+                parameter = x.split("=")
+                minVolume = parameter[1].rstrip()
+            elif "maxVolume" in x:
+                parameter = x.split("=")
+                maxVolume = parameter[1].rstrip()
+            elif "defaultVolume" in x:
+                parameter = x.split("=")
+                defaultVolume = parameter[1].rstrip()
+            elif "growingVolume" in x:
+                parameter = x.split("=")
+                growingVolume = parameter[1].rstrip()
+            elif "growingSpeed" in x:
+                parameter = x.split("=")
+                growingSpeed = parameter[1].rstrip()
+            elif "playlist" in x:
+                parameter = x.split("=")
+                alarmPlaylistName = parameter[1].rstrip()               
+            elif "theNewestSongs" in x:
+                parameter = x.split("=")
+                if "true" in parameter[1]:
+                    theNewestSongCheckBox = "checked"
+                    playlistCheckbox = ""
+                else:
+                    theNewestSongCheckBox = ""
+                    playlistCheckbox = "checked"
+
+        else:
+            break        
+    
+    f.close() 
+
+    out = subprocess.check_output("mpc lsplaylists | grep -v m3u", shell=True, text=True)
+    playlists = []
+    musicPlaylistName=""
+    for x in out:
+        if x != '\n':
+            musicPlaylistName += x
+        else:
+            playlists.append(musicPlaylistName)
+            musicPlaylistName=""
+
+    process = subprocess.run('systemctl is-active alarm.timer', shell=True, stdout=subprocess.PIPE, universal_newlines=True)
+    output = process.stdout
+    if "in" in output:
+        alarmIsOn = ""
+    else:
+        alarmIsOn = "checked"
+   
+    return render_template('alarm.html', alarm_time=time, 
+                                        theNewestSongChecked=theNewestSongCheckBox, 
+                                        playlistChecked=playlistCheckbox, 
+                                        alarm_playlists=playlists, 
+                                        alarm_active=alarmIsOn,
+                                        monday_checked=mondayChecked,
+                                        tuesday_checked=tuesdayChecked,
+                                        wednesday_checked=wednesdayChecked,
+                                        thursday_checked=thursdayChecked,
+                                        friday_checked=fridayChecked,
+                                        saturday_checked=saturdayChecked,
+                                        sunday_checked=sundayChecked,
+                                        min_volume=minVolume,
+                                        max_volume=maxVolume,
+                                        default_volume=defaultVolume
+                                        )
+
+@app.route('/save_alarm', methods = ['POST', 'GET'])
+def save_alarm():
+    if request.method == 'POST':
+        time = request.form['alarm_time']
+        print(time)
+    print("confirm alarm")
+    return render_template('alarm.html')
+
 
 @app.route('/playlists.html')
 def playlists():
@@ -249,6 +367,12 @@ def download_360p(url):
     metadata = {"title": result['title'], 
                  "path": full_path }
     return metadata
+
+@app.route('/SomeFunction')
+def SomeFunction():
+    print('In SomeFunction')
+    return "Nothing"
+
 
 if __name__ == '__main__':
     app.run()

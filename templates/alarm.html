@@ -1,0 +1,176 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="../static/bootstrap-5.0.0/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="../static/clockpicker/dist/bootstrap-clockpicker.min.css">
+  <link rel="stylesheet" href="../static/style.css">
+  <title>Media Server</title>
+  <script src="../static/bootstrap-5.0.0/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"> </script>
+  <script type="text/javascript" src="../static/clockpicker/dist/bootstrap-clockpicker.min.js"></script>
+  <script type=text/javascript>
+    $(function() { 
+        $("#mybutton").click(function (event) 
+        { 
+            $.getJSON('/SomeFunction', { }, function(data) { }); 
+            return false; 
+        }
+        ); }); 
+    </script>
+</head>
+
+<body>
+  {% include 'header.html' %}
+
+  <div class="container">
+
+    <form action="/save_alarm" method="POST">
+      <div class="row">
+        <div class="col-sm">
+          <br>
+          <div class="input-group clockpicker" data-align="top" data-autoclose="true">
+            <input type="text" class="form-control" name="alarm" value="{{alarm_time}}">
+            <span class="input-group-addon">
+              <span class="glyphicon glyphicon-time"></span>
+            </span>
+          </div>
+          <script type="text/javascript">
+            $('.clockpicker').clockpicker({
+              afterHourSelect: function () {
+                $('.clockpicker').clockpicker('realtimeDone');
+              }
+            });
+          </script>
+          <input class="form-check-input" type="radio" id="theNewestSong" name="alarmMode" value="mp3"
+            {{theNewestSongChecked}}>
+
+          <label>The Newest Song</label>
+          <br>
+          <input class="form-check-input" type="radio" id="Playlist" name="alarmMode" value="360p" {{playlistChecked}}>
+          <label>Playlist</label>
+          <select name="playlists" id="playlists" size="1" style="width: 250px;">
+            {% for o in alarm_playlists %}
+            <option value="{{ o }}">{{ o }}</option>
+            {% endfor %}
+          </select>
+
+
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" {{monday_checked}}>
+            <label class="form-check-label" for="flexCheckDefault">
+              Mon
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" {{tuesday_checked}}>
+            <label class="form-check-label" for="flexCheckDefault">
+              Tue
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" {{wednesday_checked}}>
+            <label class="form-check-label" for="flexCheckDefault">
+              Wed
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" {{thursday_checked}}>
+            <label class="form-check-label" for="flexCheckDefault">
+              Thu
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" {{friday_checked}}>
+            <label class="form-check-label" for="flexCheckDefault">
+              Fri
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" {{saturday_checked}}>
+            <label class="form-check-label" for="flexCheckDefault">
+              Sat
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" {{sunday_checked}}>
+            <label class="form-check-label" for="flexCheckDefault">
+              Sun
+            </label>
+          </div>
+
+
+        </div>
+        <div class="col-sm">
+          <label for="customRange1" class="form-label">Min Volume</label>
+          <input type="range" class="form-range" min="0" max="50" value="{{min_volume}}" id="customRange1">
+
+
+          <label for="customRange1" class="form-label">Max Volume</label>
+          <input type="range" class="form-range" min="50" max="100" value="{{max_volume}}" id="customRange1">
+
+          <label for="customRange1" class="form-label">Default Volume</label>
+          <input type="range" class="form-range" id="customRange1" value="{{default_volume}}">
+
+          <label class="form-label">Growing volume [%]</label>
+          <select class="form-select" aria-label="Default select example">
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="13">13</option>
+            <option value="14">14</option>
+            <option value="15">15</option>
+            <option value="16">16</option>
+            <option value="17">17</option>
+            <option value="18">18</option>
+            <option value="19">19</option>
+            <option value="20">20</option>
+          </select>
+          <label class="form-label">Growing speed [s]</label>
+          <select class="form-select" aria-label="Default select example">
+            <option value="45">45</option>
+            <option value="46">46</option>
+            <option value="47">47</option>
+            <option value="48">48</option>
+            <option value="49">49</option>
+            <option value="50">50</option>
+            <option value="51">51</option>
+            <option value="52">52</option>
+            <option value="53">53</option>
+            <option value="54">54</option>
+            <option value="55">55</option>
+            <option value="56">56</option>
+            <option value="57">57</option>
+            <option value="58">58</option>
+            <option value="59">59</option>
+          </select>
+          <input type="button" id="mybutton" value="test" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm">
+
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" {{alarm_active}}>
+            <label class="form-check-label" for="flexSwitchCheckDefault">Enable</label>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+
+      </div>
+
+    </form>
+  </div>
+  <!--<input type = "button" id = "mybutton" value = "Click Here" />-->
+</body>
+
+</html>
