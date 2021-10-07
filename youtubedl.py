@@ -2,7 +2,7 @@ import os
 import youtube_dl
 import metadata_mp3
 import subprocess
-from flask import Flask, render_template, redirect, url_for, request, send_file, logging, jsonify
+from flask import Flask, render_template, redirect, url_for, request, send_file, logging, jsonify, request
 from configparser import ConfigParser
 
 app = Flask(__name__)
@@ -156,6 +156,7 @@ def loadAlarmConfig():
 
 @app.route('/alarm.html')
 def alarm():
+    print(request.remote_addr)
     return loadAlarmConfig()
 
 @app.route('/save_alarm', methods = ['POST', 'GET'])
@@ -238,6 +239,7 @@ def save_alarm():
             f.write(x)
         f.close()    
 
+        subprocess.run('systemctl daemon-reload', shell=True)
 
 
     return loadAlarmConfig()
@@ -456,16 +458,25 @@ def download_360p(url):
 @app.route('/alarm_test_start')
 def alarmTestStart():
     print('alarm test start')
+#    subprocess.run('bash /etc/mediaserver/alarm.sh')
+#    subprocess.run('systemctl start alarm.service', shell=True)
+
     return "Nothing"
 
 @app.route('/alarm_test_stop')
 def alarmTestStop():
     print('alarm test stop')
+    subprocess.run('/usr/bin/mpc stop', shell=True)
+#    subprocess.run('systemctl stop alarm.service', shell=True)
+
+#    process = subprocess.run('systemctl is-active alarm.timer', shell=True, stdout=subprocess.PIPE, universal_newlines=True)
+
     return "Nothing"
 
 @app.route('/alarm_on')
 def alarmOn():
-    print('alarm on')
+    subprocess.run('systemctl enable alarm.timer', shell=True)
+    subprocess.run('systemctl start alarm.timer', shell=True)
     return "Nothing"
 
 @app.route('/alarm_off')

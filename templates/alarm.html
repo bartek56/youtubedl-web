@@ -21,12 +21,12 @@
             if(button.value == "start")
             {
                 button.value = "stop"
-                $.getJSON('/alarm_test_start', { }, function(data) { }); 
+                $.getJSON('/youtubedl/alarm_test_start', { }, function(data) { }); 
             }
             else if(button.value == "stop")
             {
                 button.value = "start"
-                $.getJSON('/alarm_test_stop', { }, function(data) { }); 
+                $.getJSON('/youtubedl/alarm_test_stop', { }, function(data) { }); 
             }
             return false; 
         }); 
@@ -34,11 +34,11 @@
         { 
             if ($("#enable_alarm_button").val() == "alarm_on")
             {
-                $.getJSON('/alarm_on', { }, function(data) { }); 
+                $.getJSON('/youtubedl/alarm_on', { }, function(data) { }); 
             }
             else
             {
-                 $.getJSON('/alarm_off', { }, function(data) { }); 
+                 $.getJSON('/youtubedl/alarm_off', { }, function(data) { }); 
             }
 
             return false; 
