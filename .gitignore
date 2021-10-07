@@ -1,4 +1,5 @@
 *~
 .vscode
 static/bootstrap-*
+static/clockpicker
 __pycache__

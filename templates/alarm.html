@@ -13,13 +13,28 @@
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"> </script>
   <script type="text/javascript" src="../static/clockpicker/dist/bootstrap-clockpicker.min.js"></script>
   <script type=text/javascript>
-    $(function() { 
-        $("#mybutton").click(function (event) 
+    $(function() 
+    { 
+        $("#alarm_test_button").click(function (event) 
         { 
-            $.getJSON('/SomeFunction', { }, function(data) { }); 
+            $.getJSON('/alarm_test', { }, function(data) { }); 
             return false; 
-        }
-        ); }); 
+        }); 
+        $("#enable_alarm_button").click(function (event) 
+        { 
+            if ($("#enable_alarm_button").val() == "alarm_on")
+            {
+                $.getJSON('/alarm_on', { }, function(data) { }); 
+            }
+            else
+            {
+                 $.getJSON('/alarm_off', { }, function(data) { }); 
+            }
+
+            return false; 
+        }); 
+
+    }); 
     </script>
 </head>
 
@@ -28,12 +43,12 @@
 
   <div class="container">
 
-    <form action="/save_alarm" method="POST">
+    <form action="/youtubedl/save_alarm" method="POST">
       <div class="row">
         <div class="col-sm">
           <br>
           <div class="input-group clockpicker" data-align="top" data-autoclose="true">
-            <input type="text" class="form-control" name="alarm" value="{{alarm_time}}">
+            <input type="text" class="form-control" name="alarm_time" value="{{alarm_time}}">
             <span class="input-group-addon">
               <span class="glyphicon glyphicon-time"></span>
             </span>
@@ -45,58 +60,63 @@
               }
             });
           </script>
-          <input class="form-check-input" type="radio" id="theNewestSong" name="alarmMode" value="mp3"
-            {{theNewestSongChecked}}>
+          <input class="form-check-input" type="radio" id="theNewestSong" name="alarm_mode" value="newest_song" {{theNewestSongChecked}}>
 
           <label>The Newest Song</label>
           <br>
-          <input class="form-check-input" type="radio" id="Playlist" name="alarmMode" value="360p" {{playlistChecked}}>
+          <input class="form-check-input" type="radio" id="Playlist" name="alarm_mode" value="playlist" {{playlistChecked}}>
+
+
           <label>Playlist</label>
           <select name="playlists" id="playlists" size="1" style="width: 250px;">
             {% for o in alarm_playlists %}
-            <option value="{{ o }}">{{ o }}</option>
+                {% if o == alarm_playlist_name %}
+                     <option value="{{ o }}" selected>{{ o }}</option>
+                {% else %}
+                    <option value="{{ o }}">{{ o }}</option>
+                {% endif %}
             {% endfor %}
           </select>
 
 
           <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" {{monday_checked}}>
+            <input class="form-check-input" type="checkbox" name="monday" value="monday" {{monday_checked}}>
             <label class="form-check-label" for="flexCheckDefault">
               Mon
             </label>
           </div>
           <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" {{tuesday_checked}}>
+            <input class="form-check-input" type="checkbox" name="tueday" value="tueday" {{tuesday_checked}}>
             <label class="form-check-label" for="flexCheckDefault">
               Tue
             </label>
           </div>
           <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" {{wednesday_checked}}>
+            <input class="form-check-input" type="checkbox" name="wedday" value="wedday" {{wednesday_checked}}>
             <label class="form-check-label" for="flexCheckDefault">
               Wed
             </label>
           </div>
           <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" {{thursday_checked}}>
+            <input class="form-check-input" type="checkbox" name="thuday" value="thuday" {{thursday_checked}}>
             <label class="form-check-label" for="flexCheckDefault">
               Thu
             </label>
           </div>
           <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" {{friday_checked}}>
+            <input class="form-check-input" type="checkbox" name="friday" value="friday" {{friday_checked}}>
             <label class="form-check-label" for="flexCheckDefault">
               Fri
             </label>
           </div>
           <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" {{saturday_checked}}>
+            <input class="form-check-input" type="checkbox" name="satday" value="satday"  {{saturday_checked}}>
             <label class="form-check-label" for="flexCheckDefault">
               Sat
             </label>
           </div>
           <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" {{sunday_checked}}>
+            <input class="form-check-input" type="checkbox" name= "sunday" value="sunday" {{sunday_checked}}>
             <label class="form-check-label" for="flexCheckDefault">
               Sun
             </label>
@@ -106,60 +126,43 @@
         </div>
         <div class="col-sm">
           <label for="customRange1" class="form-label">Min Volume</label>
-          <input type="range" class="form-range" min="0" max="50" value="{{min_volume}}" id="customRange1">
+          <input type="range" class="form-range" min="3" max="50" value="{{min_volume}}" name="min_volume"> 
 
 
           <label for="customRange1" class="form-label">Max Volume</label>
-          <input type="range" class="form-range" min="50" max="100" value="{{max_volume}}" id="customRange1">
+          <input type="range" class="form-range" min="50" max="100" value="{{max_volume}}" name="max_volume">
 
           <label for="customRange1" class="form-label">Default Volume</label>
-          <input type="range" class="form-range" id="customRange1" value="{{default_volume}}">
+          <input type="range" class="form-range" min="10" max="70" value="{{default_volume}}" name="default_volume">
 
           <label class="form-label">Growing volume [%]</label>
-          <select class="form-select" aria-label="Default select example">
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-            <option value="9">9</option>
-            <option value="10">10</option>
-            <option value="11">11</option>
-            <option value="12">12</option>
-            <option value="13">13</option>
-            <option value="14">14</option>
-            <option value="15">15</option>
-            <option value="16">16</option>
-            <option value="17">17</option>
-            <option value="18">18</option>
-            <option value="19">19</option>
-            <option value="20">20</option>
+          <select class="form-select" aria-label="Default select example" name="growing_volume">
+            {% for i in [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20] %}
+                {% if i == growing_volume %} 
+                    <option value="{{i}}" selected>{{i}}</option>
+                {% else %}}
+                    <option value="{{i}}">{{i}}</option>
+                {% endif %}}
+            {% endfor %}
           </select>
           <label class="form-label">Growing speed [s]</label>
-          <select class="form-select" aria-label="Default select example">
-            <option value="45">45</option>
-            <option value="46">46</option>
-            <option value="47">47</option>
-            <option value="48">48</option>
-            <option value="49">49</option>
-            <option value="50">50</option>
-            <option value="51">51</option>
-            <option value="52">52</option>
-            <option value="53">53</option>
-            <option value="54">54</option>
-            <option value="55">55</option>
-            <option value="56">56</option>
-            <option value="57">57</option>
-            <option value="58">58</option>
-            <option value="59">59</option>
+          <select class="form-select" aria-label="Default select example" name="growing_speed">
+            {% for i in [30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59] %}
+                {% if i == growing_speed %} 
+                    <option value="{{i}}" selected>{{i}}</option>
+                {% else %}}
+                    <option value="{{i}}">{{i}}</option>
+                {% endif %}}
+            {% endfor %}
           </select>
-          <input type="button" id="mybutton" value="test" />
+          <input type="button" id="alarm_test_button" value="test" />
         </div>
       </div>
       <div class="row">
         <div class="col-sm">
 
           <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" {{alarm_active}}>
+            <input class="form-check-input" type="checkbox" id="enable_alarm_button" value="alarm_on" {{alarm_active}}>
             <label class="form-check-label" for="flexSwitchCheckDefault">Enable</label>
           </div>
 

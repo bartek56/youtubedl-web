@@ -42,9 +42,8 @@ for x in content:
 def index():
     return render_template('index.html')
 
-@app.route('/alarm.html')
-def alarm():
 
+def loadAlarmConfig():
     f = open("/etc/mediaserver/alarm.timer","r")
     content = f.readlines()
 
@@ -95,13 +94,14 @@ def alarm():
                 defaultVolume = parameter[1].rstrip()
             elif "growingVolume" in x:
                 parameter = x.split("=")
-                growingVolume = parameter[1].rstrip()
+                growingVolume = int(parameter[1].rstrip())
             elif "growingSpeed" in x:
                 parameter = x.split("=")
-                growingSpeed = parameter[1].rstrip()
+                growingSpeed = int(parameter[1].rstrip())
             elif "playlist" in x:
                 parameter = x.split("=")
-                alarmPlaylistName = parameter[1].rstrip()               
+                alarmPlaylistName = parameter[1].rstrip()
+                alarmPlaylistName=alarmPlaylistName.replace('"','')
             elif "theNewestSongs" in x:
                 parameter = x.split("=")
                 if "true" in parameter[1]:
@@ -132,11 +132,11 @@ def alarm():
         alarmIsOn = ""
     else:
         alarmIsOn = "checked"
-   
     return render_template('alarm.html', alarm_time=time, 
                                         theNewestSongChecked=theNewestSongCheckBox, 
                                         playlistChecked=playlistCheckbox, 
-                                        alarm_playlists=playlists, 
+                                        alarm_playlists=playlists,
+                                        alarm_playlist_name=alarmPlaylistName,
                                         alarm_active=alarmIsOn,
                                         monday_checked=mondayChecked,
                                         tuesday_checked=tuesdayChecked,
@@ -147,16 +147,101 @@ def alarm():
                                         sunday_checked=sundayChecked,
                                         min_volume=minVolume,
                                         max_volume=maxVolume,
-                                        default_volume=defaultVolume
+                                        default_volume=defaultVolume,
+                                        growing_volume=growingVolume,
+                                        growing_speed=growingSpeed
                                         )
+
+
+
+@app.route('/alarm.html')
+def alarm():
+    return loadAlarmConfig()
 
 @app.route('/save_alarm', methods = ['POST', 'GET'])
 def save_alarm():
     if request.method == 'POST':
         time = request.form['alarm_time']
-        print(time)
-    print("confirm alarm")
-    return render_template('alarm.html')
+        alarmMode = request.form['alarm_mode']
+        alarmPlaylist = request.form['playlists']
+        alarmDays = ""
+        if len(request.form.getlist('monday')) > 0:
+            alarmDays += "Mon,"
+        if len(request.form.getlist('tueday')) > 0:
+            alarmDays += "Tue,"
+        if len(request.form.getlist('wedday')) > 0:
+            alarmDays += "Wed,"
+        if len(request.form.getlist('thuday')) > 0:
+            alarmDays += "Thu,"
+        if len(request.form.getlist('friday')) > 0:
+            alarmDays += "Fri,"
+        if len(request.form.getlist('satday')) > 0:
+            alarmDays += "Sat,"
+        if len(request.form.getlist('sunday')) > 0:
+            alarmDays += "Sun,"
+
+        if len(alarmDays) > 0:
+            alarmDays = alarmDays[:-1]
+
+        minVolume=request.form['min_volume']
+        maxVolume=request.form['max_volume']
+        defaultVolume=request.form['default_volume']
+      
+        growingVolume = request.form['growing_volume']
+        growingSpeed = request.form['growing_speed']
+
+
+        f = open("/etc/mediaserver/alarm.timer","r")
+        content = f.readlines()
+        f.close()
+        for i in range(len(content)):
+            if "OnCalendar" in content[i]:
+                content[i] = "OnCalendar=%s %s \n"%(alarmDays, time)
+
+        f = open("/etc/mediaserver/alarm.timer","w")
+
+        for x in content:
+            f.write(x)
+
+        f.close()
+
+
+        f = open("/etc/mediaserver/alarm.sh", "r")
+        content = f.readlines()
+        f.close()
+        for i in range(len(content)):
+            if i>0 and i<8:
+                if "minVolume" in content[i]:
+                    content[i] = "minVolume=%s\n"%(minVolume)
+                elif "maxVolume" in content[i]:
+                    content[i] = "maxVolume=%s\n"%(maxVolume)
+                elif "defaultVolume" in content[i]:
+                    content[i] = "defaultVolume=%s\n"%(defaultVolume)
+                elif "growingVolume" in content[i]:
+                    content[i] = "growingVolume=%s\n"%(growingVolume)    
+                elif "growingSpeed" in content[i]:
+                    content[i] = "growingSpeed=%s\n"%(growingSpeed)
+                elif "playlist" in content[i]:
+                    content[i] = "playlist=\"%s\"\n"%(alarmPlaylist)
+                elif "theNewestSong" in content[i]:
+                    alarmType = "true"
+                    if "playlist" in alarmMode:
+                        alarmType = "false"
+                    else:
+                        alarmType = "true"    
+                    content[i] = "theNewestSongs=%s\n"%(alarmType)
+            elif i >=8:
+                break
+
+        f = open("/etc/mediaserver/alarm.sh", "w")
+        for x in content:
+            f.write(x)
+        f.close()    
+
+
+
+    return loadAlarmConfig()
+
 
 
 @app.route('/playlists.html')
@@ -368,11 +453,20 @@ def download_360p(url):
                  "path": full_path }
     return metadata
 
-@app.route('/SomeFunction')
-def SomeFunction():
-    print('In SomeFunction')
+@app.route('/alarm_test')
+def alarmTest():
+    print('alarm test')
     return "Nothing"
 
+@app.route('/alarm_on')
+def alarmOn():
+    print('alarm on')
+    return "Nothing"
+
+@app.route('/alarm_off')
+def alarmOff():
+    print('alarm off')
+    return "Nothing"
 
 if __name__ == '__main__':
     app.run()
