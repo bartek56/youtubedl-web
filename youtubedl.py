@@ -453,9 +453,14 @@ def download_360p(url):
                  "path": full_path }
     return metadata
 
-@app.route('/alarm_test')
-def alarmTest():
-    print('alarm test')
+@app.route('/alarm_test_start')
+def alarmTestStart():
+    print('alarm test start')
+    return "Nothing"
+
+@app.route('/alarm_test_stop')
+def alarmTestStop():
+    print('alarm test stop')
     return "Nothing"
 
 @app.route('/alarm_on')

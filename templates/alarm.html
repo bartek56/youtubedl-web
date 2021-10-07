@@ -17,7 +17,17 @@
     { 
         $("#alarm_test_button").click(function (event) 
         { 
-            $.getJSON('/alarm_test', { }, function(data) { }); 
+            var button= document.getElementById('alarm_test_button');
+            if(button.value == "start")
+            {
+                button.value = "stop"
+                $.getJSON('/alarm_test_start', { }, function(data) { }); 
+            }
+            else if(button.value == "stop")
+            {
+                button.value = "start"
+                $.getJSON('/alarm_test_stop', { }, function(data) { }); 
+            }
             return false; 
         }); 
         $("#enable_alarm_button").click(function (event) 
@@ -155,7 +165,7 @@
                 {% endif %}}
             {% endfor %}
           </select>
-          <input type="button" id="alarm_test_button" value="test" />
+          <input type="button" id="alarm_test_button" value="start" />
         </div>
       </div>
       <div class="row">
