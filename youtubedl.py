@@ -42,6 +42,9 @@ for x in content:
 def index():
     return render_template('index.html')
 
+def alert_info(info):
+    return render_template('alert.html', alert=info) 
+
 
 def loadAlarmConfig():
     f = open("/etc/mediaserver/alarm.timer","r")
@@ -156,8 +159,13 @@ def loadAlarmConfig():
 
 @app.route('/alarm.html')
 def alarm():
-    print(request.remote_addr)
-    return loadAlarmConfig()
+    remoteAddress = request.remote_addr
+
+    if ("192.168" in remoteAddress) or ("127.0.0.1" in remoteAddress):
+        return loadAlarmConfig()
+    else:
+        return alert_info("You do not have access to alarm settings")
+
 
 @app.route('/save_alarm', methods = ['POST', 'GET'])
 def save_alarm():
@@ -248,17 +256,21 @@ def save_alarm():
 
 @app.route('/playlists.html')
 def playlists():
-    config = ConfigParser()
-    config.read(CONFIG_FILE)
-    data = [{'name':'name'}]
-    data.clear()
+    remoteAddress = request.remote_addr
 
-    for section_name in config.sections():
-        if section_name != "GLOBAL":
-            data.append({'name':config[section_name]['name'] })
+    if ("192.168" in remoteAddress) or ("127.0.0.1" in remoteAddress):
+        config = ConfigParser()
+        config.read(CONFIG_FILE)
+        data = [{'name':'name'}]
+        data.clear()
 
-    return render_template('playlists.html', playlists_data=data)
+        for section_name in config.sections():
+            if section_name != "GLOBAL":
+                data.append({'name':config[section_name]['name'] })
 
+        return render_template('playlists.html', playlists_data=data)
+    else:
+        return alert_info("You do not have access to alarm settings")
 
 
 @app.route('/download',methods = ['POST', 'GET'])
