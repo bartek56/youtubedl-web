@@ -270,7 +270,7 @@ def playlists():
 
         return render_template('playlists.html', playlists_data=data)
     else:
-        return alert_info("You do not have access to alarm settings")
+        return alert_info("You do not have access to Youtube playlists")
 
 
 @app.route('/download',methods = ['POST', 'GET'])
@@ -489,11 +489,14 @@ def alarmTestStop():
 def alarmOn():
     subprocess.run('systemctl enable alarm.timer', shell=True)
     subprocess.run('systemctl start alarm.timer', shell=True)
+    subprocess.run('/bin/bash /opt/youtubedl-web/script.sh')
+
     return "Nothing"
 
 @app.route('/alarm_off')
 def alarmOff():
     print('alarm off')
+    subprocess.run('/bin/bash /opt/youtube-dl/script.sh')
     return "Nothing"
 
 if __name__ == '__main__':
