@@ -132,7 +132,7 @@ def loadAlarmConfig():
     process = subprocess.run('systemctl is-active alarm.timer', shell=True, stdout=subprocess.PIPE, universal_newlines=True)
     output = process.stdout
     if "in" in output:
-        alarmIsOn = ""
+        alarmIsOn = "unchecked"
     else:
         alarmIsOn = "checked"
     return render_template('alarm.html', alarm_time=time, 
@@ -247,7 +247,7 @@ def save_alarm():
             f.write(x)
         f.close()    
 
-        subprocess.run('systemctl daemon-reload', shell=True)
+        subprocess.run('sudo /bin/systemctl daemon-reload', shell=True)
 
 
     return loadAlarmConfig()
@@ -487,16 +487,17 @@ def alarmTestStop():
 
 @app.route('/alarm_on')
 def alarmOn():
-    subprocess.run('systemctl enable alarm.timer', shell=True)
-    subprocess.run('systemctl start alarm.timer', shell=True)
-    subprocess.run('/bin/bash /opt/youtubedl-web/script.sh')
-
+    print("alarm on")
+    subprocess.run('sudo /bin/systemctl enable alarm.timer', shell=True)
+    subprocess.run('sudo /bin/systemctl start alarm.timer', shell=True)
     return "Nothing"
 
 @app.route('/alarm_off')
 def alarmOff():
     print('alarm off')
-    subprocess.run('/bin/bash /opt/youtube-dl/script.sh')
+    subprocess.run('sudo /bin/systemctl stop alarm.timer', shell=True)
+    subprocess.run('sudo /bin/systemctl disable alarm.timer', shell=True)
+
     return "Nothing"
 
 if __name__ == '__main__':

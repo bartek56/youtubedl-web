@@ -18,12 +18,12 @@
         $("#alarm_test_button").click(function (event) 
         { 
             var button= document.getElementById('alarm_test_button');
-            if(button.value == "start")
+            if(button.value === "start")
             {
                 button.value = "stop"
                 $.getJSON('/youtubedl/alarm_test_start', { }, function(data) { }); 
             }
-            else if(button.value == "stop")
+            else if(button.value === "stop")
             {
                 button.value = "start"
                 $.getJSON('/youtubedl/alarm_test_stop', { }, function(data) { }); 
@@ -32,18 +32,18 @@
         }); 
         $("#enable_alarm_button").click(function (event) 
         { 
-            if ($("#enable_alarm_button").val() == "alarm_on")
+            console.log($("#enable_alarm_button").val())    
+            if ($("#enable_alarm_button").val() === "unchecked")
             {
                 $.getJSON('/youtubedl/alarm_on', { }, function(data) { }); 
             }
             else
             {
-                 $.getJSON('/youtubedl/alarm_off', { }, function(data) { }); 
+                $.getJSON('/youtubedl/alarm_off', { }, function(data) { }); 
             }
 
             return false; 
         }); 
-
     }); 
     </script>
 </head>
@@ -172,7 +172,7 @@
         <div class="col-sm">
 
           <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="enable_alarm_button" value="alarm_on" {{alarm_active}}>
+                  <input class="form-check-input" type="checkbox" id="enable_alarm_button" value="{{alarm_active}}" {{alarm_active}}>
             <label class="form-check-label" for="flexSwitchCheckDefault">Enable</label>
           </div>
 
