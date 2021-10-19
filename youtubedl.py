@@ -470,27 +470,24 @@ def download_360p(url):
 @app.route('/alarm_test_start')
 def alarmTestStart():
     print('alarm test start')
-#    subprocess.run('bash /etc/mediaserver/alarm.sh')
-#    subprocess.run('systemctl start alarm.service', shell=True)
-
+    subprocess.run('sudo /bin/systemctl start alarm.service', shell=True)
     return "Nothing"
 
 @app.route('/alarm_test_stop')
 def alarmTestStop():
     print('alarm test stop')
+    subprocess.run('sudo /bin/systemctl stop alarm.service', shell=True)
     subprocess.run('/usr/bin/mpc stop', shell=True)
-#    subprocess.run('systemctl stop alarm.service', shell=True)
-
-#    process = subprocess.run('systemctl is-active alarm.timer', shell=True, stdout=subprocess.PIPE, universal_newlines=True)
-
-    return "Nothing"
+#    return "Nothing"
+    return loadAlarmConfig()
 
 @app.route('/alarm_on')
 def alarmOn():
     print("alarm on")
     subprocess.run('sudo /bin/systemctl enable alarm.timer', shell=True)
     subprocess.run('sudo /bin/systemctl start alarm.timer', shell=True)
-    return "Nothing"
+#    return "Nothing"
+    return loadAlarmConfig()
 
 @app.route('/alarm_off')
 def alarmOff():
