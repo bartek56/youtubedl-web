@@ -16,7 +16,8 @@
   <script type=text/javascript>
   
 $(function() 
-    { 
+    {
+                
         $("#alarm_test_button").click(function (event) 
         { 
             var button= document.getElementById('alarm_test_button');
@@ -46,7 +47,40 @@ $(function()
                 button.value = "unchecked"
             }
             return true; 
-        }); 
+        });
+
+        var checkRadio = document.querySelector('input[name="alarm_mode"]:checked');
+
+        if (checkRadio.value === "newest_song")
+        {
+            var playlistsSelect = document.getElementById('playlists');
+            playlistsSelect.disabled = true;    
+         }
+         else
+         {
+             var playlistsSelect = document.getElementById('playlists');
+             playlistsSelect.disabled = false;    
+         }
+
+
+         let alarmMode = document.querySelectorAll('input[name="alarm_mode"]');
+
+         for (let i = 0; i < alarmMode.length; i++) {
+             alarmMode[i].addEventListener("change", function() {
+             let val = this.value; // this == the clicked radio,
+             if (val === "newest_song")
+             {
+                 var playlistsSelect = document.getElementById('playlists');
+                 playlistsSelect.disabled = true;    
+             }
+             else
+             {
+                 var playlistsSelect = document.getElementById('playlists');
+                 playlistsSelect.disabled = false;    
+              }
+
+          });
+      } 
     }); 
 
     </script>
