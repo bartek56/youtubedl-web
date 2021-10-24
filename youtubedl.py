@@ -172,7 +172,9 @@ def save_alarm():
     if request.method == 'POST':
         time = request.form['alarm_time']
         alarmMode = request.form['alarm_mode']
-        alarmPlaylist = request.form['playlists']
+        alarmPlaylist = ""
+        if "playlist" in alarmMode:
+            alarmPlaylist = request.form['playlists']
         alarmDays = ""
         if len(request.form.getlist('monday')) > 0:
             alarmDays += "Mon,"
