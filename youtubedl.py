@@ -2,11 +2,14 @@ import os
 import youtube_dl
 import metadata_mp3
 import subprocess
-from flask import Flask, render_template, redirect, url_for, request, send_file, logging, jsonify, request
+import logging
+from flask import Flask, render_template, redirect, url_for, request, send_file, jsonify, request
 from configparser import ConfigParser
 
 app = Flask(__name__)
 
+logging.basicConfig(format="%(asctime)s %(levelname)s-%(message)s",filename='/var/log/youtubedlweb.log', level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 CONFIG_FILE='/etc/mediaserver/youtubedl.ini'
 MUSIC_PATH=''
@@ -164,6 +167,7 @@ def loadAlarmConfig():
 @app.route('/alarm.html')
 def alarm():
     remoteAddress = request.remote_addr
+    logger.info("alarm website")
 
     if ("192.168" in remoteAddress) or ("127.0.0.1" in remoteAddress):
         return loadAlarmConfig()
@@ -252,9 +256,9 @@ def save_alarm():
         for x in content:
             f.write(x)
         f.close()    
-
         subprocess.run('sudo /bin/systemctl daemon-reload', shell=True)
-
+#        subprocess.run('sudo /bin/systemctl restart alarm.timer', shell=True)
+        app.logger.info("alarm saved, systemctl daemon-reload")
 
     return loadAlarmConfig()
 
