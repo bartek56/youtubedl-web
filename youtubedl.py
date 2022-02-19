@@ -8,7 +8,7 @@ from configparser import ConfigParser
 
 app = Flask(__name__)
 
-logging.basicConfig(format="%(asctime)s %(levelname)s-%(message)s",filename='/var/log/youtubedlweb.log', level=logging.INFO)
+#logging.basicConfig(format="%(asctime)s %(levelname)s-%(message)s",filename='/var/log/youtubedlweb.log', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 CONFIG_FILE='/etc/mediaserver/youtubedl.ini'
@@ -257,6 +257,7 @@ def save_alarm():
             f.write(x)
         f.close()    
         subprocess.run('sudo /bin/systemctl daemon-reload', shell=True)
+
 #        subprocess.run('sudo /bin/systemctl restart alarm.timer', shell=True)
         app.logger.info("alarm saved, systemctl daemon-reload")
 
@@ -393,9 +394,16 @@ def download_mp3(url):
           }  
     result = youtube_dl.YoutubeDL(ydl_opts).extract_info(url)
 
-    songTitle = result['title'] 
-    artist = result['artist']
-    album = result['album']
+    songTitle = ""
+    artist = ""
+    album = ""
+
+    if "title" in result:
+        songTitle = result['title'] 
+    if "artist" in result:
+        artist = result['artist'] 
+    if "album" in result:
+        album = result['album'] 
 
     full_path = metadata_mp3.add_metadata_song(MUSIC_PATH, album, artist, songTitle)
     
