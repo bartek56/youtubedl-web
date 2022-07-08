@@ -208,6 +208,9 @@ def save_alarm():
       
         growingVolume = request.form['growing_volume']
         growingSpeed = request.form['growing_speed']
+        alarmIsEnable = False
+        if "alarm_active" in request.form:
+            alarmIsEnable = True
 
 
         f = open("/etc/mediaserver/alarm.timer","r")
@@ -256,10 +259,15 @@ def save_alarm():
         for x in content:
             f.write(x)
         f.close()    
+        if alarmIsEnable:
+            subprocess.run('sudo /bin/systemctl stop alarm.timer', shell=True)
         subprocess.run('sudo /bin/systemctl daemon-reload', shell=True)
+        if alarmIsEnable:
+            subprocess.run('sudo /bin/systemctl start alarm.timer', shell=True)
 
-#        subprocess.run('sudo /bin/systemctl restart alarm.timer', shell=True)
         app.logger.info("alarm saved, systemctl daemon-reload")
+        #print(alarmActive)
+
 
     return loadAlarmConfig()
 
