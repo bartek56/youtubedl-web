@@ -17,7 +17,7 @@ MUSIC_PATH=''
 VIDEO_PATH=''
 PLAYLISTS_PATH=''
 
-if os.isfile("/etc/mediaserver/minidlna.conf"):
+if os.path.isfile("/etc/mediaserver/minidlna.conf"):
     f = open("/etc/mediaserver/minidlna.conf","r")
     content = f.readlines()
 
@@ -36,7 +36,6 @@ if os.isfile("/etc/mediaserver/minidlna.conf"):
             VIDEO_PATH=VIDEO_PATH.replace('\n','')
             VIDEO_PATH=VIDEO_PATH.replace('\r','')
 else:
-    
     MUSIC_PATH='/tmp/music/quick_download/'
     VIDEO_PATH='/tmp/video/quick_download/'
     PLAYLISTS_PATH='/tmp/music/Youtube list/'
