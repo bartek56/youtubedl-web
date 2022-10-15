@@ -1,4 +1,4 @@
-from main import app
+from youtubedl import app
 
 with app.test_client() as c:
     response = c.get('/')
