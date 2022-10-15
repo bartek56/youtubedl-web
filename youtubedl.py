@@ -1,3 +1,4 @@
+from genericpath import isfile
 import os
 import youtube_dl
 import metadata_mp3
@@ -16,28 +17,29 @@ MUSIC_PATH=''
 VIDEO_PATH=''
 PLAYLISTS_PATH=''
 
-f = open("/etc/mediaserver/minidlna.conf","r")
-content = f.readlines()
+if os.isfile("/etc/mediaserver/minidlna.conf"):
+    f = open("/etc/mediaserver/minidlna.conf","r")
+    content = f.readlines()
 
-for x in content:
-    if "media_dir=A" in x:
-        parameter = x.split("A,")
-        musicPath = parameter[1]
-        musicPath=musicPath.replace('\n','')
-        musicPath=musicPath.replace('\r','')
-        MUSIC_PATH="%s/quick download/"%(musicPath)
-        PLAYLISTS_PATH="%s/Youtube list/"%(musicPath)
-    if "media_dir=V" in x:
-        parameter = x.split("V,")
-        musicPath = parameter[1]
-        VIDEO_PATH="%s/quick download/"%(musicPath)
-        VIDEO_PATH=VIDEO_PATH.replace('\n','')
-        VIDEO_PATH=VIDEO_PATH.replace('\r','')
-
-
-#MUSIC_PATH='/tmp/music/quick_download/'
-#VIDEO_PATH='/tmp/video/quick_download/'
-#PLAYLISTS_PATH='/tmp/music/Youtube list/'
+    for x in content:
+        if "media_dir=A" in x:
+            parameter = x.split("A,")
+            musicPath = parameter[1]
+            musicPath=musicPath.replace('\n','')
+            musicPath=musicPath.replace('\r','')
+            MUSIC_PATH="%s/quick download/"%(musicPath)
+            PLAYLISTS_PATH="%s/Youtube list/"%(musicPath)
+        if "media_dir=V" in x:
+            parameter = x.split("V,")
+            musicPath = parameter[1]
+            VIDEO_PATH="%s/quick download/"%(musicPath)
+            VIDEO_PATH=VIDEO_PATH.replace('\n','')
+            VIDEO_PATH=VIDEO_PATH.replace('\r','')
+else:
+    
+    MUSIC_PATH='/tmp/music/quick_download/'
+    VIDEO_PATH='/tmp/video/quick_download/'
+    PLAYLISTS_PATH='/tmp/music/Youtube list/'
 
 @app.route('/favicon.ico')
 def favicon():
