@@ -1,6 +1,6 @@
 from genericpath import isfile
 import os
-import youtube_dl
+import yt_dlp
 import metadata_mp3
 import subprocess
 import logging
@@ -401,7 +401,7 @@ def download_mp3(url):
           'ignoreerrors': True,
           'noplaylist': True
           }  
-    result = youtube_dl.YoutubeDL(ydl_opts).extract_info(url)
+    result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
 
     songTitle = ""
     artist = ""
@@ -441,7 +441,7 @@ def download_4k(url):
           'outtmpl': path+'/'+'%(title)s_4k.%(ext)s',
           'ignoreerrors': True
           }  
-    result = youtube_dl.YoutubeDL(ydl_opts).extract_info(url)
+    result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
     full_path= "%s/%s_4k.%s"%(path,result['title'],result['ext'])
 
 
@@ -464,7 +464,7 @@ def download_720p(url):
           'outtmpl': path+'/'+'%(title)s_720p.%(ext)s',
           'ignoreerrors': True
           }  
-    result = youtube_dl.YoutubeDL(ydl_opts).extract_info(url)
+    result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
 
     full_path = "%s/%s_720p.%s"%(path,result['title'],result['ext'])
     metadata = {"title": result['title'], 
@@ -487,7 +487,7 @@ def download_360p(url):
           'ignoreerrors': True
           }
 
-    result = youtube_dl.YoutubeDL(ydl_opts).extract_info(url)
+    result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
     full_path = "%s/%s_360p.%s"%(path,result['title'],result['ext'])
 
     metadata = {"title": result['title'], 
