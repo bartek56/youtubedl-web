@@ -2,12 +2,14 @@ from genericpath import isfile
 import os
 import yt_dlp
 import metadata_mp3
+#import subprocessDebug as subprocess
 import subprocess
 import logging
-from flask import Flask, render_template, redirect, url_for, request, send_file, jsonify, request
+from flask import Flask, render_template, redirect, url_for, request, send_file, jsonify, send_from_directory, flash
 from configparser import ConfigParser
 
 app = Flask(__name__)
+app.secret_key = "super_extra_key"
 
 #logging.basicConfig(format="%(asctime)s %(levelname)s-%(message)s",filename='/var/log/youtubedlweb.log', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -54,7 +56,7 @@ def alert_info(info):
     return render_template('alert.html', alert=info) 
 
 
-def loadAlarmConfig():
+def loadAlarmConfigAlarmHTML():
     f = open("/etc/mediaserver/alarm.timer","r")
     content = f.readlines()
 
@@ -163,18 +165,19 @@ def loadAlarmConfig():
                                         growing_speed=growingSpeed
                                         )
 
-
-
 @app.route('/alarm.html')
 def alarm():
     remoteAddress = request.remote_addr
     logger.info("alarm website")
 
     if ("192.168" in remoteAddress) or ("127.0.0.1" in remoteAddress):
-        return loadAlarmConfig()
+        return loadAlarmConfigAlarmHTML()
+    #elif os.path.isfile("/etc/mediaserver/alarm.timer") == False:
+    #    return alert_info("Alarm timer doesn't exist")
+    #elif os.path.isfile("/etc/mediaserver/alarm.sh") == False:
+    #    return alert_info("Alarm script doesn't exist")   
     else:
         return alert_info("You do not have access to alarm settings")
-
 
 @app.route('/save_alarm', methods = ['POST', 'GET'])
 def save_alarm():
@@ -261,18 +264,27 @@ def save_alarm():
             f.write(x)
         f.close()    
         if alarmIsEnable:
-            subprocess.run('sudo /bin/systemctl stop alarm.timer', shell=True)
-        subprocess.run('sudo /bin/systemctl daemon-reload', shell=True)
+            p = subprocess.run('sudo /bin/systemctl stop alarm.timer', shell=True)
+            if p.returncode != 0:
+                flash("Failed to restart alarm timer", 'danger')
+                return loadAlarmConfigAlarmHTML()
+
+        p = subprocess.run('sudo /bin/systemctl daemon-reload', shell=True)
+        if p.returncode != 0:
+                flash("Failed to daemon-reload", 'danger')
+                return loadAlarmConfigAlarmHTML()
+
         if alarmIsEnable:
-            subprocess.run('sudo /bin/systemctl start alarm.timer', shell=True)
+            p = subprocess.run('sudo /bin/systemctl start alarm.timer', shell=True)
+            if p.returncode != 0:
+                flash("Failed to start alarm timer", 'danger')
+                return loadAlarmConfigAlarmHTML()                
 
         app.logger.info("alarm saved, systemctl daemon-reload")
-        #print(alarmActive)
 
+        flash("Successfull saved alarm", 'success')        
 
-    return loadAlarmConfig()
-
-
+    return loadAlarmConfigAlarmHTML()
 
 @app.route('/playlists.html')
 def playlists():
@@ -292,9 +304,8 @@ def playlists():
     else:
         return alert_info("You do not have access to Youtube playlists")
 
-
 @app.route('/download',methods = ['POST', 'GET'])
-def login():
+def download():
     path=''
     info = {"path": "path"}
 
@@ -378,8 +389,6 @@ def playlist():
        app.logger.debug("error")
        return redirect('playlists.html')
 
-
-
 def download_mp3(url):
     path=MUSIC_PATH
     if not os.path.exists(path):
@@ -426,7 +435,6 @@ def download_mp3(url):
 
     return metadata
 
-
 def download_4k(url):
     path=VIDEO_PATH
     if not os.path.exists(path):
@@ -449,7 +457,6 @@ def download_4k(url):
                  "path": full_path }
     return metadata
 
-
 def download_720p(url):
     path=VIDEO_PATH
     if not os.path.exists(path):
@@ -470,7 +477,6 @@ def download_720p(url):
     metadata = {"title": result['title'], 
                  "path": full_path }
     return metadata
-
 
 def download_360p(url):
     path=VIDEO_PATH
@@ -506,7 +512,7 @@ def alarmTestStop():
     subprocess.run('sudo /bin/systemctl stop alarm.service', shell=True)
     subprocess.run('/usr/bin/mpc stop', shell=True)
 #    return "Nothing"
-    return loadAlarmConfig()
+    return loadAlarmConfigAlarmHTML()
 
 @app.route('/alarm_on')
 def alarmOn():
@@ -514,7 +520,7 @@ def alarmOn():
     subprocess.run('sudo /bin/systemctl enable alarm.timer', shell=True)
     subprocess.run('sudo /bin/systemctl start alarm.timer', shell=True)
 #    return "Nothing"
-    return loadAlarmConfig()
+    return loadAlarmConfigAlarmHTML()
 
 @app.route('/alarm_off')
 def alarmOff():
