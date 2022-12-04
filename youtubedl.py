@@ -7,9 +7,11 @@ import subprocess
 import logging
 from flask import Flask, render_template, redirect, url_for, request, send_file, jsonify, send_from_directory, flash
 from configparser import ConfigParser
+from NotificationManager.mailManager import Mail
 
 app = Flask(__name__)
 app.secret_key = "super_extra_key"
+mailManager = Mail()
 
 #logging.basicConfig(format="%(asctime)s %(levelname)s-%(message)s",filename='/var/log/youtubedlweb.log', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -62,6 +64,8 @@ def mail():
         sender = request.form['sender']
         message = request.form['message']
         if(len(sender)>2 and len(message)>2):
+            fullMessage = "You received message from " + sender + ": " + message
+            mailManager.sendMail("bartosz.brzozowski23@gmail.com", "MediaServer", fullMessage)
             flash("Successfull send mail",'success')
         else:
             flash("You have to fill in the fields", 'danger')
@@ -70,7 +74,6 @@ def mail():
 
 def alert_info(info):
     return render_template('alert.html', alert=info)
-
 
 def loadAlarmConfigAlarmHTML():
     f = open("/etc/mediaserver/alarm.timer","r")
