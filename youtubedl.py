@@ -52,8 +52,24 @@ def favicon():
 def index():
     return render_template('index.html')
 
+@app.route('/contact.html')
+def contactHTML():
+    return render_template('contact.html')
+
+@app.route('/mail', methods = ['POST', 'GET'])
+def mail():
+    if request.method == 'POST':
+        sender = request.form['sender']
+        message = request.form['message']
+        if(len(sender)>2 and len(message)>2):
+            flash("Successfull send mail",'success')
+        else:
+            flash("You have to fill in the fields", 'danger')
+
+    return render_template('contact.html')
+
 def alert_info(info):
-    return render_template('alert.html', alert=info) 
+    return render_template('alert.html', alert=info)
 
 
 def loadAlarmConfigAlarmHTML():
@@ -89,7 +105,7 @@ def loadAlarmConfigAlarmHTML():
                 saturdayChecked = "checked"
             if "Sun" in weekDays:
                 sundayChecked = "checked"
-    f.close() 
+    f.close()
 
     f = open("/etc/mediaserver/alarm.sh","r")
     content = f.readlines()
@@ -125,9 +141,9 @@ def loadAlarmConfigAlarmHTML():
                     playlistCheckbox = "checked"
 
         else:
-            break        
-    
-    f.close() 
+            break
+
+    f.close()
 
     out = subprocess.check_output("mpc lsplaylists | grep -v m3u", shell=True, text=True)
     playlists = []
@@ -145,9 +161,9 @@ def loadAlarmConfigAlarmHTML():
         alarmIsOn = "unchecked"
     else:
         alarmIsOn = "checked"
-    return render_template('alarm.html', alarm_time=time, 
-                                        theNewestSongChecked=theNewestSongCheckBox, 
-                                        playlistChecked=playlistCheckbox, 
+    return render_template('alarm.html', alarm_time=time,
+                                        theNewestSongChecked=theNewestSongCheckBox,
+                                        playlistChecked=playlistCheckbox,
                                         alarm_playlists=playlists,
                                         alarm_playlist_name=alarmPlaylistName,
                                         alarm_active=alarmIsOn,
@@ -175,7 +191,7 @@ def alarm():
     #elif os.path.isfile("/etc/mediaserver/alarm.timer") == False:
     #    return alert_info("Alarm timer doesn't exist")
     #elif os.path.isfile("/etc/mediaserver/alarm.sh") == False:
-    #    return alert_info("Alarm script doesn't exist")   
+    #    return alert_info("Alarm script doesn't exist")
     else:
         return alert_info("You do not have access to alarm settings")
 
@@ -209,7 +225,7 @@ def save_alarm():
         minVolume=request.form['min_volume']
         maxVolume=request.form['max_volume']
         defaultVolume=request.form['default_volume']
-      
+
         growingVolume = request.form['growing_volume']
         growingSpeed = request.form['growing_speed']
         alarmIsEnable = False
@@ -278,11 +294,11 @@ def save_alarm():
             p = subprocess.run('sudo /bin/systemctl start alarm.timer', shell=True)
             if p.returncode != 0:
                 flash("Failed to start alarm timer", 'danger')
-                return loadAlarmConfigAlarmHTML()                
+                return loadAlarmConfigAlarmHTML()
 
         app.logger.info("alarm saved, systemctl daemon-reload")
 
-        flash("Successfull saved alarm", 'success')        
+        flash("Successfull saved alarm", 'success')
 
     return loadAlarmConfigAlarmHTML()
 
