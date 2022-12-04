@@ -56,15 +56,16 @@ def index():
 
 @app.route('/contact.html')
 def contactHTML():
+    mailManager.initialize()
     return render_template('contact.html')
 
 @app.route('/mail', methods = ['POST', 'GET'])
 def mail():
     if request.method == 'POST':
         sender = request.form['sender']
-        message = request.form['message']
-        if(len(sender)>2 and len(message)>2):
-            fullMessage = "You received message from " + sender + ": " + message
+        message = request.form['message']        
+        if(len(sender)>2 and len(message)>2):            
+            fullMessage = "You received message from " + sender + ": " + message            
             mailManager.sendMail("bartosz.brzozowski23@gmail.com", "MediaServer", fullMessage)
             flash("Successfull send mail",'success')
         else:

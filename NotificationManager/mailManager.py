@@ -1,8 +1,8 @@
 from simplegmail import Gmail
 
-class Mail():
-    def __init__(self):
-        self.gmail = Gmail() # will open a browser window to ask you to log in and authenticate
+class Mail():    
+    def initialize(self):
+        self.gmail = Gmail()
 
     def sendMail(self, address, subject, text, attachments=[]):
 
@@ -17,4 +17,5 @@ class Mail():
 
 if __name__ == "__main__":
     mail = Mail()
+    mail.initialize()
     mail.sendMail("bartosz.brzozowski23@gmail.com", "IPRecorder", "everything perfectly work")

@@ -33,7 +33,7 @@ class FlaskClientTestCase(unittest.TestCase):
     
     @mock.patch.object(Mail, 'sendMail', autospec=True)
     def test_correct_mail(self, mock_sendMail):
-        rv = self.mail('test@wp.pl', 'mail text')
+        rv = self.mail('test@wp.pl', 'mail text')        
         mock_sendMail.assert_called_with(self.mailManager, "bartosz.brzozowski23@gmail.com", "MediaServer", "You received message from test@wp.pl: mail text")
         assert b'Successfull send mail' in rv.data
     
