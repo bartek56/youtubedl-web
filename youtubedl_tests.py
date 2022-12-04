@@ -17,10 +17,12 @@ class FlaskClientTestCase(unittest.TestCase):
 
     def test_home_page(self):
         rv = self.app.get('/index.html')
+        assert rv.status_code == 200
         assert b'<title>Media Server</title>' in rv.data
     
     def test_wrong_page(self):
         rv = self.app.get('/zzzz')
+        assert rv.status_code == 404
         assert b'404 Not Found' in rv.data
 
     def mail(self, senderMail, textMail):
