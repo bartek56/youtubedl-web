@@ -1,48 +1,21 @@
-from genericpath import isfile
 import os
-import yt_dlp
-import metadata_mp3
 #import subprocessDebug as subprocess
 import subprocess
 import logging
 from flask import Flask, render_template, redirect, url_for, request, send_file, jsonify, send_from_directory, flash
 from configparser import ConfigParser
-from NotificationManager.mailManager import Mail
+from Common.mailManager import Mail
+from Common.YouTubeManager import YoutubeDl
 
 app = Flask(__name__)
 app.secret_key = "super_extra_key"
 mailManager = Mail()
+youtubeManager = YoutubeDl()
 
 #logging.basicConfig(format="%(asctime)s %(levelname)s-%(message)s",filename='/var/log/youtubedlweb.log', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 CONFIG_FILE='/etc/mediaserver/youtubedl.ini'
-MUSIC_PATH=''
-VIDEO_PATH=''
-PLAYLISTS_PATH=''
-
-if os.path.isfile("/etc/mediaserver/minidlna.conf"):
-    f = open("/etc/mediaserver/minidlna.conf","r")
-    content = f.readlines()
-
-    for x in content:
-        if "media_dir=A" in x:
-            parameter = x.split("A,")
-            musicPath = parameter[1]
-            musicPath=musicPath.replace('\n','')
-            musicPath=musicPath.replace('\r','')
-            MUSIC_PATH="%s/quick download/"%(musicPath)
-            PLAYLISTS_PATH="%s/Youtube list/"%(musicPath)
-        if "media_dir=V" in x:
-            parameter = x.split("V,")
-            musicPath = parameter[1]
-            VIDEO_PATH="%s/quick download/"%(musicPath)
-            VIDEO_PATH=VIDEO_PATH.replace('\n','')
-            VIDEO_PATH=VIDEO_PATH.replace('\r','')
-else:
-    MUSIC_PATH='/tmp/music/quick_download/'
-    VIDEO_PATH='/tmp/video/quick_download/'
-    PLAYLISTS_PATH='/tmp/music/Youtube list/'
 
 @app.route('/favicon.ico')
 def favicon():
@@ -335,25 +308,25 @@ def download():
         option = request.form['quickdownload']
         if option == 'mp3':
             app.logger.debug("mp3")
-            info = download_mp3(link)
+            info = youtubeManager.download_mp3(link)
             path = info["path"]
             del info["path"]
             info["Type"] = "MP3 audio"
         elif option == '360p':
             app.logger.debug("360p")
-            info = download_360p(link)
+            info = youtubeManager.download_360p(link)
             path = info["path"]
             del info["path"]
             info["Type"] = "video"
         elif option == '720p':
             app.logger.debug("720p")
-            info = download_720p(link)
+            info = youtubeManager.download_720p(link)
             path = info["path"]
             del info["path"]
             info["Type"] = "video"
         elif option == '4k':
             app.logger.debug("4k")
-            info = download_4k(link)
+            info = youtubeManager.download_4k(link)
             path = info["path"]
             del info["path"]
             info["Type"] = "video"
@@ -408,117 +381,6 @@ def playlist():
    else:
        app.logger.debug("error")
        return redirect('playlists.html')
-
-def download_mp3(url):
-    path=MUSIC_PATH
-    if not os.path.exists(path):
-      os.makedirs(path)
-    
-    info = "[INFO] start download MP3 from link %s "%(url)
-    app.logger.debug(info)
-
-    ydl_opts = {
-          'format': 'bestaudio/best',
-          'download_archive': path+'/downloaded_songs.txt',
-          'addmetadata': True,
-          'outtmpl': path+'/'+'%(title)s.%(ext)s',
-          'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-             }],
-          'ignoreerrors': True,
-          'noplaylist': True
-          }  
-    result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
-
-    songTitle = ""
-    artist = ""
-    album = ""
-
-    if "title" in result:
-        songTitle = result['title'] 
-    if "artist" in result:
-        artist = result['artist'] 
-    if "album" in result:
-        album = result['album'] 
-
-    full_path = metadata_mp3.add_metadata_song(MUSIC_PATH, album, artist, songTitle)
-    
-    metadata = {"path": full_path}
-    app.logger.debug(metadata)
-    if(artist is not None):
-        metadata["artist"] = artist
-    metadata["title"] = songTitle    
-    if(album is not None):
-        metadata["album"] = album
-
-    return metadata
-
-def download_4k(url):
-    path=VIDEO_PATH
-    if not os.path.exists(path):
-      os.makedirs(path)
-    
-    info = "[INFO] start download video [high quality] from link %s "%(url)
-    app.logger.debug(info)
-
-    ydl_opts = {
-          'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best',
-          'addmetadata': True,
-          'outtmpl': path+'/'+'%(title)s_4k.%(ext)s',
-          'ignoreerrors': True
-          }  
-    result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
-    full_path= "%s/%s_4k.%s"%(path,result['title'],result['ext'])
-
-
-    metadata = {"title": result['title'], 
-                 "path": full_path }
-    return metadata
-
-def download_720p(url):
-    path=VIDEO_PATH
-    if not os.path.exists(path):
-      os.makedirs(path)
-    
-    info = "[INFO] start download video [medium quality] from link %s "%(url)
-    app.logger.debug(info)
-
-    ydl_opts = {
-          'format': 'bestvideo[height=720]/mp4',
-          'addmetadata': True,
-          'outtmpl': path+'/'+'%(title)s_720p.%(ext)s',
-          'ignoreerrors': True
-          }  
-    result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
-
-    full_path = "%s/%s_720p.%s"%(path,result['title'],result['ext'])
-    metadata = {"title": result['title'], 
-                 "path": full_path }
-    return metadata
-
-def download_360p(url):
-    path=VIDEO_PATH
-    if not os.path.exists(path):
-      os.makedirs(path)
-    
-    info = "[INFO] start download video [low quality] from link %s "%(url)
-    app.logger.debug(info)
-
-    ydl_opts = {
-          'format': 'worse[height<=360]/mp4',
-          'addmetadata': True,
-          'outtmpl': path+'/'+'%(title)s_360p.%(ext)s',
-          'ignoreerrors': True
-          }
-
-    result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
-    full_path = "%s/%s_360p.%s"%(path,result['title'],result['ext'])
-
-    metadata = {"title": result['title'], 
-                 "path": full_path }
-    return metadata
 
 @app.route('/alarm_test_start')
 def alarmTestStart():

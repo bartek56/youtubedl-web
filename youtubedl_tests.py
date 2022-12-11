@@ -3,7 +3,7 @@ import tempfile
 import unittest
 import os
 import unittest.mock as mock
-from NotificationManager.mailManager import Mail
+from Common.mailManager import Mail
 
 class FlaskClientTestCase(unittest.TestCase):
 
@@ -37,10 +37,10 @@ class FlaskClientTestCase(unittest.TestCase):
         mock_sendMail.assert_called_with(self.mailManager, "bartosz.brzozowski23@gmail.com", "MediaServer", "You received message from test@wp.pl: mail text")
         assert b'Successfull send mail' in rv.data
     
-    @mock.patch('NotificationManager.mailManager.Gmail')
+    @mock.patch('Common.mailManager.Gmail')
     def test_wrong_mail(self, mock_Gmail):
         rv = self.mail('jkk', '')
-        assert b'You have to fill in the fields' in rv.data    
+        assert b'You have to fill in the fields' in rv.data
 
 if __name__ == '__main__':
     unittest.main()
