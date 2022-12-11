@@ -1,9 +1,8 @@
 import youtubedl
-import tempfile
 import unittest
-import os
 import unittest.mock as mock
 from Common.mailManager import Mail
+from Common.YouTubeManager import YoutubeDl
 
 class FlaskClientTestCase(unittest.TestCase):
 
@@ -11,6 +10,7 @@ class FlaskClientTestCase(unittest.TestCase):
         youtubedl.app.config['TESTING'] = True
         self.app = youtubedl.app.test_client()
         self.mailManager = youtubedl.mailManager
+        self.ytManager = youtubedl.youtubeManager
 
     def tearDown(self):
         pass
@@ -42,5 +42,26 @@ class FlaskClientTestCase(unittest.TestCase):
         rv = self.mail('jkk', '')
         assert b'You have to fill in the fields' in rv.data
 
+    def yt_dlp(self, url, type):
+        return self.app.post('/download', data=dict(
+        link=url,
+        quickdownload=type
+    ), follow_redirects=True)
+    
+    def retTrue(self, input):
+        return True
+
+    @mock.patch.object(YoutubeDl, 'download_4k', autospec=True)
+    @mock.patch.object(YoutubeDl, 'download_720p', autospec=True)
+    @mock.patch.object(YoutubeDl, 'download_360p', autospec=True)
+    @mock.patch.object(YoutubeDl, 'download_mp3', return_value={"title": "song","path":"/home/music/song.mp3"})
+    @mock.patch.object(YoutubeDl, 'isFile', retTrue)
+    def test_download_mp3(self, mock_mp3, mock_360p, mock_720p, mock_4k):
+        ytLink = "https://youtu.be/q1MmYVcDyMs"
+        rv = self.yt_dlp(ytLink, 'mp3')
+        mock_mp3.assert_called_with(ytLink)
+        self.assertIn(b'<form action="/download_file"', rv.data)
+        self.assertEqual(rv.status_code, 200)
+ 
 if __name__ == '__main__':
     unittest.main()

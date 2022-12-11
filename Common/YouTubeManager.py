@@ -38,7 +38,6 @@ class YoutubeDl:
 
         ydl_opts = {
               'format': 'bestaudio/best',
-              'download_archive': path+'/downloaded_songs.txt',
               'addmetadata': True,
               'outtmpl': path+'/'+'%(title)s.%(ext)s',
               'postprocessors': [{
@@ -65,7 +64,6 @@ class YoutubeDl:
         full_path = metadata_mp3.add_metadata_song(self.MUSIC_PATH, album, artist, songTitle)
     
         metadata = {"path": full_path}
-        print(metadata)
         if(artist is not None):
             metadata["artist"] = artist
         metadata["title"] = songTitle    
@@ -138,6 +136,9 @@ class YoutubeDl:
         metadata = {"title": result['title'], 
                      "path": full_path }
         return metadata
+
+    def isFile(self, path):
+        return os.path.isfile(path)
 
 if __name__ == "__main__":
     yt = YoutubeDl()

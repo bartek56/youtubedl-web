@@ -330,11 +330,11 @@ def download():
             path = info["path"]
             del info["path"]
             info["Type"] = "video"
-    if not os.path.isfile(path):
+    if not youtubeManager.isFile(path):
         path = path.replace("|", "_")
         path = path.replace("\"", "'")
         path = path.replace(":", "-")
-    if os.path.isfile(path):
+    if youtubeManager.isFile(path):
         return render_template('download.html', full_path=path, file_info=info)
     else:
         app.logger.debug("error")
