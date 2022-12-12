@@ -11,8 +11,8 @@ jobs:
       - run:
           name: Running tests
           command: |
-            python3 youtubedl_tests.py
-            python3 Common/YouTubeManager_tests.py
+            python3 tests/youtubedl_tests.py
+            python3 tests/YouTubeManager_tests.py
       - store_artifacts:
           path: test-reports/
           destination: python_app
