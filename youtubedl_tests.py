@@ -6,7 +6,7 @@ from Common.YouTubeManager import YoutubeDl
 
 class FlaskClientTestCase(unittest.TestCase):
 
-    def setUp(self):        
+    def setUp(self):
         youtubedl.app.config['TESTING'] = True
         self.app = youtubedl.app.test_client()
         self.mailManager = youtubedl.mailManager
@@ -19,7 +19,7 @@ class FlaskClientTestCase(unittest.TestCase):
         rv = self.app.get('/index.html')
         assert rv.status_code == 200
         assert b'<title>Media Server</title>' in rv.data
-    
+
     def test_wrong_page(self):
         rv = self.app.get('/zzzz')
         assert rv.status_code == 404
@@ -30,13 +30,13 @@ class FlaskClientTestCase(unittest.TestCase):
         sender=senderMail,
         message=textMail
     ), follow_redirects=True)
-    
+
     @mock.patch.object(Mail, 'sendMail', autospec=True)
     def test_correct_mail(self, mock_sendMail):
-        rv = self.mail('test@wp.pl', 'mail text')        
+        rv = self.mail('test@wp.pl', 'mail text')
         mock_sendMail.assert_called_with(self.mailManager, "bartosz.brzozowski23@gmail.com", "MediaServer", "You received message from test@wp.pl: mail text")
         assert b'Successfull send mail' in rv.data
-    
+
     @mock.patch('Common.mailManager.Gmail')
     def test_wrong_mail(self, mock_Gmail):
         rv = self.mail('jkk', '')
@@ -47,21 +47,18 @@ class FlaskClientTestCase(unittest.TestCase):
         link=url,
         quickdownload=type
     ), follow_redirects=True)
-    
+
     def retTrue(self, input):
         return True
 
-    @mock.patch.object(YoutubeDl, 'download_4k', autospec=True)
-    @mock.patch.object(YoutubeDl, 'download_720p', autospec=True)
-    @mock.patch.object(YoutubeDl, 'download_360p', autospec=True)
     @mock.patch.object(YoutubeDl, 'download_mp3', return_value={"title": "song","path":"/home/music/song.mp3"})
     @mock.patch.object(YoutubeDl, 'isFile', retTrue)
-    def test_download_mp3(self, mock_mp3, mock_360p, mock_720p, mock_4k):
+    def test_download_mp3(self, mock_mp3):
         ytLink = "https://youtu.be/q1MmYVcDyMs"
         rv = self.yt_dlp(ytLink, 'mp3')
-        mock_mp3.assert_called_with(ytLink)
-        self.assertIn(b'<form action="/download_file"', rv.data)
+        mock_mp3.assert_called_once_with(ytLink)
         self.assertEqual(rv.status_code, 200)
- 
+        self.assertIn(b'<form action="/download_file"', rv.data)
+
 if __name__ == '__main__':
     unittest.main()

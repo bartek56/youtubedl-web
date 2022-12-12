@@ -1,6 +1,6 @@
 from simplegmail import Gmail
 
-class Mail():    
+class Mail():
     def initialize(self):
         self.gmail = Gmail()
 

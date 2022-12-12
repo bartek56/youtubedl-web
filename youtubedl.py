@@ -36,9 +36,9 @@ def contactHTML():
 def mail():
     if request.method == 'POST':
         sender = request.form['sender']
-        message = request.form['message']        
-        if(len(sender)>2 and len(message)>2):            
-            fullMessage = "You received message from " + sender + ": " + message            
+        message = request.form['message']
+        if(len(sender)>2 and len(message)>2):
+            fullMessage = "You received message from " + sender + ": " + message
             mailManager.sendMail("bartosz.brzozowski23@gmail.com", "MediaServer", fullMessage)
             flash("Successfull send mail",'success')
         else:
@@ -237,7 +237,7 @@ def save_alarm():
                 elif "defaultVolume" in content[i]:
                     content[i] = "defaultVolume=%s\n"%(defaultVolume)
                 elif "growingVolume" in content[i]:
-                    content[i] = "growingVolume=%s\n"%(growingVolume)    
+                    content[i] = "growingVolume=%s\n"%(growingVolume)
                 elif "growingSpeed" in content[i]:
                     content[i] = "growingSpeed=%s\n"%(growingSpeed)
                 elif "playlist" in content[i]:
@@ -247,7 +247,7 @@ def save_alarm():
                     if "playlist" in alarmMode:
                         alarmType = "false"
                     else:
-                        alarmType = "true"    
+                        alarmType = "true"
                     content[i] = "theNewestSongs=%s\n"%(alarmType)
             elif i >=8:
                 break
@@ -255,7 +255,7 @@ def save_alarm():
         f = open("/etc/mediaserver/alarm.sh", "w")
         for x in content:
             f.write(x)
-        f.close()    
+        f.close()
         if alarmIsEnable:
             p = subprocess.run('sudo /bin/systemctl stop alarm.timer', shell=True)
             if p.returncode != 0:
@@ -342,7 +342,7 @@ def download():
 
 @app.route('/download_file',methods = ['POST', 'GET'])
 def downloadFile():
-   path='' 
+   path=''
    if request.method == 'POST':
       path = request.form['path']
       return send_file(path, as_attachment=True)
@@ -355,7 +355,7 @@ def playlist():
    if request.method == 'POST':
        config = ConfigParser()
        config.read(CONFIG_FILE)
-       
+
        select = request.form.get('playlists')
        app.logger.debug(select)
 
