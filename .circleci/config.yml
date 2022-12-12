@@ -11,6 +11,7 @@ jobs:
       - run:
           name: Running tests
           command: |
+            export PYTHONPATH=:
             python3 tests/youtubedl_tests.py
             python3 tests/YouTubeManager_tests.py
       - store_artifacts:
