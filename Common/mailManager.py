@@ -1,8 +1,14 @@
-from simplegmail import Gmail
 
 class Mail():
     def initialize(self):
-        self.gmail = Gmail()
+        result = False
+        try:
+            from simplegmail import Gmail
+            self.gmail = Gmail()
+            result = True
+        except ModuleNotFoundError:
+            result = False
+        return result
 
     def sendMail(self, address, subject, text, attachments=[]):
 
@@ -17,5 +23,5 @@ class Mail():
 
 if __name__ == "__main__":
     mail = Mail()
-    mail.initialize()
-    mail.sendMail("bartosz.brzozowski23@gmail.com", "IPRecorder", "everything perfectly work")
+    if mail.initialize():
+        mail.sendMail("bartosz.brzozowski23@gmail.com", "IPRecorder", "everything perfectly work")

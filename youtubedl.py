@@ -29,8 +29,10 @@ def index():
 
 @app.route('/contact.html')
 def contactHTML():
-    mailManager.initialize()
-    return render_template('contact.html')
+    if mailManager.initialize():
+        return render_template('contact.html')
+    else:
+        return alert_info("Mail is not support")
 
 @app.route('/mail', methods = ['POST', 'GET'])
 def mail():
