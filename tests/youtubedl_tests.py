@@ -37,7 +37,7 @@ class FlaskClientTestCase(unittest.TestCase):
         mock_sendMail.assert_called_with(self.mailManager, "bartosz.brzozowski23@gmail.com", "MediaServer", "You received message from test@wp.pl: mail text")
         assert b'Successfull send mail' in rv.data
 
-    @mock.patch('Common.mailManager.Gmail')
+    @mock.patch.object(Mail, 'sendMail', autospec=True)
     def test_wrong_mail(self, mock_Gmail):
         rv = self.mail('jkk', '')
         assert b'You have to fill in the fields' in rv.data
