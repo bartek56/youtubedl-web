@@ -12,13 +12,14 @@ class YouTubeManagerTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", return_value={"title":"title_test", "artist":"artist_test", "album":"album_test"})
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3, "add_metadata_song")
     def test_downloadMP3(self, mock_metadata, mock_extract_info):
+        mock_extract_info.configure_mock(return_value={"title":"title_test", "artist":"artist_test", "album":"album_test"})
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
         result = self.ytManager.download_mp3(link)
 
-        mock_extract_info.assert_called_with(link)
+        mock_extract_info.assert_called_once_with(link)
         mock_metadata.assert_called_with('/tmp/music/quick_download/', 'album_test', 'artist_test', 'title_test')
 
         self.assertEqual(result["title"], "title_test")
