@@ -5,16 +5,6 @@ from configparser import ConfigParser
 from Common.mailManager import Mail
 from Common.YouTubeManager import YoutubeDl
 
-class CustomConfigParser(ConfigParser):
-    def read(self, filename):
-        self.read_string("[playlist_to_remove]\nname = playlist_to_remove\nlink = http://youtube.com/test\n[playlist]\nname = playlist\nlink = http://youtube.com/test\n")
-
-#    def write(self, fp, space_around_delimiters=True):
-#        return "działa"
-
-    def write(self):
-        return self.sections()
-
 
 class FlaskClientTestCase(unittest.TestCase):
 
@@ -101,16 +91,19 @@ class FlaskClientTestCase(unittest.TestCase):
         assert b'<title>Media Server</title>' in rv.data
 
 
-    @mock.patch('configparser.ConfigParser', side_effect=CustomConfigParser)
+    @mock.patch('configparser.ConfigParser')
     @mock.patch('youtubedl.saveConfigs')
     def test_remove_playlist(self, mock_saveConfigs, mock_configParser):
+        class CustomConfigParser(ConfigParser):
+            def read(self, filename):
+                self.read_string("[playlist_to_remove]\nname = playlist_to_remove\nlink = http://youtube.com/test\n[playlist]\nname = playlist\nlink = http://youtube.com/test\n")
+        mock_configParser.configure_mock(side_effect=CustomConfigParser)
         rv = self.app.post('/playlists', data=dict(remove=True, playlists="playlist_to_remove"), follow_redirects=True)
-
+        self.assertEqual(mock_configParser.call_count, 2)
         args = mock_saveConfigs.call_args
         configs = args[0][0]
         self.assertEqual(len(configs.sections()), 1)
         self.assertEqual(configs.sections()[0],"playlist")
-
         assert rv.status_code == 200
         assert b'<title>Media Server</title>' in rv.data
 
