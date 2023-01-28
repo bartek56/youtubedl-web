@@ -37,7 +37,8 @@ class FlaskClientTestCase(unittest.TestCase):
         assert rv.status_code == 404
         assert b'404 Not Found' in rv.data
 
-    def test_contact_page(self):
+    @mock.patch.object(Mail, 'initialize', return_value=False)
+    def test_contact_page(self, mock_mail):
         rv = self.app.get('/contact.html')
         assert rv.status_code == 200
         assert b'<title>Media Server</title>' in rv.data
