@@ -6,31 +6,9 @@ import yt_dlp
 import metadata_mp3
 
 class YoutubeDl:
-    def __init__(self, tests=False):
-        self.MUSIC_PATH='/tmp/music/quick_download/'
-        self.VIDEO_PATH='/tmp/video/quick_download/'
-        self.PLAYLISTS_PATH='/tmp/music/Youtube list/'
-
-        if not tests:
-            if os.path.isfile("/etc/mediaserver/minidlna.conf"):
-                f = open("/etc/mediaserver/minidlna.conf","r")
-                content = f.readlines()
-
-                for x in content:
-                    if "media_dir=A" in x:
-                        parameter = x.split("A,")
-                        musicPath = parameter[1]
-                        musicPath=musicPath.replace('\n','')
-                        musicPath=musicPath.replace('\r','')
-                        self.MUSIC_PATH="%s/quick download/"%(musicPath)
-                        self.PLAYLISTS_PATH="%s/Youtube list/"%(musicPath)
-                    if "media_dir=V" in x:
-                        parameter = x.split("V,")
-                        musicPath = parameter[1]
-                        self.VIDEO_PATH="%s/quick download/"%(musicPath)
-                        self.VIDEO_PATH=self.VIDEO_PATH.replace('\n','')
-                        self.VIDEO_PATH=self.VIDEO_PATH.replace('\r','')
-                f.close()
+    def __init__(self):
+        self.MUSIC_PATH='/tmp/quick_download/'
+        self.VIDEO_PATH='/tmp/quick_download/'
 
     def download_mp3(self, url):
         path=self.MUSIC_PATH

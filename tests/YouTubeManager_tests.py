@@ -7,7 +7,7 @@ import metadata_mp3
 
 class YouTubeManagerTestCase(unittest.TestCase):
     def setUp(self):
-        self.ytManager = YoutubeDl(tests=True)
+        self.ytManager = YoutubeDl()
 
     def tearDown(self):
         pass
@@ -20,7 +20,7 @@ class YouTubeManagerTestCase(unittest.TestCase):
         result = self.ytManager.download_mp3(link)
 
         mock_extract_info.assert_called_once_with(link)
-        mock_metadata.assert_called_with('/tmp/music/quick_download/', 'album_test', 'artist_test', 'title_test')
+        mock_metadata.assert_called_with('/tmp/quick_download/', 'album_test', 'artist_test', 'title_test')
 
         self.assertEqual(result["title"], "title_test")
         self.assertEqual(result["artist"], "artist_test")
@@ -34,7 +34,7 @@ class YouTubeManagerTestCase(unittest.TestCase):
         result = self.ytManager.download_mp3(link)
 
         mock_extract_info.assert_called_with(link)
-        mock_metadata.assert_called_with('/tmp/music/quick_download/', 'album_test', '', 'title_test')
+        mock_metadata.assert_called_with('/tmp/quick_download/', 'album_test', '', 'title_test')
 
         self.assertEqual(result["title"], "title_test")
         self.assertEqual(result["artist"], "")
@@ -48,7 +48,7 @@ class YouTubeManagerTestCase(unittest.TestCase):
         mock_extract_info.assert_called_with(link)
 
         self.assertEqual(result["title"], "title_test")
-        self.assertEqual(result["path"], "/tmp/video/quick_download//title_test_360p.mp4")
+        self.assertEqual(result["path"], "/tmp/quick_download//title_test_360p.mp4")
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", return_value={"title":"title_test", "artist":"artist_test", "ext":"mp4"})
     def test_download720p(self, mock_extract_info):
@@ -58,7 +58,7 @@ class YouTubeManagerTestCase(unittest.TestCase):
         mock_extract_info.assert_called_with(link)
 
         self.assertEqual(result["title"], "title_test")
-        self.assertEqual(result["path"], "/tmp/video/quick_download//title_test_720p.mp4")
+        self.assertEqual(result["path"], "/tmp/quick_download//title_test_720p.mp4")
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", return_value={"title":"title_test", "artist":"artist_test", "ext":"mp4"})
     def test_download4k(self, mock_extract_info):
@@ -68,7 +68,7 @@ class YouTubeManagerTestCase(unittest.TestCase):
         mock_extract_info.assert_called_with(link)
 
         self.assertEqual(result["title"], "title_test")
-        self.assertEqual(result["path"], "/tmp/video/quick_download//title_test_4k.mp4")
+        self.assertEqual(result["path"], "/tmp/quick_download//title_test_4k.mp4")
 
 
 if __name__ == "__main__":

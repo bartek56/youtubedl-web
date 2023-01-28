@@ -4,7 +4,7 @@ from Common.YouTubeManager import YoutubeDl
 
 class YouTubeManagerTestCase(unittest.TestCase):
     def setUp(self):
-        self.ytManager = YoutubeDl(tests=True)
+        self.ytManager = YoutubeDl()
 
     def tearDown(self):
         pass
