@@ -1,14 +1,18 @@
 import os
-#import subprocessDebug as subprocess
-import subprocess
 import logging
 from flask import Flask, render_template, redirect, url_for, request, send_file, jsonify, send_from_directory, flash
-from configparser import ConfigParser
+import configparser
 from Common.mailManager import Mail
 from Common.YouTubeManager import YoutubeDl
 
 app = Flask(__name__)
 app.secret_key = "super_extra_key"
+if app.debug == True:
+    import sys
+    sys.path.append("./tests")
+    import subprocessDebug as subprocess
+else:
+    import subprocess
 mailManager = Mail()
 youtubeManager = YoutubeDl()
 
@@ -160,6 +164,10 @@ def loadAlarmConfigAlarmHTML():
                                         growing_speed=growingSpeed
                                         )
 
+def saveConfigs(config):
+    with open(CONFIG_FILE,'w') as fp:
+        config.write(fp)
+
 @app.route('/alarm.html')
 def alarm():
     remoteAddress = request.remote_addr
@@ -286,7 +294,7 @@ def playlists():
     remoteAddress = request.remote_addr
 
     if ("192.168" in remoteAddress) or ("127.0.0.1" in remoteAddress):
-        config = ConfigParser()
+        config = configparser.ConfigParser()
         config.read(CONFIG_FILE)
         data = [{'name':'name'}]
         data.clear()
@@ -355,29 +363,25 @@ def downloadFile():
 @app.route('/playlists',methods = ['POST', 'GET'])
 def playlist():
    if request.method == 'POST':
-       config = ConfigParser()
+       config = configparser.ConfigParser()
        config.read(CONFIG_FILE)
 
-       select = request.form.get('playlists')
-       app.logger.debug(select)
-
        if 'add' in request.form:
-           app.logger.debug("add")
            playlist_name = request.form['playlist_name']
            link = request.form['link']
+           app.logger.debug("add playlist %s %s", playlist_name, link)
            config[playlist_name]={}
            config[playlist_name]['name']=playlist_name
            config[playlist_name]['link']=link
 
        if 'remove' in request.form:
-           app.logger.debug("remove")
+           select = request.form['playlists']
            for i in config.sections():
                if i == str(select):
-                   config.remove_section(str(select))
+                   config.remove_section(i)
+                   app.logger.debug("removed playlist %s", i)
 
-       with open(CONFIG_FILE,'w') as fp:
-           config.write(fp)
-
+       saveConfigs(config)
        return redirect('playlists.html')
 
    else:
