@@ -15,4 +15,4 @@ gmail_token.json
 
 #tests
 .coverage
-html*
+results
