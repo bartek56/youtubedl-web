@@ -1,8 +1,5 @@
 import os
 import yt_dlp
-#import sys
-#sys.path.append("/home/bartosz/Documents/projects/youtubedl-web/tests")
-#import yt_dlp_mock as yt_dlp
 import metadata_mp3
 
 class YoutubeDl:
@@ -12,8 +9,7 @@ class YoutubeDl:
 
     def download_mp3(self, url):
         path=self.MUSIC_PATH
-        if not os.path.exists(path):
-          os.makedirs(path)
+        self.createDirIfNotExist(path)
 
         info = "[INFO] start download MP3 from link %s "%(url)
         print(info)
@@ -56,9 +52,7 @@ class YoutubeDl:
 
     def download_4k(self, url):
         path=self.VIDEO_PATH
-        if not os.path.exists(path):
-          os.makedirs(path)
-
+        self.createDirIfNotExist(path)
         info = "[INFO] start download video [high quality] from link %s "%(url)
         print(info)
 
@@ -78,9 +72,7 @@ class YoutubeDl:
 
     def download_720p(self, url):
         path=self.VIDEO_PATH
-        if not os.path.exists(path):
-          os.makedirs(path)
-
+        self.createDirIfNotExist(path)
         info = "[INFO] start download video [medium quality] from link %s "%(url)
         print(info)
 
@@ -99,8 +91,7 @@ class YoutubeDl:
 
     def download_360p(self, url):
         path=self.VIDEO_PATH
-        if not os.path.exists(path):
-          os.makedirs(path)
+        self.createDirIfNotExist(path)
 
         info = "[INFO] start download video [low quality] from link %s "%(url)
         print(info)
@@ -119,8 +110,9 @@ class YoutubeDl:
                      "path": full_path }
         return metadata
 
-    def isFile(self, path):
-        return os.path.isfile(path)
+    def createDirIfNotExist(self, path):
+        if not os.path.exists(path): # pragma: no cover
+            os.makedirs(path)
 
 if __name__ == "__main__":
     yt = YoutubeDl()

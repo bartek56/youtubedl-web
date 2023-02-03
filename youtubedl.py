@@ -7,7 +7,7 @@ from Common.YouTubeManager import YoutubeDl
 
 app = Flask(__name__)
 app.secret_key = "super_extra_key"
-if app.debug == True:
+if app.debug == True: # pragma: no cover
     import sys
     sys.path.append("./tests")
     import subprocessDebug as subprocess
@@ -340,11 +340,11 @@ def download():
             path = info["path"]
             del info["path"]
             info["Type"] = "video"
-    if not youtubeManager.isFile(path):
+    if not isFile(path):
         path = path.replace("|", "_")
         path = path.replace("\"", "'")
         path = path.replace(":", "-")
-    if youtubeManager.isFile(path):
+    if isFile(path):
         return render_template('download.html', full_path=path, file_info=info)
     else:
         app.logger.debug("error")
@@ -417,6 +417,9 @@ def alarmOff():
     subprocess.run('sudo /bin/systemctl disable alarm.timer', shell=True)
 
     return "Nothing"
+
+def isFile(file):
+    return os.path.isfile(file)
 
 if __name__ == '__main__':
     app.run()

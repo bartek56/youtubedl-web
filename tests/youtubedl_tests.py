@@ -57,15 +57,13 @@ class FlaskClientTestCase(unittest.TestCase):
         quickdownload=type
     ), follow_redirects=True)
 
-    def retTrue(self, input):
-        return True
-
     @mock.patch.object(YoutubeDl, 'download_mp3', return_value={"title": "song","path":"/home/music/song.mp3"})
-    @mock.patch.object(YoutubeDl, 'isFile', retTrue)
-    def test_download_mp3(self, mock_mp3):
+    @mock.patch('youtubedl.isFile', return_value=True)
+    def test_download_mp3(self, mock_isFile, mock_mp3):
         ytLink = "https://youtu.be/q1MmYVcDyMs"
         rv = self.yt_dlp(ytLink, 'mp3')
         mock_mp3.assert_called_once_with(ytLink)
+        self.assertEqual(mock_isFile.call_count, 2)
         self.assertEqual(rv.status_code, 200)
         self.assertIn(b'<form action="/download_file"', rv.data)
 

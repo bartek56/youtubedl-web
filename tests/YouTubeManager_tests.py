@@ -3,11 +3,12 @@ import unittest.mock as mock
 from Common.YouTubeManager import YoutubeDl
 import yt_dlp
 import metadata_mp3
-
+import os.path
 
 class YouTubeManagerTestCase(unittest.TestCase):
     def setUp(self):
         self.ytManager = YoutubeDl()
+        self.ytManager.createDirIfNotExist = mock.MagicMock()
 
     def tearDown(self):
         pass
