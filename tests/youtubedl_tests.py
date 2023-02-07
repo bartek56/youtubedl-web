@@ -28,10 +28,19 @@ class FlaskClientTestCase(unittest.TestCase):
         assert b'404 Not Found' in rv.data
 
     @mock.patch.object(Mail, 'initialize', return_value=False)
-    def test_contact_page(self, mock_mail):
+    def test_contact_mailNotInitialized(self, mock_mail):
         rv = self.app.get('/contact.html')
         assert rv.status_code == 200
         assert b'<title>Media Server</title>' in rv.data
+        assert b'Mail is not support' in rv.data
+
+    @mock.patch.object(Mail, 'initialize', return_value=True)
+    def test_contact_mailInitialized(self, mock_initialize_mail):
+        rv = self.app.get('/contact.html')
+        assert rv.status_code == 200
+        mock_initialize_mail.assert_called_once()
+        assert b'<title>Media Server</title>' in rv.data
+        assert b'enter text here' in rv.data
 
     def mail(self, senderMail, textMail):
         return self.app.post('/mail', data=dict(
@@ -58,6 +67,16 @@ class FlaskClientTestCase(unittest.TestCase):
     ), follow_redirects=True)
 
     @mock.patch.object(YoutubeDl, 'download_mp3', return_value={"title": "song","path":"/home/music/song.mp3"})
+    @mock.patch('youtubedl.isFile', return_value=False)
+    def test_failed_download_mp3(self, mock_isFile, mock_mp3):
+        ytLink = "https://youtu.be/q1MmYVcDyMs"
+        rv = self.yt_dlp(ytLink, 'mp3')
+        mock_mp3.assert_called_once_with(ytLink)
+        self.assertEqual(mock_isFile.call_count, 2)
+        self.assertEqual(rv.status_code, 200)
+        self.assertIn(b'Failed downloaded', rv.data)
+
+    @mock.patch.object(YoutubeDl, 'download_mp3', return_value={"title": "song example","path":"/home/music/song.mp3"})
     @mock.patch('youtubedl.isFile', return_value=True)
     def test_download_mp3(self, mock_isFile, mock_mp3):
         ytLink = "https://youtu.be/q1MmYVcDyMs"
@@ -66,6 +85,50 @@ class FlaskClientTestCase(unittest.TestCase):
         self.assertEqual(mock_isFile.call_count, 2)
         self.assertEqual(rv.status_code, 200)
         self.assertIn(b'<form action="/download_file"', rv.data)
+        self.assertIn(b'Type: MP3 audio', rv.data)
+        self.assertIn(b'title: song example', rv.data)
+
+    @mock.patch.object(YoutubeDl, 'download_360p', return_value={"title": "video example","path":"/home/music/wideo.mp4"})
+    @mock.patch('youtubedl.isFile', return_value=True)
+    def test_download_360p(self, mock_isFile, mock_download):
+        ytLink = "https://youtu.be/q1MmYVcDyMs"
+        rv = self.yt_dlp(ytLink, '360p')
+        mock_download.assert_called_once_with(ytLink)
+        self.assertEqual(mock_isFile.call_count, 2)
+        self.assertEqual(rv.status_code, 200)
+        self.assertIn(b'<form action="/download_file"', rv.data)
+        self.assertIn(b'Type: video', rv.data)
+        self.assertIn(b'title: video example', rv.data)
+
+    @mock.patch.object(YoutubeDl, 'download_720p', return_value={"title": "video example","path":"/home/music/wideo.mp4"})
+    @mock.patch('youtubedl.isFile', return_value=True)
+    def test_download_720p(self, mock_isFile, mock_download):
+        ytLink = "https://youtu.be/q1MmYVcDyMs"
+        rv = self.yt_dlp(ytLink, '720p')
+        mock_download.assert_called_once_with(ytLink)
+        self.assertEqual(mock_isFile.call_count, 2)
+        self.assertEqual(rv.status_code, 200)
+        self.assertIn(b'<form action="/download_file"', rv.data)
+        self.assertIn(b'Type: video', rv.data)
+        self.assertIn(b'title: video example', rv.data)
+
+    @mock.patch.object(YoutubeDl, 'download_4k', return_value={"title": "video example","path":"/home/music/wideo.mp4"})
+    @mock.patch('youtubedl.isFile', return_value=True)
+    def test_download_4k(self, mock_isFile, mock_download):
+        ytLink = "https://youtu.be/q1MmYVcDyMs"
+        rv = self.yt_dlp(ytLink, '4k')
+        mock_download.assert_called_once_with(ytLink)
+        self.assertEqual(mock_isFile.call_count, 2)
+        self.assertEqual(rv.status_code, 200)
+        self.assertIn(b'<form action="/download_file"', rv.data)
+        self.assertIn(b'Type: video', rv.data)
+        self.assertIn(b'title: video example', rv.data)
+
+    @mock.patch("flask.send_file")
+    def test_download_file(self, mock):
+        rv = self.app.post('/download_file', data=dict(path="/tmp/fileForDownload.mp4"))
+        mock.assert_called_once_with("/tmp/fileForDownload.mp4", as_attachment=True)
+        assert rv.status_code == 200
 
     @mock.patch('configparser.ConfigParser')
     @mock.patch('youtubedl.saveConfigs')
@@ -87,7 +150,6 @@ class FlaskClientTestCase(unittest.TestCase):
                                        mock.call('yt_playlist'), mock.call().__setitem__('link', 'https://youtube.com/link')])
         assert rv.status_code == 200
         assert b'<title>Media Server</title>' in rv.data
-
 
     @mock.patch('configparser.ConfigParser')
     @mock.patch('youtubedl.saveConfigs')

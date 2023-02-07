@@ -1,9 +1,10 @@
 import os
 import logging
-from flask import Flask, render_template, redirect, url_for, request, send_file, jsonify, send_from_directory, flash
+from flask import Flask, render_template, redirect, url_for, request, jsonify, send_from_directory, flash
 import configparser
 from Common.mailManager import Mail
 from Common.YouTubeManager import YoutubeDl
+import flask
 
 app = Flask(__name__)
 app.secret_key = "super_extra_key"
@@ -348,14 +349,14 @@ def download():
         return render_template('download.html', full_path=path, file_info=info)
     else:
         app.logger.debug("error")
-        return redirect('/')
+        return alert_info("Failed downloaded")
 
 @app.route('/download_file',methods = ['POST', 'GET'])
 def downloadFile():
    path=''
    if request.method == 'POST':
       path = request.form['path']
-      return send_file(path, as_attachment=True)
+      return flask.send_file(path, as_attachment=True)
    else:
       app.logger.debug("error")
       return redirect('/')
