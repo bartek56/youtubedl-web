@@ -56,10 +56,13 @@ def mail():
 def alert_info(info):
     return render_template('alert.html', alert=info)
 
-def loadAlarmConfigAlarmHTML():
-    f = open("/etc/mediaserver/alarm.timer","r")
+def loadConfig(configFile):
+    f = open(configFile, "r")
     content = f.readlines()
+    f.close()
+    return content
 
+def loadAlarmConfigAlarmHTML():
     mondayChecked = ""
     tuesdayChecked = ""
     wednesdayChecked = ""
@@ -67,6 +70,8 @@ def loadAlarmConfigAlarmHTML():
     fridayChecked = ""
     saturdayChecked = ""
     sundayChecked = ""
+
+    content = loadConfig("/etc/mediaserver/alarm.timer")
 
     for x in content:
         if "OnCalendar" in x:
@@ -89,10 +94,8 @@ def loadAlarmConfigAlarmHTML():
                 saturdayChecked = "checked"
             if "Sun" in weekDays:
                 sundayChecked = "checked"
-    f.close()
 
-    f = open("/etc/mediaserver/alarm.sh","r")
-    content = f.readlines()
+    content = loadConfig("/etc/mediaserver/alarm.sh")
 
     for x in content:
         if len(x)>1:
@@ -123,11 +126,8 @@ def loadAlarmConfigAlarmHTML():
                 else:
                     theNewestSongCheckBox = ""
                     playlistCheckbox = "checked"
-
         else:
             break
-
-    f.close()
 
     out = subprocess.check_output("mpc lsplaylists | grep -v m3u", shell=True, text=True)
     playlists = []
@@ -139,8 +139,7 @@ def loadAlarmConfigAlarmHTML():
             playlists.append(musicPlaylistName)
             musicPlaylistName=""
 
-    process = subprocess.run('systemctl is-active alarm.timer', shell=True, stdout=subprocess.PIPE, universal_newlines=True)
-    output = process.stdout
+    output = subprocess.check_output('systemctl is-active alarm.timer', shell=True, text=True)
     if "in" in output:
         alarmIsOn = "unchecked"
     else:
