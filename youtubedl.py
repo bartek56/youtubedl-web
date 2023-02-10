@@ -62,7 +62,7 @@ def loadConfig(configFile):
     f.close()
     return content
 
-def loadAlarmConfigAlarmHTML():
+def loadAlarmConfig():
     mondayChecked = ""
     tuesdayChecked = ""
     wednesdayChecked = ""
@@ -144,25 +144,25 @@ def loadAlarmConfigAlarmHTML():
         alarmIsOn = "unchecked"
     else:
         alarmIsOn = "checked"
-    return render_template('alarm.html', alarm_time=time,
-                                        theNewestSongChecked=theNewestSongCheckBox,
-                                        playlistChecked=playlistCheckbox,
-                                        alarm_playlists=playlists,
-                                        alarm_playlist_name=alarmPlaylistName,
-                                        alarm_active=alarmIsOn,
-                                        monday_checked=mondayChecked,
-                                        tuesday_checked=tuesdayChecked,
-                                        wednesday_checked=wednesdayChecked,
-                                        thursday_checked=thursdayChecked,
-                                        friday_checked=fridayChecked,
-                                        saturday_checked=saturdayChecked,
-                                        sunday_checked=sundayChecked,
-                                        min_volume=minVolume,
-                                        max_volume=maxVolume,
-                                        default_volume=defaultVolume,
-                                        growing_volume=growingVolume,
-                                        growing_speed=growingSpeed
-                                        )
+
+    return {"alarm_time": time,
+            "theNewestSongChecked":theNewestSongCheckBox,
+            "playlistChecked":playlistCheckbox,
+            "alarm_playlists":playlists,
+            "alarm_playlist_name":alarmPlaylistName,
+            "alarm_active":alarmIsOn,
+            "monday_checked":mondayChecked,
+            "tuesday_checked":tuesdayChecked,
+            "wednesday_checked":wednesdayChecked,
+            "thursday_checked":thursdayChecked,
+            "friday_checked":fridayChecked,
+            "saturday_checked":saturdayChecked,
+            "sunday_checked":sundayChecked,
+            "min_volume":minVolume,
+            "max_volume":maxVolume,
+            "default_volume":defaultVolume,
+            "growing_volume":growingVolume,
+            "growing_speed":growingSpeed}
 
 def saveConfigs(config):
     with open(CONFIG_FILE,'w') as fp:
@@ -174,7 +174,8 @@ def alarm():
     logger.info("alarm website")
 
     if ("192.168" in remoteAddress) or ("127.0.0.1" in remoteAddress):
-        return loadAlarmConfigAlarmHTML()
+        return render_template("alarm.html", **loadAlarmConfig())
+
     #elif os.path.isfile("/etc/mediaserver/alarm.timer") == False:
     #    return alert_info("Alarm timer doesn't exist")
     #elif os.path.isfile("/etc/mediaserver/alarm.sh") == False:
@@ -270,24 +271,24 @@ def save_alarm():
             p = subprocess.run('sudo /bin/systemctl stop alarm.timer', shell=True)
             if p.returncode != 0:
                 flash("Failed to restart alarm timer", 'danger')
-                return loadAlarmConfigAlarmHTML()
+                return render_template("alarm.html", **loadAlarmConfig())
 
         p = subprocess.run('sudo /bin/systemctl daemon-reload', shell=True)
         if p.returncode != 0:
                 flash("Failed to daemon-reload", 'danger')
-                return loadAlarmConfigAlarmHTML()
+                return render_template("alarm.html", **loadAlarmConfig())
 
         if alarmIsEnable:
             p = subprocess.run('sudo /bin/systemctl start alarm.timer', shell=True)
             if p.returncode != 0:
                 flash("Failed to start alarm timer", 'danger')
-                return loadAlarmConfigAlarmHTML()
+                return render_template("alarm.html", **loadAlarmConfig())
 
         app.logger.info("alarm saved, systemctl daemon-reload")
 
         flash("Successfull saved alarm", 'success')
 
-    return loadAlarmConfigAlarmHTML()
+    return render_template("alarm.html", **loadAlarmConfig())
 
 @app.route('/playlists.html')
 def playlists():
@@ -399,16 +400,14 @@ def alarmTestStop():
     print('alarm test stop')
     subprocess.run('sudo /bin/systemctl stop alarm.service', shell=True)
     subprocess.run('/usr/bin/mpc stop', shell=True)
-#    return "Nothing"
-    return loadAlarmConfigAlarmHTML()
+    return render_template("alarm.html", **loadAlarmConfig())
 
 @app.route('/alarm_on')
 def alarmOn():
     print("alarm on")
     subprocess.run('sudo /bin/systemctl enable alarm.timer', shell=True)
     subprocess.run('sudo /bin/systemctl start alarm.timer', shell=True)
-#    return "Nothing"
-    return loadAlarmConfigAlarmHTML()
+    return render_template("alarm.html", **loadAlarmConfig())
 
 @app.route('/alarm_off')
 def alarmOff():

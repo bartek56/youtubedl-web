@@ -167,26 +167,78 @@ class FlaskClientTestCase(unittest.TestCase):
         assert rv.status_code == 200
         assert b'<title>Media Server</title>' in rv.data
 
+    @mock.patch('subprocess.check_output')
+    @mock.patch('youtubedl.loadConfig')
+    def test_load_alarm_config(self, mock_loadConfig , mock_proc_check_output):
+        alarmsPlaylists = ["Favorites", "Alarm"]
+        alarmPlaylistString = '\n'.join(str(e) for e in alarmsPlaylists) + '\n'
+        alarmTime="06:30"
+        checked="checked"
+        minVolume=16
+        maxVolume=55
+        defaultVolume=11
+        growingVolume=9
+        growingSpeed=45
+
+        mock_proc_check_output.configure_mock(side_effect=[alarmPlaylistString, "active"])
+
+        mock_loadConfig.configure_mock(side_effect=[
+                    ["[Unit]","Description=Alarm","",
+                    "[Timer]","OnCalendar=Mon,Tue,Wed,Thu,Fri,Sat,Sun "+alarmTime,"",
+                    "[Install]","WantedBy=multi-user.target",""],
+                    ["#/bin/bash",
+                    "minVolume="+str(minVolume),
+                    "maxVolume="+str(maxVolume),
+                    "defaultVolume="+str(defaultVolume),
+                    "growingVolume="+str(growingVolume),
+                    "growingSpeed="+str(growingSpeed),
+                    "playlist=\"\"",
+                    "theNewestSongs=true",
+                    "",""]
+                    ])
+
+        alarmConfig = youtubedl.loadAlarmConfig()
+
+        self.assertEqual(mock_proc_check_output.call_count, 2)
+        self.assertEqual(mock_loadConfig.call_count, 2)
+
+        self.assertEqual(alarmConfig["alarm_time"], alarmTime)
+        self.assertEqual(alarmConfig["theNewestSongChecked"], checked)
+        self.assertEqual(alarmConfig["playlistChecked"], "")
+        self.assertListEqual(alarmConfig["alarm_playlists"], alarmsPlaylists)
+        self.assertEqual(alarmConfig["alarm_playlist_name"], "")
+        self.assertEqual(alarmConfig["alarm_active"], checked)
+        self.assertEqual(alarmConfig["monday_checked"], checked)
+        self.assertEqual(alarmConfig["tuesday_checked"], checked)
+        self.assertEqual(alarmConfig["wednesday_checked"], checked)
+        self.assertEqual(alarmConfig["thursday_checked"], checked)
+        self.assertEqual(alarmConfig["friday_checked"], checked)
+        self.assertEqual(alarmConfig["saturday_checked"], checked)
+        self.assertEqual(alarmConfig["sunday_checked"], checked)
+        self.assertEqual(alarmConfig["min_volume"], str(minVolume))
+        self.assertEqual(alarmConfig["max_volume"], str(maxVolume))
+        self.assertEqual(alarmConfig["default_volume"], str(defaultVolume))
+        self.assertEqual(alarmConfig["growing_volume"], growingVolume)
+        self.assertEqual(alarmConfig["growing_speed"], growingSpeed)
+
+
     @mock.patch('subprocess.check_output', side_effect=["Favorites\nAlarm\n", "active"])
     @mock.patch('youtubedl.loadConfig',
                  side_effect=[
                     ["[Unit]","Description=Alarm","","[Timer]","OnCalendar=Mon,Tue,Wed,Thu,Fri,Sat,Sun 06:50","","[Install]","WantedBy=multi-user.target",""],
                     ["#/bin/bash","minVolume=16","maxVolume=55","defaultVolume=11", "growingVolume=9", "growingSpeed=45","playlist=\"\"","theNewestSongs=true","", ""]
                     ])
-    def test_load_alarm(self, mock_loadConfig , mock_proc_check_output):
+    def test_alarm_web(self, mock_loadConfig , mock_proc_check_output):
         rv = self.app.get('/alarm.html')
         self.assertEqual(mock_proc_check_output.call_count, 2)
         self.assertEqual(mock_loadConfig.call_count, 2)
 
         assert rv.status_code == 200
         assert b'name="alarm_time" value="06:50"'               in rv.data
-
         assert b'name="alarm_mode" value="newest_song" checked>'       in rv.data
         assert b'name="alarm_mode" value="playlist" >'  in rv.data
-
         assert b'<option value="Alarm">Alarm</option>' in rv.data
         assert b'<option value="Favorites">Favorites</option>'  in rv.data
-
         assert b'name="alarm_active" value="checked" checked>'  in rv.data
         assert b'value="monday" checked>'                       in rv.data
         assert b'value="tueday" checked>'                       in rv.data
@@ -198,44 +250,6 @@ class FlaskClientTestCase(unittest.TestCase):
         assert b'value="16" name="min_volume">'                 in rv.data
         assert b'value="55" name="max_volume">'                 in rv.data
         assert b'value="11" name="default_volume">'             in rv.data
-        # assert b'<option value="6" selected>6</option>'                  in rv.data
-
-        assert b'<title>Media Server</title>' in rv.data
-
-
-    @mock.patch('subprocess.check_output', side_effect=["Favorites\nAlarm\n", "inactive"])
-    @mock.patch('youtubedl.loadConfig',
-                 side_effect=[
-                    ["[Unit]","Description=Alarm","","[Timer]","OnCalendar=Mon,Tue,Wed,Thu,Fri,Sat,Sun 06:50","","[Install]","WantedBy=multi-user.target",""],
-                    ["#/bin/bash","minVolume=16","maxVolume=55","defaultVolume=11", "growingVolume=9", "growingSpeed=45","playlist=\"\"","theNewestSongs=false","", ""]
-                    ])
-    def test_load_alarm_2(self, mock_loadConfig , mock_proc_check_output):
-        rv = self.app.get('/alarm.html')
-        self.assertEqual(mock_proc_check_output.call_count, 2)
-        self.assertEqual(mock_loadConfig.call_count, 2)
-
-        assert rv.status_code == 200
-        assert b'name="alarm_time" value="06:50"'               in rv.data
-
-        assert b'name="alarm_mode" value="newest_song" >'       in rv.data
-        assert b'name="alarm_mode" value="playlist" checked>'  in rv.data
-
-        assert b'<option value="Alarm">Alarm</option>' in rv.data
-        assert b'<option value="Favorites">Favorites</option>'  in rv.data
-
-        assert b'name="alarm_active" value="unchecked" unchecked>'  in rv.data
-        assert b'value="monday" checked>'                       in rv.data
-        assert b'value="tueday" checked>'                       in rv.data
-        assert b'value="wedday" checked>'                       in rv.data
-        assert b'value="thuday" checked>'                       in rv.data
-        assert b'value="friday" checked>'                       in rv.data
-        assert b'value="satday" checked>'                       in rv.data
-        assert b'value="sunday" checked>'                       in rv.data
-        assert b'value="16" name="min_volume">'                 in rv.data
-        assert b'value="55" name="max_volume">'                 in rv.data
-        assert b'value="11" name="default_volume">'             in rv.data
-        # assert b'<option value="6" selected>6</option>'                  in rv.data
-
         assert b'<title>Media Server</title>' in rv.data
 
 
