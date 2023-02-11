@@ -1,10 +1,43 @@
 import os
+from enum import Enum
 import logging
 from flask import Flask, render_template, redirect, url_for, request, jsonify, send_from_directory, flash
 import configparser
 from Common.mailManager import Mail
 from Common.YouTubeManager import YoutubeDl
 import flask
+
+class AlarmConfigFlask(Enum):
+    ALARM_TIME="alarm_time"
+    THE_NEWEST_SONG="theNewestSongChecked"
+    PLAYLIST_CHECKED="playlistChecked"
+    ALARM_PLAYLISTS="alarm_playlists"
+    ALARM_PLATLIST_NAME="alarm_playlist_name"
+    ALARM_ACTIVE="alarm_active"
+    MONDAY="monday_checked"
+    TUESDAY="tuesday_checked"
+    WEDNESDEY="wednesday_checked"
+    THURSDAY="thursday_checked"
+    FRIDAY="friday_checked"
+    SATURDAY="saturday_checked"
+    SUNDAY="sunday_checked"
+    MIN_VOLUME="min_volume"
+    MAX_VOLUME="max_volume"
+    DEFAULT_VOLUME="default_volume"
+    GROWING_VOLUME="growing_volume"
+    GROWING_SPEED="growing_speed"
+
+class AlarmConfigLinux(Enum):
+    THE_NEWEST_SONG="theNewestSongs"
+    PLAYLIST="playlist"
+    ALARM_PLAYLISTS="alarm_playlists"
+    ALARM_PLATLIST_NAME="alarm_playlist_name"
+    ALARM_ACTIVE="alarm_active"
+    MIN_VOLUME="minVolume"
+    MAX_VOLUME="maxVolume"
+    DEFAULT_VOLUME="defaultVolume"
+    GROWING_VOLUME="growingVolume"
+    GROWING_SPEED="growingSpeed"
 
 app = Flask(__name__)
 app.secret_key = "super_extra_key"
@@ -61,6 +94,16 @@ def loadConfig(configFile):
     content = f.readlines()
     f.close()
     return content
+
+def saveConfig(configFile:str, content:list):
+    f = open(configFile,"w")
+    for x in content:
+        f.write(x)
+    f.close()
+
+def saveYoutubedlConfigs(config:configparser.ConfigParser):
+    with open(CONFIG_FILE,'w') as fp:
+        config.write(fp)
 
 def loadAlarmConfig():
     mondayChecked = ""
@@ -145,28 +188,24 @@ def loadAlarmConfig():
     else:
         alarmIsOn = "checked"
 
-    return {"alarm_time": time,
-            "theNewestSongChecked":theNewestSongCheckBox,
-            "playlistChecked":playlistCheckbox,
-            "alarm_playlists":playlists,
-            "alarm_playlist_name":alarmPlaylistName,
-            "alarm_active":alarmIsOn,
-            "monday_checked":mondayChecked,
-            "tuesday_checked":tuesdayChecked,
-            "wednesday_checked":wednesdayChecked,
-            "thursday_checked":thursdayChecked,
-            "friday_checked":fridayChecked,
-            "saturday_checked":saturdayChecked,
-            "sunday_checked":sundayChecked,
-            "min_volume":minVolume,
-            "max_volume":maxVolume,
-            "default_volume":defaultVolume,
-            "growing_volume":growingVolume,
-            "growing_speed":growingSpeed}
-
-def saveConfigs(config):
-    with open(CONFIG_FILE,'w') as fp:
-        config.write(fp)
+    return {AlarmConfigFlask.ALARM_TIME.value: time,
+            AlarmConfigFlask.THE_NEWEST_SONG.value:theNewestSongCheckBox,
+            AlarmConfigFlask.PLAYLIST_CHECKED.value:playlistCheckbox,
+            AlarmConfigFlask.ALARM_PLAYLISTS.value:playlists,
+            AlarmConfigFlask.ALARM_PLATLIST_NAME.value:alarmPlaylistName,
+            AlarmConfigFlask.ALARM_ACTIVE.value:alarmIsOn,
+            AlarmConfigFlask.MONDAY.value:mondayChecked,
+            AlarmConfigFlask.TUESDAY.value:tuesdayChecked,
+            AlarmConfigFlask.WEDNESDEY.value:wednesdayChecked,
+            AlarmConfigFlask.THURSDAY.value:thursdayChecked,
+            AlarmConfigFlask.FRIDAY.value:fridayChecked,
+            AlarmConfigFlask.SATURDAY.value:saturdayChecked,
+            AlarmConfigFlask.SUNDAY.value:sundayChecked,
+            AlarmConfigFlask.MIN_VOLUME.value:minVolume,
+            AlarmConfigFlask.MAX_VOLUME.value:maxVolume,
+            AlarmConfigFlask.DEFAULT_VOLUME.value:defaultVolume,
+            AlarmConfigFlask.GROWING_VOLUME.value:growingVolume,
+            AlarmConfigFlask.GROWING_SPEED.value:growingSpeed}
 
 @app.route('/alarm.html')
 def alarm():
@@ -184,7 +223,7 @@ def alarm():
         return alert_info("You do not have access to alarm settings")
 
 @app.route('/save_alarm', methods = ['POST', 'GET'])
-def save_alarm():
+def save_alarm_html():
     if request.method == 'POST':
         time = request.form['alarm_time']
         alarmMode = request.form['alarm_mode']
@@ -220,25 +259,43 @@ def save_alarm():
         if "alarm_active" in request.form:
             alarmIsEnable = True
 
+        saveAlarmConfig(alarmDays,time,minVolume,maxVolume,defaultVolume,growingVolume,growingSpeed,
+                        alarmPlaylist,alarmMode)
 
-        f = open("/etc/mediaserver/alarm.timer","r")
-        content = f.readlines()
-        f.close()
+        if alarmIsEnable:
+            p = subprocess.run('sudo /bin/systemctl stop alarm.timer', shell=True)
+            if p.returncode != 0:
+                flash("Failed to restart alarm timer", 'danger')
+                return render_template("alarm.html", **loadAlarmConfig())
+
+        p = subprocess.run('sudo /bin/systemctl daemon-reload', shell=True)
+        if p.returncode != 0:
+                flash("Failed to daemon-reload", 'danger')
+                return render_template("alarm.html", **loadAlarmConfig())
+
+        if alarmIsEnable:
+            p = subprocess.run('sudo /bin/systemctl start alarm.timer', shell=True)
+            if p.returncode != 0:
+                flash("Failed to start alarm timer", 'danger')
+                return render_template("alarm.html", **loadAlarmConfig())
+
+        app.logger.info("alarm saved, systemctl daemon-reload")
+
+        flash("Successfull saved alarm", 'success')
+
+    return render_template("alarm.html", **loadAlarmConfig())
+
+def saveAlarmConfig(alarmDays, time, minVolume, maxVolume, defaultVolume,
+              growingVolume, growingSpeed, alarmPlaylist, alarmMode):
+
+        content = loadConfig("/etc/mediaserver/alarm.timer")
         for i in range(len(content)):
             if "OnCalendar" in content[i]:
                 content[i] = "OnCalendar=%s %s \n"%(alarmDays, time)
 
-        f = open("/etc/mediaserver/alarm.timer","w")
+        saveConfig("/etc/mediaserver/alarm.timer", content)
 
-        for x in content:
-            f.write(x)
-
-        f.close()
-
-
-        f = open("/etc/mediaserver/alarm.sh", "r")
-        content = f.readlines()
-        f.close()
+        content = loadConfig("/etc/mediaserver/alarm.sh")
         for i in range(len(content)):
             if i>0 and i<8:
                 if "minVolume" in content[i]:
@@ -263,32 +320,7 @@ def save_alarm():
             elif i >=8:
                 break
 
-        f = open("/etc/mediaserver/alarm.sh", "w")
-        for x in content:
-            f.write(x)
-        f.close()
-        if alarmIsEnable:
-            p = subprocess.run('sudo /bin/systemctl stop alarm.timer', shell=True)
-            if p.returncode != 0:
-                flash("Failed to restart alarm timer", 'danger')
-                return render_template("alarm.html", **loadAlarmConfig())
-
-        p = subprocess.run('sudo /bin/systemctl daemon-reload', shell=True)
-        if p.returncode != 0:
-                flash("Failed to daemon-reload", 'danger')
-                return render_template("alarm.html", **loadAlarmConfig())
-
-        if alarmIsEnable:
-            p = subprocess.run('sudo /bin/systemctl start alarm.timer', shell=True)
-            if p.returncode != 0:
-                flash("Failed to start alarm timer", 'danger')
-                return render_template("alarm.html", **loadAlarmConfig())
-
-        app.logger.info("alarm saved, systemctl daemon-reload")
-
-        flash("Successfull saved alarm", 'success')
-
-    return render_template("alarm.html", **loadAlarmConfig())
+        saveConfig("/etc/mediaserver/alarm.sh", content)
 
 @app.route('/playlists.html')
 def playlists():
@@ -382,7 +414,7 @@ def playlist():
                    config.remove_section(i)
                    app.logger.debug("removed playlist %s", i)
 
-       saveConfigs(config)
+       saveYoutubedlConfigs(config)
        return redirect('playlists.html')
 
    else:
