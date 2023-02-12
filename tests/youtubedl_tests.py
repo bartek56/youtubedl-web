@@ -1,4 +1,4 @@
-from youtubedl import AlarmConfigFlask, AlarmConfigLinux
+from youtubedl import AlarmConfigFlask, AlarmConfigLinux, SystemdCommand
 import youtubedl
 import unittest
 import unittest.mock as mock
@@ -208,24 +208,24 @@ class FlaskClientTestCase(unittest.TestCase):
         self.assertEqual(mock_proc_check_output.call_count, 2)
         self.assertEqual(mock_loadConfig.call_count, 2)
 
-        self.assertEqual(alarmConfig[AlarmConfigFlask.ALARM_TIME.value], alarmTime)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.THE_NEWEST_SONG.value], self.checked)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.PLAYLIST_CHECKED.value], "")
-        self.assertListEqual(alarmConfig[AlarmConfigFlask.ALARM_PLAYLISTS.value], alarmsPlaylists)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.ALARM_PLATLIST_NAME.value], "")
-        self.assertEqual(alarmConfig[AlarmConfigFlask.ALARM_ACTIVE.value], self.checked)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.MONDAY.value], self.checked)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.TUESDAY.value], self.checked)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.WEDNESDEY.value], self.checked)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.THURSDAY.value], self.checked)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.FRIDAY.value], self.checked)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.SATURDAY.value], self.checked)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.SUNDAY.value], self.checked)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.MIN_VOLUME.value], str(minVolume))
-        self.assertEqual(alarmConfig[AlarmConfigFlask.MAX_VOLUME.value], str(maxVolume))
-        self.assertEqual(alarmConfig[AlarmConfigFlask.DEFAULT_VOLUME.value], str(defaultVolume))
-        self.assertEqual(alarmConfig[AlarmConfigFlask.GROWING_VOLUME.value], growingVolume)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.GROWING_SPEED.value], growingSpeed)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.ALARM_TIME], alarmTime)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.THE_NEWEST_SONG], self.checked)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.PLAYLIST_CHECKED], "")
+        self.assertListEqual(alarmConfig[AlarmConfigFlask.ALARM_PLAYLISTS], alarmsPlaylists)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.ALARM_PLATLIST_NAME], "")
+        self.assertEqual(alarmConfig[AlarmConfigFlask.ALARM_ACTIVE], self.checked)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.MONDAY], self.checked)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.TUESDAY], self.checked)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.WEDNESDEY], self.checked)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.THURSDAY], self.checked)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.FRIDAY], self.checked)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.SATURDAY], self.checked)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.SUNDAY], self.checked)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.MIN_VOLUME], str(minVolume))
+        self.assertEqual(alarmConfig[AlarmConfigFlask.MAX_VOLUME], str(maxVolume))
+        self.assertEqual(alarmConfig[AlarmConfigFlask.DEFAULT_VOLUME], str(defaultVolume))
+        self.assertEqual(alarmConfig[AlarmConfigFlask.GROWING_VOLUME], growingVolume)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.GROWING_SPEED], growingSpeed)
 
     @mock.patch('subprocess.check_output')
     @mock.patch('youtubedl.loadConfig')
@@ -261,24 +261,24 @@ class FlaskClientTestCase(unittest.TestCase):
         self.assertEqual(mock_proc_check_output.call_count, 2)
         self.assertEqual(mock_loadConfig.call_count, 2)
 
-        self.assertEqual(alarmConfig[AlarmConfigFlask.ALARM_TIME.value], alarmTime)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.THE_NEWEST_SONG.value], self.empty)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.PLAYLIST_CHECKED.value], self.checked)
-        self.assertListEqual(alarmConfig[AlarmConfigFlask.ALARM_PLAYLISTS.value], alarmsPlaylists)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.ALARM_PLATLIST_NAME.value], alarmsPlaylists[0])
-        self.assertEqual(alarmConfig[AlarmConfigFlask.ALARM_ACTIVE.value], self.unchecked)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.MONDAY.value], self.checked)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.TUESDAY.value], self.checked)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.WEDNESDEY.value], self.checked)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.THURSDAY.value], self.checked)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.FRIDAY.value], self.checked)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.SATURDAY.value], self.checked)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.SUNDAY.value], self.checked)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.MIN_VOLUME.value], str(minVolume))
-        self.assertEqual(alarmConfig[AlarmConfigFlask.MAX_VOLUME.value], str(maxVolume))
-        self.assertEqual(alarmConfig[AlarmConfigFlask.DEFAULT_VOLUME.value], str(defaultVolume))
-        self.assertEqual(alarmConfig[AlarmConfigFlask.GROWING_VOLUME.value], growingVolume)
-        self.assertEqual(alarmConfig[AlarmConfigFlask.GROWING_SPEED.value], growingSpeed)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.ALARM_TIME], alarmTime)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.THE_NEWEST_SONG], self.empty)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.PLAYLIST_CHECKED], self.checked)
+        self.assertListEqual(alarmConfig[AlarmConfigFlask.ALARM_PLAYLISTS], alarmsPlaylists)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.ALARM_PLATLIST_NAME], alarmsPlaylists[0])
+        self.assertEqual(alarmConfig[AlarmConfigFlask.ALARM_ACTIVE], self.unchecked)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.MONDAY], self.checked)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.TUESDAY], self.checked)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.WEDNESDEY], self.checked)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.THURSDAY], self.checked)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.FRIDAY], self.checked)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.SATURDAY], self.checked)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.SUNDAY], self.checked)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.MIN_VOLUME], str(minVolume))
+        self.assertEqual(alarmConfig[AlarmConfigFlask.MAX_VOLUME], str(maxVolume))
+        self.assertEqual(alarmConfig[AlarmConfigFlask.DEFAULT_VOLUME], str(defaultVolume))
+        self.assertEqual(alarmConfig[AlarmConfigFlask.GROWING_VOLUME], growingVolume)
+        self.assertEqual(alarmConfig[AlarmConfigFlask.GROWING_SPEED], growingSpeed)
 
     @mock.patch('youtubedl.loadConfig')
     @mock.patch('youtubedl.saveConfig')
@@ -299,30 +299,30 @@ class FlaskClientTestCase(unittest.TestCase):
                     "[Timer]","OnCalendar="+alarmDays+" "+time,"",
                     "[Install]","WantedBy=multi-user.target",""],
                     ["#/bin/bash",
-                    AlarmConfigLinux.MIN_VOLUME.value +"="+str(minVolume),
-                    AlarmConfigLinux.MAX_VOLUME.value+"="+str(maxVolume),
-                    AlarmConfigLinux.DEFAULT_VOLUME.value+"="+str(defaultVolume),
-                    AlarmConfigLinux.GROWING_VOLUME.value+"="+str(growingVolume),
-                    AlarmConfigLinux.GROWING_SPEED.value+"="+str(growingSpeed),
-                    AlarmConfigLinux.PLAYLIST.value+"=\""+alarmPlaylist+"\"",
-                    AlarmConfigLinux.THE_NEWEST_SONG.value+"=false",
+                    AlarmConfigLinux.MIN_VOLUME+"="+str(minVolume),
+                    AlarmConfigLinux.MAX_VOLUME+"="+str(maxVolume),
+                    AlarmConfigLinux.DEFAULT_VOLUME+"="+str(defaultVolume),
+                    AlarmConfigLinux.GROWING_VOLUME+"="+str(growingVolume),
+                    AlarmConfigLinux.GROWING_SPEED+"="+str(growingSpeed),
+                    AlarmConfigLinux.PLAYLIST+"=\""+alarmPlaylist+"\"",
+                    AlarmConfigLinux.THE_NEWEST_SONG+"=false",
                     "",""]
                     ])
 
         youtubedl.saveAlarmConfig(alarmDays,time,minVolume,maxVolume,defaultVolume,growingVolume,growingSpeed,alarmPlaylist,alarmMode)
-        mock_saveConfig.assert_has_calls([mock.call('/etc/mediaserver/alarm.timer',
+        mock_saveConfig.assert_has_calls([mock.call(youtubedl.ALARM_TIMER,
                                                     ['[Unit]', 'Description=Alarm', '',
                                                      '[Timer]', 'OnCalendar=' + alarmDays +' '+ time + ' \n', '',
                                                      '[Install]', 'WantedBy=multi-user.target', '']),
-                                          mock.call('/etc/mediaserver/alarm.sh',
+                                          mock.call(youtubedl.ALARM_SCRIPT,
                                                     ['#/bin/bash',
-                                                    AlarmConfigLinux.MIN_VOLUME.value+'='+str(minVolume)+'\n',
-                                                    AlarmConfigLinux.MAX_VOLUME.value+'='+str(maxVolume)+'\n',
-                                                    AlarmConfigLinux.DEFAULT_VOLUME.value+'='+str(defaultVolume)+'\n',
-                                                    AlarmConfigLinux.GROWING_VOLUME.value+'='+str(growingVolume)+'\n',
-                                                    AlarmConfigLinux.GROWING_SPEED.value+'='+str(growingSpeed)+'\n',
-                                                    AlarmConfigLinux.PLAYLIST.value+'="'+alarmPlaylist+'"\n',
-                                                    AlarmConfigLinux.THE_NEWEST_SONG.value+'=false\n', '', ''])])
+                                                    AlarmConfigLinux.MIN_VOLUME+'='+str(minVolume)+'\n',
+                                                    AlarmConfigLinux.MAX_VOLUME+'='+str(maxVolume)+'\n',
+                                                    AlarmConfigLinux.DEFAULT_VOLUME+'='+str(defaultVolume)+'\n',
+                                                    AlarmConfigLinux.GROWING_VOLUME+'='+str(growingVolume)+'\n',
+                                                    AlarmConfigLinux.GROWING_SPEED+'='+str(growingSpeed)+'\n',
+                                                    AlarmConfigLinux.PLAYLIST+'="'+alarmPlaylist+'"\n',
+                                                    AlarmConfigLinux.THE_NEWEST_SONG+'=false\n', '', ''])])
 
     @mock.patch('subprocess.check_output', side_effect=["Favorites\nAlarm\n", "active"])
     @mock.patch('youtubedl.loadConfig')
@@ -347,25 +347,25 @@ class FlaskClientTestCase(unittest.TestCase):
                     ["[Unit]","Description=Alarm","","[Timer]","OnCalendar=Mon,Tue,Wed,Thu,Fri,Sat,Sun 07:50",
                     "","[Install]","WantedBy=multi-user.target",""], #configuration before update
                     ["#/bin/bash",
-                    AlarmConfigLinux.MIN_VOLUME.value+"=16",
-                    AlarmConfigLinux.MAX_VOLUME.value+"=55",
-                    AlarmConfigLinux.DEFAULT_VOLUME.value+"=11",
-                    AlarmConfigLinux.GROWING_VOLUME.value+"=9",
-                    AlarmConfigLinux.GROWING_SPEED.value+"=45",
-                    AlarmConfigLinux.PLAYLIST.value+"=\"\"",
-                    AlarmConfigLinux.THE_NEWEST_SONG.value+"=false",
+                    AlarmConfigLinux.MIN_VOLUME+"=16",
+                    AlarmConfigLinux.MAX_VOLUME+"=55",
+                    AlarmConfigLinux.DEFAULT_VOLUME+"=11",
+                    AlarmConfigLinux.GROWING_VOLUME+"=9",
+                    AlarmConfigLinux.GROWING_SPEED+"=45",
+                    AlarmConfigLinux.PLAYLIST+"=\"\"",
+                    AlarmConfigLinux.THE_NEWEST_SONG+"=false",
                     "", ""], #configuration before update
                     ["[Unit]","Description=Alarm","",
                     "[Timer]","OnCalendar="+alarmDays+" "+time,"",
                     "[Install]","WantedBy=multi-user.target",""],
                     ["#/bin/bash",
-                    AlarmConfigLinux.MIN_VOLUME.value+"="+str(minVolume),
-                    AlarmConfigLinux.MAX_VOLUME.value+"="+str(maxVolume),
-                    AlarmConfigLinux.DEFAULT_VOLUME.value+"="+str(defaultVolume),
-                    AlarmConfigLinux.GROWING_VOLUME.value+"="+str(growingVolume),
-                    AlarmConfigLinux.GROWING_SPEED.value+"="+str(growingSpeed),
-                    AlarmConfigLinux.PLAYLIST.value+"=\"\"",
-                    AlarmConfigLinux.THE_NEWEST_SONG.value+"=true",
+                    AlarmConfigLinux.MIN_VOLUME+"="+str(minVolume),
+                    AlarmConfigLinux.MAX_VOLUME+"="+str(maxVolume),
+                    AlarmConfigLinux.DEFAULT_VOLUME+"="+str(defaultVolume),
+                    AlarmConfigLinux.GROWING_VOLUME+"="+str(growingVolume),
+                    AlarmConfigLinux.GROWING_SPEED+"="+str(growingSpeed),
+                    AlarmConfigLinux.PLAYLIST+"=\"\"",
+                    AlarmConfigLinux.THE_NEWEST_SONG+"=true",
                     "", ""]
                     ])
 
@@ -376,26 +376,26 @@ class FlaskClientTestCase(unittest.TestCase):
                                     alarm_active="true", monday=['monday'], tueday=['tueday'], wedday=['wedday']),
                             follow_redirects=True)
 
-        mock_saveConfig.assert_has_calls([mock.call('/etc/mediaserver/alarm.timer',
+        mock_saveConfig.assert_has_calls([mock.call(youtubedl.ALARM_TIMER,
                                                     ['[Unit]', 'Description=Alarm', '',
                                                      '[Timer]', 'OnCalendar=' + alarmDays +' '+ time + ' \n', '',
                                                      '[Install]', 'WantedBy=multi-user.target', '']),
-                                          mock.call('/etc/mediaserver/alarm.sh',
+                                          mock.call(youtubedl.ALARM_SCRIPT,
                                                     ['#/bin/bash',
-                                                    AlarmConfigLinux.MIN_VOLUME.value+'='+str(minVolume)+'\n',
-                                                    AlarmConfigLinux.MAX_VOLUME.value+'='+str(maxVolume)+'\n',
-                                                    AlarmConfigLinux.DEFAULT_VOLUME.value+'='+str(defaultVolume)+'\n',
-                                                    AlarmConfigLinux.GROWING_VOLUME.value+'='+str(growingVolume)+'\n',
-                                                    AlarmConfigLinux.GROWING_SPEED.value+'='+str(growingSpeed)+'\n',
-                                                    AlarmConfigLinux.PLAYLIST.value+'="'+alarmPlaylist+'"\n',
-                                                    AlarmConfigLinux.THE_NEWEST_SONG.value+'=false\n', '', ''])])
+                                                    AlarmConfigLinux.MIN_VOLUME+'='+str(minVolume)+'\n',
+                                                    AlarmConfigLinux.MAX_VOLUME+'='+str(maxVolume)+'\n',
+                                                    AlarmConfigLinux.DEFAULT_VOLUME+'='+str(defaultVolume)+'\n',
+                                                    AlarmConfigLinux.GROWING_VOLUME+'='+str(growingVolume)+'\n',
+                                                    AlarmConfigLinux.GROWING_SPEED+'='+str(growingSpeed)+'\n',
+                                                    AlarmConfigLinux.PLAYLIST+'="'+alarmPlaylist+'"\n',
+                                                    AlarmConfigLinux.THE_NEWEST_SONG+'=false\n', '', ''])])
 
-        mock_subprocess_run.assert_has_calls([mock.call('sudo /bin/systemctl stop alarm.timer', shell=True),
-                                              mock.call('sudo /bin/systemctl daemon-reload', shell=True),
-                                              mock.call('sudo /bin/systemctl start alarm.timer', shell=True)])
+        mock_subprocess_run.assert_has_calls([mock.call(SystemdCommand.STOP_ALARM_TIMER, shell=True),
+                                              mock.call(SystemdCommand.DAEMON_RELOAD, shell=True),
+                                              mock.call(SystemdCommand.START_ALARM_TIMER, shell=True)])
 
         mock_subprocess_checkoutput.assert_has_calls([mock.call('mpc lsplaylists | grep -v m3u', shell=True, text=True),
-                                                      mock.call('systemctl is-active alarm.timer', shell=True, text=True)])
+                                                      mock.call(SystemdCommand.IS_ACTIVE_ALARM_TIMER, shell=True, text=True)])
 
 
         assert rv.status_code == 200
@@ -431,11 +431,11 @@ class FlaskClientTestCase(unittest.TestCase):
                     "[Timer]","OnCalendar=Mon,Tue,Wed,Thu,Fri,Sat,Sun "+alarm_time,"",
                     "[Install]","WantedBy=multi-user.target",""],
                     ["#/bin/bash",
-                    AlarmConfigLinux.MIN_VOLUME.value+"="+str(minVolume),
-                    AlarmConfigLinux.MAX_VOLUME.value+"="+str(maxVolume),
-                    AlarmConfigLinux.DEFAULT_VOLUME.value+"="+str(defaultVolume),
-                    AlarmConfigLinux.GROWING_VOLUME.value+"=9",
-                    AlarmConfigLinux.GROWING_SPEED.value+"=45",
+                    AlarmConfigLinux.MIN_VOLUME+"="+str(minVolume),
+                    AlarmConfigLinux.MAX_VOLUME+"="+str(maxVolume),
+                    AlarmConfigLinux.DEFAULT_VOLUME+"="+str(defaultVolume),
+                    AlarmConfigLinux.GROWING_VOLUME+"=9",
+                    AlarmConfigLinux.GROWING_SPEED+"=45",
                     "playlist=\"\"","theNewestSongs=true","", ""]
                     ])
 
