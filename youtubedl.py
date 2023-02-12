@@ -9,6 +9,8 @@ import flask
 class AlarmConfigFlask():
     ALARM_TIME =          "alarm_time"
     ALARM_MODE =          "alarm_mode"
+    ALARM_MODE_NEWEST =   "newest_song"
+    ALARM_MODE_PLAYLIST = "playlist"
     THE_NEWEST_SONG =     "theNewestSongChecked"
     PLAYLIST_CHECKED =    "playlistChecked"
     ALARM_PLAYLISTS =     "alarm_playlists"
@@ -30,9 +32,6 @@ class AlarmConfigFlask():
 class AlarmConfigLinux():
     THE_NEWEST_SONG =     "theNewestSongs"
     PLAYLIST =            "playlist"
-    ALARM_PLAYLISTS =     "alarm_playlists"
-    ALARM_PLATLIST_NAME = "alarm_playlist_name"
-    ALARM_ACTIVE = "alarm_active"
     MIN_VOLUME =   "minVolume"
     MAX_VOLUME =   "maxVolume"
     DEFAULT_VOLUME = "defaultVolume"
@@ -241,7 +240,7 @@ def save_alarm_html():
         time = request.form[AlarmConfigFlask.ALARM_TIME]
         alarmMode = request.form[AlarmConfigFlask.ALARM_MODE]
         alarmPlaylist = ""
-        if AlarmConfigLinux.PLAYLIST in alarmMode:
+        if AlarmConfigFlask.ALARM_MODE_PLAYLIST in alarmMode:
             alarmPlaylist = request.form['playlists']
         alarmDays = ""
         if len(request.form.getlist('monday')) > 0:
@@ -272,7 +271,7 @@ def save_alarm_html():
         if "alarm_active" in request.form:
             alarmIsEnable = True
 
-        saveAlarmConfig(alarmDays,time,minVolume,maxVolume,defaultVolume,growingVolume,growingSpeed,
+        updateAlarmConfig(alarmDays,time,minVolume,maxVolume,defaultVolume,growingVolume,growingSpeed,
                         alarmPlaylist,alarmMode)
 
         if alarmIsEnable:
@@ -298,7 +297,7 @@ def save_alarm_html():
 
     return render_template("alarm.html", **loadAlarmConfig())
 
-def saveAlarmConfig(alarmDays, time, minVolume, maxVolume, defaultVolume,
+def updateAlarmConfig(alarmDays, time, minVolume, maxVolume, defaultVolume,
               growingVolume, growingSpeed, alarmPlaylist, alarmMode):
 
         content = loadConfig(ALARM_TIMER)
@@ -324,12 +323,12 @@ def saveAlarmConfig(alarmDays, time, minVolume, maxVolume, defaultVolume,
                 elif AlarmConfigLinux.PLAYLIST in content[i]:
                     content[i] = "%s=\"%s\"\n"%(AlarmConfigLinux.PLAYLIST, alarmPlaylist)
                 elif AlarmConfigLinux.THE_NEWEST_SONG in content[i]:
-                    alarmType = "true"
-                    if AlarmConfigLinux.PLAYLIST in alarmMode:
-                        alarmType = "false"
+                    alarmNewestModeIsEnable = ""
+                    if AlarmConfigFlask.ALARM_MODE_PLAYLIST in alarmMode:
+                        alarmNewestModeIsEnable = "false"
                     else:
-                        alarmType = "true"
-                    content[i] = "%s=%s\n"%(AlarmConfigLinux.THE_NEWEST_SONG, alarmType)
+                        alarmNewestModeIsEnable = "true"
+                    content[i] = "%s=%s\n"%(AlarmConfigLinux.THE_NEWEST_SONG, alarmNewestModeIsEnable)
             elif i >=8:
                 break
 
