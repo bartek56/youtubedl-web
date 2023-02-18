@@ -4,6 +4,7 @@ import metadata_mp3
 
 class YoutubeDl:
     def __init__(self):
+        self.metadataManager = metadata_mp3.MetadataManager()
         self.MUSIC_PATH='/tmp/quick_download/'
         self.VIDEO_PATH='/tmp/quick_download/'
 
@@ -39,7 +40,11 @@ class YoutubeDl:
         if "album" in result:
             album = result['album']
 
-        full_path = metadata_mp3.add_metadata_song(self.MUSIC_PATH, album, artist, songTitle)
+        fileName = "%s.mp3"%(songTitle)
+        if not os.path.isfile(os.path.join(path, fileName)):
+            print("[WARNING] File doesn't exist. Sanitize is require")
+            songTitle = yt_dlp.utils.sanitize_filename(songTitle)
+        full_path = self.metadataManager.rename_and_add_metadata_to_song(self.MUSIC_PATH, album, artist, songTitle)
 
         metadata = {"path": full_path}
         if(artist is not None):
