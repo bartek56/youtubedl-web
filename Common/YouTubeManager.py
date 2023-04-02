@@ -1,6 +1,50 @@
 import os
 import yt_dlp
 import metadata_mp3
+import configparser
+
+class YoutubeConfig():
+    def __init__(self, configFile):
+        self.CONFIG_FILE = configFile
+
+    def getPlaylists(self):
+        config = configparser.ConfigParser()
+        config.read(self.CONFIG_FILE)
+        data = []
+
+        for section_name in config.sections():
+            if section_name != "GLOBAL":
+                data.append({'name':config[section_name]['name'] })
+        return data
+
+    def getPlaylistsName(self):
+        config = configparser.ConfigParser()
+        config.read(self.CONFIG_FILE)
+        data = []
+
+        for section_name in config.sections():
+            if section_name != "GLOBAL":
+                data.append(config[section_name]['name'])
+        return data
+
+    def addPlaylist(self, playlist:dict):
+        keys = playlist.keys()
+        if not "name" in keys or not "link" in keys:
+            return False
+        config = configparser.ConfigParser()
+        config.read(self.CONFIG_FILE)
+        playlistName = playlist["name"]
+        playlistLink = playlist["link"]
+
+        config[playlistName]={}
+        config[playlistName]['name']=playlistName
+        config[playlistName]['link']=playlistLink
+        self.save(config)
+        return True
+
+    def save(self, config:configparser.ConfigParser):
+        with open(self.CONFIG_FILE,'w') as fp:
+            config.write(fp)
 
 class YoutubeDl:
     def __init__(self):
