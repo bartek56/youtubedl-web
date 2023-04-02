@@ -198,9 +198,14 @@ def loadAlarmConfig():
     try:
         output = subprocess.check_output(SystemdCommand.IS_ACTIVE_ALARM_TIMER, shell=True, text=True)
         #exception is called when alarm is disabled
-        alarmIsOn = "checked"
+        if "in" in output:
+            alarmIsOn = "unchecked"
+        else:
+            alarmIsOn = "checked"
     except subprocess.CalledProcessError as grepexc:
         logger.info("Exception - alarm is disabled")
+        alarmIsOn = "unchecked"
+
     return {AlarmConfigFlask.ALARM_TIME: time,
             AlarmConfigFlask.THE_NEWEST_SONG:theNewestSongCheckBox,
             AlarmConfigFlask.PLAYLIST_CHECKED:playlistCheckbox,
