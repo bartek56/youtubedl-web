@@ -37,10 +37,22 @@ class YoutubeConfig():
         playlistLink = playlist["link"]
 
         config[playlistName]={}
-        config[playlistName]['name']=playlistName
-        config[playlistName]['link']=playlistLink
+        config[playlistName]["name"]=playlistName
+        config[playlistName]["link"]=playlistLink
         self.save(config)
         return True
+
+    def removePlaylist(self, playlistName:str):
+        result = False
+        config = configparser.ConfigParser()
+        config.read(self.CONFIG_FILE)
+        for i in config.sections():
+               if i == playlistName:
+                   config.remove_section(i)
+                   self.save(config)
+                   result = True
+                   break
+        return result
 
     def save(self, config:configparser.ConfigParser):
         with open(self.CONFIG_FILE,'w') as fp:

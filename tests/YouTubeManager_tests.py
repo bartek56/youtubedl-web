@@ -98,15 +98,60 @@ class YouTubeManagerConfigTestCase(unittest.TestCase):
         self.assertEqual(playlists[1], "chillout")
 
     @mock.patch.object(YoutubeConfig, "save")
+    @mock.patch('configparser.ConfigParser.__setitem__')
+    @mock.patch('configparser.ConfigParser.__getitem__')
+    @mock.patch('configparser.ConfigParser.read')
+    def test_addPlaylist(self, mock_read, mock_getItem, mock_setItem, mock_save):
+        newPlaylist = {"name":"disco", "link":"https://yt.com/disco"}
+        self.assertTrue(self.ytConfig.addPlaylist(newPlaylist))
+        keys = list(newPlaylist.keys())
+        values = list(newPlaylist.values())
+
+        mock_getItem.assert_has_calls([
+            mock.call(values[0]), mock.call().__setitem__(keys[0], values[0]),
+            mock.call(values[0]), mock.call().__setitem__(keys[1], values[1])])
+        self.assertEqual(mock_getItem.call_count, 2)
+
+        mock_setItem.assert_has_calls([mock.call("disco",{})])
+        self.assertEqual(mock_setItem.call_count, 1)
+
+        self.assertEqual(mock_save.call_count, 1)
+        self.assertEqual(mock_read.call_count, 1)
+
+    @mock.patch.object(YoutubeConfig, "save")
+    @mock.patch('configparser.ConfigParser.__setitem__')
+    @mock.patch('configparser.ConfigParser.__getitem__')
+    @mock.patch('configparser.ConfigParser.read')
+    def test_addPlaylistWrongKeys(self, mock_read, mock_getItem, mock_setItem, mock_save):
+        newPlaylist = {"name1":"disco", "link":"https://yt.com/disco"}
+        self.assertFalse(self.ytConfig.addPlaylist(newPlaylist))
+
+        newPlaylist = {"name":"disco", "link2":"https://yt.com/disco"}
+        self.assertFalse(self.ytConfig.addPlaylist(newPlaylist))
+
+        newPlaylist = {"name3":"disco", "link3":"https://yt.com/disco"}
+        self.assertFalse(self.ytConfig.addPlaylist(newPlaylist))
+
+        self.assertEqual(mock_getItem.call_count, 0)
+        self.assertEqual(mock_setItem.call_count, 0)
+        self.assertEqual(mock_save.call_count, 0)
+        self.assertEqual(mock_read.call_count, 0)
+
+    @mock.patch.object(YoutubeConfig, "save")
     @mock.patch('configparser.ConfigParser')
-    def test_addPlaylist(self, mock_configParser, mock_save):
+    def test_removePlaylist(self, mock_configParser, mock_save):
         mock_configParser.configure_mock(side_effect=CustomConfigParser)
-        self.assertTrue(self.ytConfig.addPlaylist({"name":"disco", "link":"https:/yt.com/disco"}))
+        self.assertTrue(self.ytConfig.removePlaylist("chillout"))
+        self.assertEqual(mock_save.call_count, 1)
+        #self.assertEqual(mock_removeSection.call_count, 1)
 
-        print(mock_configParser["disco"])
-        mock_save.assert_called_once()
-#        mock_save.assert_called_once_with("fg")
-
+    @mock.patch.object(YoutubeConfig, "save")
+    @mock.patch('configparser.ConfigParser')
+    def test_removePlaylistWrongName(self, mock_configParser, mock_save):
+        mock_configParser.configure_mock(side_effect=CustomConfigParser)
+        self.assertFalse(self.ytConfig.removePlaylist("wrongName"))
+        self.assertEqual(mock_save.call_count, 0)
+#        self.assertEqual(mock_removeSection.call_count, 1)
 
 if __name__ == "__main__":
     unittest.main()
