@@ -1,9 +1,8 @@
 import os
 import logging
 from flask import Flask, render_template, redirect, url_for, request, jsonify, send_from_directory, flash
-import configparser
 from Common.mailManager import Mail
-from Common.YouTubeManager import YoutubeDl
+from Common.YouTubeManager import YoutubeDl, YoutubeConfig
 import flask
 
 class AlarmConfigFlask():
@@ -59,6 +58,7 @@ else:
     import subprocess
 mailManager = Mail()
 youtubeManager = YoutubeDl()
+youtubeConfig = YoutubeConfig()
 
 #logging.basicConfig(format="%(asctime)s %(levelname)s-%(message)s",filename='/var/log/youtubedlweb.log', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -66,6 +66,8 @@ logger = logging.getLogger(__name__)
 CONFIG_FILE="/etc/mediaserver/youtubedl.ini"
 ALARM_TIMER="/etc/mediaserver/alarm.timer"
 ALARM_SCRIPT="/etc/mediaserver/alarm.sh"
+
+youtubeConfig.initialize(CONFIG_FILE)
 
 @app.route('/favicon.ico')
 def favicon():
@@ -112,10 +114,6 @@ def saveConfig(configFile:str, content:list):
     for x in content:
         f.write(x)
     f.close()
-
-def saveYoutubedlConfigs(config:configparser.ConfigParser):
-    with open(CONFIG_FILE,'w') as fp:
-        config.write(fp)
 
 def loadAlarmConfig():
     mondayChecked = ""
@@ -345,14 +343,11 @@ def playlists():
     remoteAddress = request.remote_addr
 
     if ("192.168" in remoteAddress) or ("127.0.0.1" in remoteAddress):
-        config = configparser.ConfigParser()
-        config.read(CONFIG_FILE)
-        data = [{'name':'name'}]
-        data.clear()
+        playlistsName = youtubeConfig.getPlaylistsName()
+        data = []
 
-        for section_name in config.sections():
-            if section_name != "GLOBAL":
-                data.append({'name':config[section_name]['name'] })
+        for playlistName in playlistsName:
+            data.append({'name':playlistName})
 
         return render_template('playlists.html', playlists_data=data)
     else:
@@ -414,25 +409,19 @@ def downloadFile():
 @app.route('/playlists',methods = ['POST', 'GET'])
 def playlist():
    if request.method == 'POST':
-       config = configparser.ConfigParser()
-       config.read(CONFIG_FILE)
-
        if 'add' in request.form:
            playlist_name = request.form['playlist_name']
            link = request.form['link']
            app.logger.debug("add playlist %s %s", playlist_name, link)
-           config[playlist_name]={}
-           config[playlist_name]['name']=playlist_name
-           config[playlist_name]['link']=link
+           youtubeConfig.addPlaylist({"name":playlist_name, "link":link})
+
 
        if 'remove' in request.form:
-           select = request.form['playlists']
-           for i in config.sections():
-               if i == str(select):
-                   config.remove_section(i)
-                   app.logger.debug("removed playlist %s", i)
+           playlistToRemove = str(request.form['playlists'])
+           result = youtubeConfig.removePlaylist(playlistToRemove)
+           if result:
+                app.logger.debug("removed playlist %s", playlistToRemove)
 
-       saveYoutubedlConfigs(config)
        return redirect('playlists.html')
 
    else:

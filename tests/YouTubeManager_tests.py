@@ -90,8 +90,8 @@ class YouTubeManagerConfigTestCase(unittest.TestCase):
         self.ytConfig.initialize("neverMind", CustomConfigParser())
         playlists = self.ytConfig.getPlaylists()
         self.assertEqual(len(playlists), 2)
-        self.assertEqual(playlists[0], {"name":"relaks"})
-        self.assertEqual(playlists[1], {"name":"chillout"})
+        self.assertEqual(playlists[0], {"name":"relaks", "link":"http://youtube.com/relaks"})
+        self.assertEqual(playlists[1], {"name":"chillout", "link":"http://youtube.com/chillout"})
 
     def test_getPlaylistsName(self):
         self.ytConfig.initialize("neverMind", CustomConfigParser())

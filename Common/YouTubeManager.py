@@ -18,7 +18,7 @@ class YoutubeConfig():
 
         for section_name in self.config.sections():
             if section_name != "GLOBAL":
-                data.append({'name':self.config[section_name]['name'] })
+                data.append({'name':self.config[section_name]['name'], 'link':self.config[section_name]['link']})
         return data
 
     def getPlaylistsName(self):
