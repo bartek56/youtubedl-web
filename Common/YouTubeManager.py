@@ -4,59 +4,62 @@ import metadata_mp3
 import configparser
 
 class YoutubeConfig():
-    def __init__(self, configFile):
+    def __init__(self):
+        pass
+
+    def initialize(self, configFile, parser = configparser.ConfigParser()):
         self.CONFIG_FILE = configFile
+        self.config = parser
 
     def getPlaylists(self):
-        config = configparser.ConfigParser()
-        config.read(self.CONFIG_FILE)
+        self.config.clear()
+        self.config.read(self.CONFIG_FILE)
         data = []
 
-        for section_name in config.sections():
+        for section_name in self.config.sections():
             if section_name != "GLOBAL":
-                data.append({'name':config[section_name]['name'] })
+                data.append({'name':self.config[section_name]['name'] })
         return data
 
     def getPlaylistsName(self):
-        config = configparser.ConfigParser()
-        config.read(self.CONFIG_FILE)
+        self.config.clear()
+        self.config.read(self.CONFIG_FILE)
         data = []
 
-        for section_name in config.sections():
+        for section_name in self.config.sections():
             if section_name != "GLOBAL":
-                data.append(config[section_name]['name'])
+                data.append(self.config[section_name]['name'])
         return data
 
     def addPlaylist(self, playlist:dict):
         keys = playlist.keys()
         if not "name" in keys or not "link" in keys:
             return False
-        config = configparser.ConfigParser()
-        config.read(self.CONFIG_FILE)
+        self.config.read(self.CONFIG_FILE)
         playlistName = playlist["name"]
         playlistLink = playlist["link"]
 
-        config[playlistName]={}
-        config[playlistName]["name"]=playlistName
-        config[playlistName]["link"]=playlistLink
-        self.save(config)
+        self.config[playlistName]={}
+        self.config[playlistName]["name"]=playlistName
+        self.config[playlistName]["link"]=playlistLink
+        self.save()
         return True
 
     def removePlaylist(self, playlistName:str):
         result = False
-        config = configparser.ConfigParser()
-        config.read(self.CONFIG_FILE)
-        for i in config.sections():
+        self.config.clear()
+        self.config.read(self.CONFIG_FILE)
+        for i in self.config.sections():
                if i == playlistName:
-                   config.remove_section(i)
-                   self.save(config)
+                   self.config.remove_section(i)
+                   self.save()
                    result = True
                    break
         return result
 
-    def save(self, config:configparser.ConfigParser):
+    def save(self):
         with open(self.CONFIG_FILE,'w') as fp:
-            config.write(fp)
+            self.config.write(fp)
 
 class YoutubeDl:
     def __init__(self):
