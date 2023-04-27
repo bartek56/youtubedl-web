@@ -421,6 +421,11 @@ def playlist():
            result = youtubeConfig.removePlaylist(playlistToRemove)
            if result:
                 app.logger.debug("removed playlist %s", playlistToRemove)
+                info = "Sucesssful removed playlist %s"%(playlistToRemove)
+                flash(info, 'success')
+           else:
+               info = "Failed to remove Youtube playlist: %s"%(playlistToRemove)
+               return alert_info(info)
 
        return redirect('playlists.html')
 

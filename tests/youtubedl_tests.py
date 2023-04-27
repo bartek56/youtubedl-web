@@ -4,7 +4,7 @@ import unittest
 import unittest.mock as mock
 from configparser import ConfigParser
 from Common.mailManager import Mail
-from Common.YouTubeManager import YoutubeDl
+from Common.YouTubeManager import YoutubeDl, YoutubeConfig
 
 
 class FlaskClientTestCase(unittest.TestCase):
@@ -20,6 +20,7 @@ class FlaskClientTestCase(unittest.TestCase):
         self.app = youtubedl.app.test_client()
         self.mailManager = youtubedl.mailManager
         self.ytManager = youtubedl.youtubeManager
+        self.ytConfig = youtubedl.youtubeConfig
 
     def tearDown(self):
         pass
@@ -137,42 +138,46 @@ class FlaskClientTestCase(unittest.TestCase):
         mock.assert_called_once_with("/tmp/fileForDownload.mp4", as_attachment=True)
         assert rv.status_code == 200
 
-    @mock.patch('configparser.ConfigParser')
-    @mock.patch('youtubedl.saveYoutubedlConfigs')
-    def test_update_playlists(self, mock_saveConfigs, mock_configParser):
-        rv = self.app.post('/playlists', data=dict(add=True, playlist_name="test5",link="link_test"), follow_redirects=True)
-        mock_saveConfigs.assert_called_once()
+    @mock.patch.object(YoutubeConfig, 'getPlaylistsName', return_value=["playlist1, playlist2"])
+    @mock.patch.object(YoutubeConfig, 'addPlaylist')
+    def test_add_playlist(self, mock_addPLaylist, mock_getPlaylistsName):
+        rv = self.app.post('/playlists', data=dict(add=True, playlist_name="yt_playlist", link="https://youtube.com/link"), follow_redirects=True)
+        mock_getPlaylistsName.assert_called_once()
+        mock_addPLaylist.assert_called_once_with({'name': 'yt_playlist', 'link': 'https://youtube.com/link'})
         assert rv.status_code == 200
         assert b'<title>Media Server</title>' in rv.data
 
-    @mock.patch('configparser.ConfigParser.__getitem__')
-    @mock.patch('configparser.ConfigParser.read')
-    @mock.patch('youtubedl.saveYoutubedlConfigs')
-    def test_add_playlist(self, mock_saveConfigs, mock_configParserRead, mock_getItem):
-        rv = self.app.post('/playlists', data=dict(add=True, playlist_name="yt_playlist",link="https://youtube.com/link"), follow_redirects=True)
-        self.assertEqual(mock_saveConfigs.call_count, 1)
-        self.assertEqual(mock_configParserRead.call_count, 2)
-
-        mock_getItem.assert_has_calls([mock.call('yt_playlist'), mock.call().__setitem__('name', 'yt_playlist'),
-                                       mock.call('yt_playlist'), mock.call().__setitem__('link', 'https://youtube.com/link')])
-        assert rv.status_code == 200
-        assert b'<title>Media Server</title>' in rv.data
-
-    @mock.patch('configparser.ConfigParser')
-    @mock.patch('youtubedl.saveYoutubedlConfigs')
-    def test_remove_playlist(self, mock_saveConfigs, mock_configParser):
+    @mock.patch.object(YoutubeConfig, 'removePlaylist', return_value=True)
+    def test_remove_playlist(self, mock_removePlaylist):
         class CustomConfigParser(ConfigParser):
             def read(self, filename):
                 self.read_string("[playlist_to_remove]\nname = playlist_to_remove\nlink = http://youtube.com/test\n[playlist]\nname = playlist\nlink = http://youtube.com/test\n")
-        mock_configParser.configure_mock(side_effect=CustomConfigParser)
+        self.ytConfig.initialize("testConfig.ini", CustomConfigParser())
         rv = self.app.post('/playlists', data=dict(remove=True, playlists="playlist_to_remove"), follow_redirects=True)
-        self.assertEqual(mock_configParser.call_count, 2)
-        args = mock_saveConfigs.call_args
-        configs = args[0][0]
-        self.assertEqual(len(configs.sections()), 1)
-        self.assertEqual(configs.sections()[0],"playlist")
+        mock_removePlaylist.assert_called_once_with("playlist_to_remove")
         assert rv.status_code == 200
         assert b'<title>Media Server</title>' in rv.data
+
+    @mock.patch.object(YoutubeConfig, 'removePlaylist', return_value=True)
+    @mock.patch.object(YoutubeConfig, 'getPlaylistsName', return_value=["playlist1", "playlist2"])
+    def test_remove_playlist2(self, mock_getPlaylistsName, mock_removePlaylist):
+        self.ytConfig.initialize("testConfig.ini")
+        rv = self.app.post('/playlists', data=dict(remove=True, playlists="playlist_to_remove"), follow_redirects=True)
+        mock_removePlaylist.assert_called_once_with("playlist_to_remove")
+        mock_getPlaylistsName.assert_called_once()
+        assert rv.status_code == 200
+        #assert b'Sucesssful removed playlist' in rv.data
+        assert b'<title>Media Server</title>' in rv.data
+
+    @mock.patch.object(YoutubeConfig, 'removePlaylist', return_value=False)
+    @mock.patch.object(YoutubeConfig, 'getPlaylistsName', return_value=["playlist1", "playlist2"])
+    def test_remove_playlist_failed(self, mock_getPlaylistsName, mock_removePlaylist):
+        self.ytConfig.initialize("testConfig.ini")
+        rv = self.app.post('/playlists', data=dict(remove=True, playlists="playlist_to_remove"), follow_redirects=True)
+        mock_removePlaylist.assert_called_once_with("playlist_to_remove")
+        assert rv.status_code == 200
+        assert b'<title>Media Server</title>' in rv.data
+        assert b'Failed to remove Youtube playlist:' in rv.data
 
     @mock.patch('subprocess.check_output')
     @mock.patch('youtubedl.loadConfig')
