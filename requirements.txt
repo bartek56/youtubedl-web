@@ -2,6 +2,7 @@ git+https://github.com/bartek56/metadata_mp3
 yt_dlp
 simplegmail
 Flask
+flask_socketio
 pytest
 pytest-html
 coverage
