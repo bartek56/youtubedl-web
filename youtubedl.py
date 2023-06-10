@@ -1,6 +1,7 @@
 import os
 import logging
 from flask import Flask, render_template, redirect, url_for, request, jsonify, send_from_directory, flash
+from flask_socketio import SocketIO, emit
 from Common.mailManager import Mail
 from Common.YouTubeManager import YoutubeDl, YoutubeConfig
 import flask
@@ -50,6 +51,7 @@ class SystemdCommand():
 
 app = Flask(__name__)
 app.secret_key = "super_extra_key"
+socketio = SocketIO(app)
 if app.debug == True: # pragma: no cover
     import sys
     sys.path.append("./tests")
@@ -464,6 +466,28 @@ def alarmOff():
 def isFile(file):
     return os.path.isfile(file)
 
-if __name__ == '__main__':
-    app.run()
+#Receive a request from client and send back a test response
+@socketio.on('download_playlist')
+def handle_message(msg):
+    print("!!!!!!!!!!!!!!!!!!!! received test message")
+    playlistToDownload = msg['data']
 
+    print('received: ' + str(msg['data']))
+    url = youtubeConfig.getUrlOfPlaylist(playlistToDownload)
+
+    ytData = youtubeManager.getPlaylistInfo(url)
+    if ytData is not None:
+        print(ytData)
+        emit('downloadPlaylist_response', ytData)
+    else:
+        emit('downloadPlaylist_response', "Error")
+    for x in ytData:
+        youtubeManager.download_mp3(x["url"])
+        emit('downloadSong_response', {"playlist_index":x["playlist_index"]})
+
+@socketio.event
+def connect():
+    print("!!!!!!!!!!!!!!!!!!!! connect")
+
+if __name__ == '__main__':
+    socketio.run(app)

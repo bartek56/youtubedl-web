@@ -7,9 +7,52 @@
     <link rel="stylesheet" href="../static/bootstrap-5.0.0/css/bootstrap.min.css" />
     <link rel="stylesheet" href="../static/style.css">
     <title>Media Server</title>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
 </head>
 
 <body>
+    <script>
+        $(document).ready(function () {
+            var socket = io.connect();
+            socket.on('connect', function() {
+                console.log("connected with socket")
+                //socket.emit('my_event', {data: 'I\'m connected!'});
+            });
+
+            $('form#downloadForm').submit(function(msg) {
+                console.log("download playlist")
+                var playlists = document.getElementById("playlists");
+                var playlistToDownload = playlists.value;
+                console.log("playlistToDownload", playlistToDownload)
+                socket.emit('download_playlist', {data: playlistToDownload});
+                return false;
+            });
+
+            //Test response received from server is handled here
+            socket.on('downloadPlaylist_response', function(msg) {
+                console.log("response from downloadPLaylist !!!!!!");
+                console.log("data", msg)
+                if (Array.isArray(msg))
+                {
+                for (const element of msg) {
+                    var playlistInfo = element["playlist_index"] + ": " + element["artist"] + " - " + element["title"] + "\n"
+
+                    $('#playlist_info').append(playlistInfo)
+                    console.log(element);
+                }
+            }
+            else{
+                $('#playlist_info').append(msg)
+            }
+            })
+
+            socket.on('downloadSong_response', function(msg) {
+                console.log("downloaded song with id: ", msg["playlist_index"])
+            })
+        });
+    </script>
+
     {% include 'header.html' %}
 
 
@@ -37,6 +80,13 @@
 
             <p><input type="submit" name="remove" value="remove" /></p>
         </form>
+        <form id="downloadForm" method="POST" action="#">
+
+            <textarea id="playlist_info" rows="8" cols="25" resize="none"></textarea>
+            <br>
+            <input type="submit" value="DownloadPlaylists">
+        </form>
+
 
     </section>
 

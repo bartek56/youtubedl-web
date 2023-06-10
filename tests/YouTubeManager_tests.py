@@ -73,7 +73,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
 
 class CustomConfigParser(ConfigParser):
     def read(self, filename):
-        self.read_string("[relaks]\nname = relaks\nlink = http://youtube.com/relaks\n[chillout]\nname = chillout\nlink = http://youtube.com/chillout\n")
+        self.read_string("[GLOBAL]\npath = /tmp/muzyka/Youtube list\n[relaks]\nname = relaks\nlink = http://youtube.com/relaks\n[chillout]\nname = chillout\nlink = http://youtube.com/chillout\n")
 
     def setMockForRemoveSection(self, mock):
         self.remove_section = mock
@@ -99,6 +99,17 @@ class YouTubeManagerConfigTestCase(unittest.TestCase):
         self.assertEqual(len(playlists), 2)
         self.assertEqual(playlists[0], "relaks")
         self.assertEqual(playlists[1], "chillout")
+
+    def test_getUrlOfPLaylist(self):
+        self.ytConfig.initialize("neverMind", CustomConfigParser())
+        url = self.ytConfig.getUrlOfPlaylist("relaks")
+        self.assertEqual(url, "http://youtube.com/relaks")
+
+    def test_getUrlOfPLaylist(self):
+        self.ytConfig.initialize("neverMind", CustomConfigParser())
+        url = self.ytConfig.getUrlOfPlaylist("WrongPlaylistName")
+        self.assertEqual(url, None)
+
 
     @mock.patch.object(YoutubeConfig, "save")
     @mock.patch('configparser.ConfigParser.__setitem__')

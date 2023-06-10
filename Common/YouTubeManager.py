@@ -57,6 +57,17 @@ class YoutubeConfig():
                    break
         return result
 
+    def getUrlOfPlaylist(self, playlistName):
+        playlistUrl = None
+        self.config.clear()
+        self.config.read(self.CONFIG_FILE)
+        for section_name in self.config.sections():
+            if section_name != "GLOBAL":
+                if self.config[section_name]['name'] == playlistName:
+                    playlistUrl = self.config[section_name]["link"]
+
+        return playlistUrl
+
     def save(self):
         with open(self.CONFIG_FILE,'w') as fp:
             self.config.write(fp)
@@ -66,6 +77,38 @@ class YoutubeDl:
         self.metadataManager = metadata_mp3.MetadataManager()
         self.MUSIC_PATH='/tmp/quick_download/'
         self.VIDEO_PATH='/tmp/quick_download/'
+
+    def getPlaylistInfo(self, url):
+
+        ydl_opts = {
+              'format': 'best/best',
+              'addmetadata': True,
+              'ignoreerrors': True,
+              'quiet':True
+              }
+        results = yt_dlp.YoutubeDL(ydl_opts).extract_info(url, download=False)
+
+        for i in results['entries']:
+            if i is None:
+                warningInfo="ERROR: not extract_info in results"
+                print (warningInfo)
+                return None
+
+        data = []
+
+        for i in results['entries']:
+            dictData = {}
+            dictData['playlist_index'] = i['playlist_index']
+            dictData['url'] = i['original_url']
+            dictData['title'] = i['title']
+
+            if "artist" in i:
+                dictData['artist'] = i['artist']
+            else:
+                dictData['artist'] = ''
+            data.append(dictData)
+
+        return data
 
     def download_mp3(self, url):
         path=self.MUSIC_PATH
