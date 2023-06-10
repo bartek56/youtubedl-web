@@ -484,6 +484,7 @@ def handle_message(msg):
     for x in ytData:
         youtubeManager.download_mp3(x["url"])
         emit('downloadSong_response', {"playlist_index":x["playlist_index"]})
+    emit('downloadPlaylist_finish', {"msg":"finished"})
 
 @socketio.event
 def connect():
