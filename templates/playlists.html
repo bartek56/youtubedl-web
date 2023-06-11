@@ -14,6 +14,7 @@
 <body>
     <script>
         $(document).ready(function () {
+            var downloadResult = [];
             var loader = document.getElementById("spinner");
             loader.style.display = 'none';
 
@@ -21,12 +22,14 @@
             var socket = io.connect();
             socket.on('connect', function() {
                 console.log("connected with socket")
-                //socket.emit('my_event', {data: 'I\'m connected!'});
             });
 
             $('form#downloadForm').submit(function(msg) {
                 // disable button
-                document.getElementById("submitButton").disabled = true;
+                var button = document.getElementById("submitButton")
+                if (button.value == "DownloadPlaylists")
+                {
+                button.disabled = true;
                 var loader = document.getElementById("spinner");
                 loader.style.display = 'block';
 
@@ -35,7 +38,38 @@
                 var playlistToDownload = playlists.value;
                 console.log("playlistToDownload", playlistToDownload)
                 socket.emit('download_playlist', {data: playlistToDownload});
+                }
+                /*
+                else if(button.value == "Download Zip")
+                {
+                    socket.emit('download_zip', {data:""});
+                }
+                */
                 return false;
+            });
+
+            var form = document.getElementById("downloadZip");
+            form.addEventListener("submit", function (event) {
+                event.preventDefault();
+
+                var formData = new FormData();
+                for (var i = 0; i < downloadResult.length; i++) {
+                    var element = downloadResult[i];
+                    formData.append(i+1, element);
+                }
+
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        var downloadLink = document.getElementById('downloadLink');
+                        downloadLink.innerHTML = '<a href="' + data.file_url + '">Download file</a>';
+                    })
+                    .catch(error => {
+                        console.error('Błąd:', error);
+                    });
             });
 
             //Test response received from server is handled here
@@ -49,7 +83,7 @@
                     var playlistInfo = ""
                     for (const element of msg)
                     {
-                        playlistInfo = element["playlist_index"] + ": " + element["artist"] + " - " + element["title"] + "\n"
+                        playlistInfo = " <a href=\"" + element["url"] +"\">" + element["playlist_index"] + "</a>"+ ": " + element["artist"] + " - " + element["title"] + "\n";
                         var row = table.insertRow();
                         var cell1 = row.insertCell();
                         var cell2 = row.insertCell();
@@ -68,6 +102,7 @@
 
             socket.on('downloadSong_response', function(msg) {
                 var index = msg["playlist_index"];
+                downloadResult.push(msg["filename"]);
                 console.log("downloaded song with id: ", index);
                 var table = document.getElementById("playlist_info");
                 var row = table.rows[index-1];
@@ -78,6 +113,7 @@
 
             socket.on('downloadPlaylist_finish', function(msg) {
                 console.log("finished download")
+                console.log(downloadResult)
                 // enable button
                 document.getElementById("submitButton").disabled = false;
                 // stop spinner
@@ -122,10 +158,14 @@
            <input type="submit" value="DownloadPlaylists" id="submitButton">
             <br><br>
        </form>
-           <table id="playlist_info" class="ms-auto me-auto">
-           </table>
            <br>
-
+    <form id="downloadZip" method="POST" action="/download_zip">
+        <table id="playlist_info" class="ms-auto me-auto">
+        </table>
+        <!--<input type="submit" value="DownloadZip" id="submitDownloadButton">-->
+        <button type="submit">Submit</button>
+    </form>
+    <div id="downloadLink"></div>
     </section>
 
     <script src="../static/bootstrap-5.0.0/js/bootstrap.js"></script>

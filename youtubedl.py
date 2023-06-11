@@ -1,5 +1,6 @@
 import os
 import logging
+import zipfile
 from flask import Flask, render_template, redirect, url_for, request, jsonify, send_from_directory, flash
 from flask_socketio import SocketIO, emit
 from Common.mailManager import Mail
@@ -389,6 +390,7 @@ def download():
             del info["path"]
             info["Type"] = "video"
     if not isFile(path):
+        # TODO sanitaize
         path = path.replace("|", "_")
         path = path.replace("\"", "'")
         path = path.replace(":", "-")
@@ -416,7 +418,6 @@ def playlist():
            link = request.form['link']
            app.logger.debug("add playlist %s %s", playlist_name, link)
            youtubeConfig.addPlaylist({"name":playlist_name, "link":link})
-
 
        if 'remove' in request.form:
            playlistToRemove = str(request.form['playlists'])
@@ -469,21 +470,46 @@ def isFile(file):
 #Receive a request from client and send back a test response
 @socketio.on('download_playlist')
 def handle_message(msg):
-    print("!!!!!!!!!!!!!!!!!!!! received test message")
     playlistToDownload = msg['data']
-
-    print('received: ' + str(msg['data']))
     url = youtubeConfig.getUrlOfPlaylist(playlistToDownload)
 
     ytData = youtubeManager.getPlaylistInfo(url)
     if ytData is not None and ytData is not -1:
         emit('downloadPlaylist_response', ytData)
         for x in ytData:
-            youtubeManager.download_mp3(x["url"])
-            emit('downloadSong_response', {"playlist_index":x["playlist_index"]})
+            data = youtubeManager.download_mp3(x["url"])
+            filename = data["path"].split("/")[-1]
+            emit('downloadSong_response', {"playlist_index":x["playlist_index"], "filename":filename})
     else:
         emit('downloadPlaylist_response', "Error")
     emit('downloadPlaylist_finish', {"msg":"finished"})
+
+@socketio.on('downloadZip_data')
+def downloadZip_data(msg):
+    print("zip data")
+
+@app.route('/upload', methods=['POST'])
+def handle_upload():
+    if request.method == 'POST':
+        i = 1
+        file_paths = []
+        for x in range(len(request.form)):
+            fileName = request.form[str(i)]
+            i += 1
+            path = "/tmp/quick_download/" + fileName
+            file_paths.append(path)
+
+        # TODO zip fileName
+        with zipfile.ZipFile("/tmp/quick_download/playlistTest.zip", 'w') as zipf:
+            for file_path in file_paths:
+                arcname = file_path.replace("/tmp/quick_download/", "")
+                zipf.write(file_path, arcname)
+
+    return {'file_url': '/downloadPl'}
+
+@app.route('/downloadPl')
+def download_file():
+    return flask.send_file('/tmp/quick_download/playlistTest.zip', as_attachment=True)
 
 @socketio.event
 def connect():
