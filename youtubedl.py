@@ -476,14 +476,13 @@ def handle_message(msg):
     url = youtubeConfig.getUrlOfPlaylist(playlistToDownload)
 
     ytData = youtubeManager.getPlaylistInfo(url)
-    if ytData is not None:
-        print(ytData)
+    if ytData is not None and ytData is not -1:
         emit('downloadPlaylist_response', ytData)
+        for x in ytData:
+            youtubeManager.download_mp3(x["url"])
+            emit('downloadSong_response', {"playlist_index":x["playlist_index"]})
     else:
         emit('downloadPlaylist_response', "Error")
-    for x in ytData:
-        youtubeManager.download_mp3(x["url"])
-        emit('downloadSong_response', {"playlist_index":x["playlist_index"]})
     emit('downloadPlaylist_finish', {"msg":"finished"})
 
 @socketio.event

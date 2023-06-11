@@ -83,10 +83,14 @@ class YoutubeDl:
         ydl_opts = {
               'format': 'best/best',
               'addmetadata': True,
-              'ignoreerrors': True,
+              'ignoreerrors': False,
               'quiet':True
               }
-        results = yt_dlp.YoutubeDL(ydl_opts).extract_info(url, download=False)
+        results = None
+        try:
+            results = yt_dlp.YoutubeDL(ydl_opts).extract_info(url, download=False)
+        except:
+            return -1
 
         for i in results['entries']:
             if i is None:
@@ -127,9 +131,15 @@ class YoutubeDl:
                     'preferredquality': '192',
                  }],
               'ignoreerrors': True,
+              'download_archive': path+'/downloaded_songs.txt',
+              'continue': True,
+              'no-overwrites': True,
               'noplaylist': True
               }
         result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
+
+        if result is None:
+            return None
 
         songTitle = ""
         artist = ""

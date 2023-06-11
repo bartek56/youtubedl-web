@@ -25,9 +25,6 @@
             });
 
             $('form#downloadForm').submit(function(msg) {
-                // clear textArea
-                $('#playlist_info').val('');
-
                 // disable button
                 document.getElementById("submitButton").disabled = true;
                 var loader = document.getElementById("spinner");
@@ -46,24 +43,37 @@
                 console.log("response from downloadPLaylist !!!!!!");
                 console.log("data", msg)
 
+                var table = document.getElementById("playlist_info");
                 if (Array.isArray(msg))
                 {
                     var playlistInfo = ""
-                    for (const element of msg) {
-                        playlistInfo += element["playlist_index"] + ": " + element["artist"] + " - " + element["title"] + "\n"
-
-                    console.log(element);
+                    for (const element of msg)
+                    {
+                        playlistInfo = element["playlist_index"] + ": " + element["artist"] + " - " + element["title"] + "\n"
+                        var row = table.insertRow();
+                        var cell1 = row.insertCell();
+                        var cell2 = row.insertCell();
+                        cell1.innerHTML = playlistInfo;
+                        cell2.innerHTML = "";
+                        console.log(element);
                     }
                     console.log(playlistInfo)
-                    $('#playlist_info').val(playlistInfo)
                 }
                 else{
-                    $('#playlist_info').value += msg
+                    var row = table.insertRow();
+                    var cell1 = row.insertCell();
+                    cell1.innerHTML = msg;
                 }
             })
 
             socket.on('downloadSong_response', function(msg) {
-                console.log("downloaded song with id: ", msg["playlist_index"])
+                var index = msg["playlist_index"];
+                console.log("downloaded song with id: ", index);
+                var table = document.getElementById("playlist_info");
+                var row = table.rows[index-1];
+                row.deleteCell(1);
+                var cell =row.insertCell(1);
+                cell.innerHTML = "V";
             })
 
             socket.on('downloadPlaylist_finish', function(msg) {
@@ -111,8 +121,10 @@
         <form id="downloadForm" method="POST" action="#">
            <input type="submit" value="DownloadPlaylists" id="submitButton">
             <br><br>
-           <textarea id="playlist_info" rows="8" cols="25" resize="none"></textarea>
-        </form>
+       </form>
+           <table id="playlist_info" class="ms-auto me-auto">
+           </table>
+           <br>
 
     </section>
 
