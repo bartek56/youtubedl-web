@@ -6,6 +6,8 @@ from flask_socketio import SocketIO, emit
 from Common.mailManager import Mail
 from Common.YouTubeManager import YoutubeDl, YoutubeConfig
 import flask
+import random
+import string
 
 class AlarmConfigFlask():
     ALARM_TIME =          "alarm_time"
@@ -486,18 +488,53 @@ def handle_message(msg):
         emit('downloadPlaylist_response', "Error")
     emit('downloadPlaylist_finish', {"msg":"finished"})
 
-@socketio.on('getMediaInfo')
-def getMediaInfo(msg):
-    url = msg['data']
-    #url = youtubeConfig.getUrlOfPlaylist(playlistToDownload)
-    mediaInfo = youtubeManager.getMediaInfo(url)
-    emit('getMediaInfo_response', {"data":mediaInfo})
-    data = youtubeManager.download_mp3(url)
-    filename = data["path"].split("/")[-1]
-    emit('downloadMedia_response', {"filename":filename})
-    # TODO random hash
-    emit('downloadMedia_finish', {"data":"zzzz"})
-    readyToDownload["zzzz"] = filename
+@socketio.on('downloadMedia')
+def downloadMedia(msg):
+    url = msg['url']
+    downloadType = str(msg['type'])
+    if downloadType == "mp3":
+        if "playlist?list" in url and "watch?v" not in url:
+            downloadedFiles = []
+            ytData = youtubeManager.getPlaylistInfo(url)
+            if ytData is not None and ytData is not -1:
+                emit('getPlaylistInfo_response', ytData)
+                for x in ytData:
+                    data = youtubeManager.download_mp3(x["url"])
+                    downloadedFiles.append(data["path"])
+                    filename = data["path"].split("/")[-1]
+                    emit("downloadPlaylistMedia_response", {"playlist_index":x["playlist_index"], "filename":filename})
+            print("downloaded playlist")
+            compressToZip(downloadedFiles)
+
+
+            randomHash = getRandomString()
+            emit('downloadMedia_finish', {"data":randomHash})
+            readyToDownload[randomHash] = "playlistTest.zip"
+        else:
+            mediaInfo = youtubeManager.getMediaInfo(url)
+            if type(mediaInfo) is not dict:
+                emit('getMediaInfo_response', {"data":"Error"})
+                emit('downloadMedia_finish', {"data":""})
+                return
+            emit('getMediaInfo_response', {"data":mediaInfo})
+            data = youtubeManager.download_mp3(url)
+            if type(data) is not dict:
+                emit('downloadMedia_finish', {"data":""})
+                return
+            filename = data["path"].split("/")[-1]
+            emit('downloadMedia_response', {"filename":filename})
+            randomHash = getRandomString()
+            emit('downloadMedia_finish', {"data":randomHash})
+            readyToDownload[randomHash] = filename
+    else:
+        emit('downloadMedia_finish', {"error":"Wrong type of download"})
+
+def compressToZip(files):
+    # TODO zip fileName
+    with zipfile.ZipFile("/tmp/quick_download/playlistTest.zip", 'w') as zipf:
+        for file_path in files:
+            arcname = file_path.split("/")[-1]
+            zipf.write(file_path, arcname)
 
 @socketio.on('downloadZip_data')
 def downloadZip_data(msg):
@@ -539,6 +576,11 @@ def pobierz_plik(nazwa):
 @socketio.event
 def connect():
     print("!!!!!!!!!!!!!!!!!!!! connect")
+
+def getRandomString():
+    letters = string.ascii_lowercase
+    result_str = ''.join(random.choice(letters) for i in range(8))
+    return result_str
 
 if __name__ == '__main__':
     socketio.run(app)

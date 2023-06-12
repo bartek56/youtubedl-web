@@ -25,25 +25,34 @@
                 console.log("connected with socket");
             });
 
-            //$("#btnFetch").click(function () {
             var form = document.getElementById("downloadForm");
             form.addEventListener("submit", function (event) {
                 event.preventDefault();
+                var table = document.getElementById("media_info");
+                table.innerHTML = '';
+                downloadResult = [];
+                var downloadType = ""
+                var rbDownloadType = document.getElementsByName("quickdownload");
+                for (var i = 0; i < rbDownloadType.length; i++) {
+                    if (rbDownloadType[i].checked) {
+                        var downloadType = rbDownloadType[i].value;
+                        break;
+                    }
+                }
+                console.log(downloadType)
                 // disable button
                 var button = document.getElementById("btnFetch")
                 button.disabled = true;
                 var loader = document.getElementById("spinner");
                 loader.style.display = 'block';
 
-                console.log("get info about link")
                 var playlists = document.getElementById("linkInput");
                 var url = playlists.value;
-                console.log("url to download", url);
-                socket.emit('getMediaInfo', { data: url });
+                socket.emit('downloadMedia', { url: url, type: downloadType});
 
                 return false;
             });
-
+            // single media
             socket.on('getMediaInfo_response', function(msg) {
                 console.log("getMediaInfo response");
                 console.log(msg["data"]);
@@ -84,16 +93,60 @@
                 cell.innerHTML = "V";
             })
 
-            socket.on('downloadMedia_finish', function(msg) {
+
+            // playlist
+            socket.on('getPlaylistInfo_response', function (msg) {
+                console.log("response from downloadPLaylist !!!!!!");
+                console.log("data", msg)
+
+                var table = document.getElementById("media_info");
+                if (Array.isArray(msg)) {
+                    var playlistInfo = ""
+                    for (const element of msg) {
+                        playlistInfo = " <a href=\"" + element["url"] + "\">" + element["playlist_index"] + "</a>" + ": " + element["artist"] + " - " + element["title"] + "\n";
+                        var row = table.insertRow();
+                        var cell1 = row.insertCell();
+                        var cell2 = row.insertCell();
+                        cell1.innerHTML = playlistInfo;
+                        cell2.innerHTML = "";
+                        console.log(element);
+                    }
+                    console.log(playlistInfo)
+                }
+                else {
+                    var row = table.insertRow();
+                    var cell1 = row.insertCell();
+                    cell1.innerHTML = msg;
+                }
+            });
+
+            socket.on('downloadPlaylistMedia_response', function (msg) {
+                var index = msg["playlist_index"];
+                downloadResult.push(msg["filename"]);
+                console.log("downloaded song with id: ", index);
+                var table = document.getElementById("media_info");
+                var row = table.rows[index-1];
+                row.deleteCell(1);
+                var cell = row.insertCell(1);
+                cell.innerHTML = "V";
+            });
+
+            // a both
+            socket.on('downloadMedia_finish', function (msg) {
                 console.log("finished download")
-                                // stop spinner
+                // stop spinner
                 var loader = document.getElementById("spinner");
                 loader.style.display = 'none';
-                console.log("hash");
-                var hash = msg["data"]
-                console.log(hash);
-                var downloadLink = document.getElementById('downloadLink');
-                downloadLink.innerHTML = '<a href="/pobierz/' + hash + '">Download file</a>';
+                if ("error" in msg) {
+                    console.log("ERROR", msg["error"]);
+                }
+                else {
+                    console.log("hash");
+                    var hash = msg["data"]
+                    console.log(hash);
+                    var downloadLink = document.getElementById('downloadLink');
+                    downloadLink.innerHTML = '<a href="/pobierz/' + hash + '">Download file</a>';
+                }
             });
         });
     </script>
@@ -122,7 +175,7 @@
             </div>
             <br>
 
-            <p><button id="btnFetch" type="submit" value="download">Convert</button></p>
+            <p><button id="btnFetch" type="submit" value="download">Download</button></p>
         </form>
         <table id="media_info" class="ms-auto me-auto">
         </table>
