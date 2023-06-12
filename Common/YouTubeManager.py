@@ -114,6 +114,35 @@ class YoutubeDl:
 
         return data
 
+    def getMediaInfo(self, url):
+
+        ydl_opts = {
+              'format': 'best/best',
+              'addmetadata': True,
+              'ignoreerrors': False,
+              'quiet':True
+              }
+        result = None
+        try:
+            result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url, download=False)
+        except:
+            return -1
+
+        if result is None:
+            return None
+
+        mediaInfo = {}
+        mediaInfo['url'] = result['original_url']
+
+        if "title" in result:
+            mediaInfo['title'] = result['title']
+        if "artist" in result:
+            mediaInfo['artist'] = result['artist']
+        if "album" in result:
+            mediaInfo['album'] = result['album']
+
+        return mediaInfo
+
     def download_mp3(self, url):
         path=self.MUSIC_PATH
         self.createDirIfNotExist(path)

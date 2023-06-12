@@ -72,6 +72,8 @@ ALARM_SCRIPT="/etc/mediaserver/alarm.sh"
 
 youtubeConfig.initialize(CONFIG_FILE)
 
+readyToDownload = {}
+
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
@@ -484,6 +486,19 @@ def handle_message(msg):
         emit('downloadPlaylist_response', "Error")
     emit('downloadPlaylist_finish', {"msg":"finished"})
 
+@socketio.on('getMediaInfo')
+def getMediaInfo(msg):
+    url = msg['data']
+    #url = youtubeConfig.getUrlOfPlaylist(playlistToDownload)
+    mediaInfo = youtubeManager.getMediaInfo(url)
+    emit('getMediaInfo_response', {"data":mediaInfo})
+    data = youtubeManager.download_mp3(url)
+    filename = data["path"].split("/")[-1]
+    emit('downloadMedia_response', {"filename":filename})
+    # TODO random hash
+    emit('downloadMedia_finish', {"data":"zzzz"})
+    readyToDownload["zzzz"] = filename
+
 @socketio.on('downloadZip_data')
 def downloadZip_data(msg):
     print("zip data")
@@ -510,6 +525,16 @@ def handle_upload():
 @app.route('/downloadPl')
 def download_file():
     return flask.send_file('/tmp/quick_download/playlistTest.zip', as_attachment=True)
+
+@app.route('/pobierz/<nazwa>')
+def pobierz_plik(nazwa):
+    print(nazwa)
+    if nazwa in readyToDownload.keys():
+        fileToDownload = readyToDownload[nazwa]
+    else:
+        return
+    fullPath = "/tmp/quick_download/" + fileToDownload
+    return flask.send_file(fullPath, as_attachment=True)
 
 @socketio.event
 def connect():
