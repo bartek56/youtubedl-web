@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="../static/bootstrap-5.0.0/css/bootstrap.min.css" />
     <link rel="stylesheet" href="../static/style.css">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <title>Media Server</title>
 </head>
 
@@ -13,7 +14,7 @@
     {% include 'header.html' %}
 
 
-    <section class="layout-hero text-center">
+    <dev class="text-center">
 <!--      <form action="/download_file" method="POST"> -->
         <form action="/youtubedl/download_file" method="POST">
             <p>Info:</p>
@@ -23,7 +24,7 @@
                  <input type="hidden" name="path" value="{{ full_path }}"><br>
             <p><input type="submit" name="download" value="download" /></p><br>
         </form>
-    </section>
+    </dev>
     <script src="../static/bootstrap-5.0.0/js/bootstrap.js"></script>
 </body>
 
