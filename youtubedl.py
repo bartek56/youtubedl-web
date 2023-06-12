@@ -488,46 +488,51 @@ def handle_message(msg):
         emit('downloadPlaylist_response', "Error")
     emit('downloadPlaylist_finish', {"msg":"finished"})
 
+def downloadMediaOfType(url, type):
+    if type == "mp3":
+        return youtubeManager.download_mp3(url)
+    elif type == "360p":
+        return youtubeManager.download_360p(url)
+    elif type == "720p":
+        return youtubeManager.download_720p(url)
+    elif type =="4k":
+        return youtubeManager.download_4k(url)
+
 @socketio.on('downloadMedia')
 def downloadMedia(msg):
     url = msg['url']
     downloadType = str(msg['type'])
-    if downloadType == "mp3":
-        if "playlist?list" in url and "watch?v" not in url:
-            downloadedFiles = []
-            ytData = youtubeManager.getPlaylistInfo(url)
-            if ytData is not None and ytData is not -1:
-                emit('getPlaylistInfo_response', ytData)
-                for x in ytData:
-                    data = youtubeManager.download_mp3(x["url"])
-                    downloadedFiles.append(data["path"])
-                    filename = data["path"].split("/")[-1]
-                    emit("downloadPlaylistMedia_response", {"playlist_index":x["playlist_index"], "filename":filename})
-            print("downloaded playlist")
-            compressToZip(downloadedFiles)
-
-
-            randomHash = getRandomString()
-            emit('downloadMedia_finish', {"data":randomHash})
-            readyToDownload[randomHash] = "playlistTest.zip"
-        else:
-            mediaInfo = youtubeManager.getMediaInfo(url)
-            if type(mediaInfo) is not dict:
-                emit('getMediaInfo_response', {"data":"Error"})
-                emit('downloadMedia_finish', {"data":""})
-                return
-            emit('getMediaInfo_response', {"data":mediaInfo})
-            data = youtubeManager.download_mp3(url)
-            if type(data) is not dict:
-                emit('downloadMedia_finish', {"data":""})
-                return
-            filename = data["path"].split("/")[-1]
-            emit('downloadMedia_response', {"filename":filename})
-            randomHash = getRandomString()
-            emit('downloadMedia_finish', {"data":randomHash})
-            readyToDownload[randomHash] = filename
+    if "playlist?list" in url and "watch?v" not in url:
+        downloadedFiles = []
+        ytData = youtubeManager.getPlaylistInfo(url)
+        if ytData is not None and ytData is not -1:
+            emit('getPlaylistInfo_response', ytData)
+            for x in ytData:
+                data = downloadMediaOfType(x["url"], downloadType)
+                downloadedFiles.append(data["path"])
+                filename = data["path"].split("/")[-1]
+                emit("downloadPlaylistMedia_response", {"playlist_index":x["playlist_index"], "filename":filename})
+        print("downloaded playlist")
+        compressToZip(downloadedFiles)
+        randomHash = getRandomString()
+        emit('downloadMedia_finish', {"data":randomHash})
+        readyToDownload[randomHash] = "playlistTest.zip"
     else:
-        emit('downloadMedia_finish', {"error":"Wrong type of download"})
+        mediaInfo = youtubeManager.getMediaInfo(url)
+        if type(mediaInfo) is not dict:
+            emit('getMediaInfo_response', {"data":"Error"})
+            emit('downloadMedia_finish', {"data":""})
+            return
+        emit('getMediaInfo_response', {"data":mediaInfo})
+        data = downloadMediaOfType(url, downloadType)
+        if type(data) is not dict:
+            emit('downloadMedia_finish', {"data":""})
+            return
+        filename = data["path"].split("/")[-1]
+        emit('downloadMedia_response', {"filename":filename})
+        randomHash = getRandomString()
+        emit('downloadMedia_finish', {"data":randomHash})
+        readyToDownload[randomHash] = filename
 
 def compressToZip(files):
     # TODO zip fileName
