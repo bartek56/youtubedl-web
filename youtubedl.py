@@ -66,9 +66,9 @@ mailManager = Mail()
 
 socketLogger = SocketLogger()
 socketLogger.settings(saveToFile=False, print=False, fileNameWihPath="/var/log/youtubedlweb_mylogger.log",
-                      logLevel=LogLevel.DEBUG, showFilename=False,showLogLevel=False, showDate=False,
+                      logLevel=LogLevel.DEBUG, showFilename=False, showLogLevel=False, showDate=False,
                       skippingLogWith=["[youtube:tab]", "B/s ETA", "[ExtractAudio]", "B in 00:00:00", "100% of",
-                                       "[youtube]", "[info]", "Downloading item", "[dashsegments]", "Deleting original file"])
+                                       "[info]", "Downloading item", "[dashsegments]", "Deleting original file", "Downloading android player", "Downloading webpage"])
 #socketLogger.settings(print=True)
 #logging.basicConfig(format="%(asctime)s %(levelname)s-%(message)s",filename='/var/log/youtubedlweb.log', level=logging.NOTSET)
 logger = logging.getLogger(__name__)
