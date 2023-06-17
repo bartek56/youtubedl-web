@@ -73,8 +73,9 @@ class YoutubeConfig():
             self.config.write(fp)
 
 class YoutubeDl:
-    def __init__(self):
+    def __init__(self, logger=None):
         self.metadataManager = metadata_mp3.MetadataManager()
+        self.logger = logger
         self.MUSIC_PATH='/tmp/quick_download/'
         self.VIDEO_PATH='/tmp/quick_download/'
 
@@ -82,21 +83,24 @@ class YoutubeDl:
 
         ydl_opts = {
               'format': 'best/best',
+              'logger': self.logger,
               'addmetadata': True,
               'ignoreerrors': False,
-              'quiet':True
+              'quiet':False
               }
         results = None
         try:
             results = yt_dlp.YoutubeDL(ydl_opts).extract_info(url, download=False)
-        except:
-            return -1
+        except Exception as e:
+            return self.removeTagFromLogger(str(e))
+
+        if results is None:
+            return "No data"
 
         for i in results['entries']:
             if i is None:
-                warningInfo="ERROR: not extract_info in results"
-                print (warningInfo)
-                return None
+                warningInfo="not extract_info in results"
+                return warningInfo
 
         data = []
 
@@ -118,6 +122,7 @@ class YoutubeDl:
 
         ydl_opts = {
               'format': 'best/best',
+              'logger': self.logger,
               'addmetadata': True,
               'ignoreerrors': False,
               'quiet':True
@@ -125,11 +130,11 @@ class YoutubeDl:
         result = None
         try:
             result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url, download=False)
-        except:
-            return -1
+        except Exception as e:
+            return self.removeTagFromLogger(str(e))
 
         if result is None:
-            return None
+            return "No data"
 
         mediaInfo = {}
         mediaInfo['url'] = result['original_url']
@@ -153,23 +158,28 @@ class YoutubeDl:
         ydl_opts = {
               'format': 'bestaudio/best',
               'addmetadata': True,
+              'logger': self.logger,
               'outtmpl': path+'/'+'%(title)s.%(ext)s',
               'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
                     'preferredcodec': 'mp3',
                     'preferredquality': '192',
                  }],
-              'ignoreerrors': True,
+              'ignoreerrors': False,
                # TODO handle errors
                #'download_archive': path+'/downloaded_songs.txt',
               'continue': True,
               'no-overwrites': True,
               'noplaylist': True
               }
-        result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
+
+        try:
+            result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
+        except Exception as e:
+            return self.removeTagFromLogger(str(e))
 
         if result is None:
-            return None
+            return "No data"
 
         songTitle = ""
         artist = ""
@@ -188,7 +198,8 @@ class YoutubeDl:
             songTitle = yt_dlp.utils.sanitize_filename(songTitle)
         full_path = self.metadataManager.rename_and_add_metadata_to_song(self.MUSIC_PATH, album, artist, songTitle)
 
-        metadata = {"path": full_path}
+        metadata = {}
+        metadata["path"] = full_path
         if(artist is not None):
             metadata["artist"] = artist
         metadata["title"] = songTitle
@@ -206,16 +217,18 @@ class YoutubeDl:
         ydl_opts = {
               'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best',
               'addmetadata': True,
+              'logger': self.logger,
               'outtmpl': path+'/'+'%(title)s_4k.%(ext)s',
+              'no-overwrites': True,
               'ignoreerrors': True
               }
-        result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
-        full_path= "%s/%s_4k.%s"%(path,result['title'],result['ext'])
+        result = self.downloadVideo(ydl_opts, url)
+        if type(result) == str:
+            return result
 
-
-        metadata = {"title": result['title'],
-                     "path": full_path }
-        return metadata
+        full_path= "%s/%s_4k.%s"%(path,yt_dlp.utils.sanitize_filename(result['title']),result['ext'])
+        result["path"] = full_path
+        return result
 
     def download_720p(self, url):
         path=self.VIDEO_PATH
@@ -226,15 +239,18 @@ class YoutubeDl:
         ydl_opts = {
               'format': 'bestvideo[height=720]/mp4',
               'addmetadata': True,
+              'logger': self.logger,
+              'no-overwrites': True,
               'outtmpl': path+'/'+'%(title)s_720p.%(ext)s',
               'ignoreerrors': True
               }
-        result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
+        result = self.downloadVideo(ydl_opts, url)
+        if type(result) == str:
+            return result
 
-        full_path = "%s/%s_720p.%s"%(path,result['title'],result['ext'])
-        metadata = {"title": result['title'],
-                     "path": full_path }
-        return metadata
+        full_path = "%s/%s_720p.%s"%(path,yt_dlp.utils.sanitize_filename(result['title']),result['ext'])
+        result["path"] = full_path
+        return result
 
     def download_360p(self, url):
         path=self.VIDEO_PATH
@@ -246,20 +262,43 @@ class YoutubeDl:
         ydl_opts = {
               'format': 'worse[height<=360]/mp4',
               'addmetadata': True,
+              'logger': self.logger,
+              'no-overwrites': True,
               'outtmpl': path+'/'+'%(title)s_360p.%(ext)s',
               'ignoreerrors': True
               }
 
-        result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
-        full_path = "%s/%s_360p.%s"%(path,result['title'],result['ext'])
+        result = self.downloadVideo(ydl_opts, url)
 
-        metadata = {"title": result['title'],
-                     "path": full_path }
+        if type(result) == str:
+            return result
+
+        full_path = "%s/%s_360p.%s"%(path, yt_dlp.utils.sanitize_filename(result['title']), result['ext'])
+        result["path"] = full_path
+        return result
+
+    def downloadVideo(self, yt_args, url):
+        try:
+            result = yt_dlp.YoutubeDL(yt_args).extract_info(url)
+        except Exception as e:
+            return self.removeTagFromLogger(str(e))
+
+        if result is None:
+            return "No data"
+
+        metadata = {}
+        metadata["title"] = result['title']
+        metadata["ext"] = result['ext']
         return metadata
 
     def createDirIfNotExist(self, path):
         if not os.path.exists(path): # pragma: no cover
             os.makedirs(path)
+
+    def removeTagFromLogger(self, log:str):
+        ENDC = '\033[0m'
+        splittedLog = log.split(ENDC)
+        return splittedLog[1]
 
 if __name__ == "__main__":
     yt = YoutubeDl()

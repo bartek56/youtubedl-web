@@ -5,6 +5,7 @@ from flask import Flask, render_template, redirect, url_for, request, jsonify, s
 from flask_socketio import SocketIO, emit
 from Common.mailManager import Mail
 from Common.YouTubeManager import YoutubeDl, YoutubeConfig
+from Common.SocketLogger import SocketLogger, LogLevel
 import flask
 import random
 import string
@@ -62,11 +63,14 @@ if app.debug == True: # pragma: no cover
 else:
     import subprocess
 mailManager = Mail()
-youtubeManager = YoutubeDl()
-youtubeConfig = YoutubeConfig()
 
-#logging.basicConfig(format="%(asctime)s %(levelname)s-%(message)s",filename='/var/log/youtubedlweb.log', level=logging.INFO)
+socketLogger = SocketLogger()
+socketLogger.settings(print=False, saveToFile=False, fileNameWihPath="/var/log/youtubedlweb_mylogger.log", logLevel=LogLevel.DEBUG)
+#logging.basicConfig(format="%(asctime)s %(levelname)s-%(message)s",filename='/var/log/youtubedlweb.log', level=logging.NOTSET)
 logger = logging.getLogger(__name__)
+
+youtubeManager = YoutubeDl(socketLogger)
+youtubeConfig = YoutubeConfig()
 
 CONFIG_FILE="/etc/mediaserver/youtubedl.ini"
 ALARM_TIMER="/etc/mediaserver/alarm.timer"
@@ -473,14 +477,14 @@ def handle_message(msg):
     url = youtubeConfig.getUrlOfPlaylist(playlistToDownload)
 
     ytData = youtubeManager.getPlaylistInfo(url)
-    if ytData is not None and ytData is not -1:
+    if type(ytData) != str:
         emit('downloadPlaylist_response', ytData)
         for x in ytData:
             data = youtubeManager.download_mp3(x["url"])
             filename = data["path"].split("/")[-1]
             emit('downloadSong_response', {"playlist_index":x["playlist_index"], "filename":filename})
     else:
-        emit('downloadPlaylist_response', "Error")
+        emit('downloadPlaylist_response', ytData)
     emit('downloadPlaylist_finish', {"msg":"finished"})
 
 def downloadMediaOfType(url, type):
@@ -500,31 +504,37 @@ def downloadMedia(msg):
     if "playlist?list" in url and "watch?v" not in url:
         downloadedFiles = []
         ytData = youtubeManager.getPlaylistInfo(url)
-        if ytData is not None and ytData is not -1:
-            emit('getPlaylistInfo_response', ytData)
-            for x in ytData:
-                data = downloadMediaOfType(x["url"], downloadType)
-                downloadedFiles.append(data["path"])
-                filename = data["path"].split("/")[-1]
-                emit("downloadPlaylistMedia_response", {"playlist_index":x["playlist_index"], "filename":filename})
-        print("downloaded playlist")
+
+        if type(ytData) == str:
+            emit('downloadMedia_finish', {"error":ytData})
+            return
+        emit('getPlaylistInfo_response', ytData)
+        for x in ytData:
+            data = downloadMediaOfType(x["url"], downloadType)
+            if type(data) == str:
+                emit("getPlaylistMediaInfo_response", {"error": data})
+                continue
+            downloadedFiles.append(data["path"])
+            filename = data["path"].split("/")[-1]
+            emit("getPlaylistMediaInfo_response", {"data": {"playlist_index":x["playlist_index"], "filename":filename}})
         compressToZip(downloadedFiles)
         randomHash = getRandomString()
         emit('downloadMedia_finish', {"data":randomHash})
         readyToDownload[randomHash] = "playlistTest.zip"
     else:
         mediaInfo = youtubeManager.getMediaInfo(url)
-        if type(mediaInfo) is not dict:
-            emit('getMediaInfo_response', {"data":"Error"})
-            emit('downloadMedia_finish', {"data":""})
+        if type(mediaInfo) == str:
+            emit('downloadMedia_finish', {"error":mediaInfo})
             return
-        emit('getMediaInfo_response', {"data":mediaInfo})
+
+        emit('getMediaInfo_response', {"data": mediaInfo})
         data = downloadMediaOfType(url, downloadType)
-        if type(data) is not dict:
-            emit('downloadMedia_finish', {"data":""})
+
+        if type(data) == str:
+            emit('downloadMedia_finish', {"error":data})
             return
         filename = data["path"].split("/")[-1]
-        emit('downloadMedia_response', {"filename":filename})
+        emit('downloadMedia_response', {"data":{"filename":filename}})
         randomHash = getRandomString()
         emit('downloadMedia_finish', {"data":randomHash})
         readyToDownload[randomHash] = filename
@@ -565,7 +575,6 @@ def download_file():
 
 @app.route('/pobierz/<nazwa>')
 def pobierz_plik(nazwa):
-    print(nazwa)
     if nazwa in readyToDownload.keys():
         fileToDownload = readyToDownload[nazwa]
     else:
@@ -575,7 +584,7 @@ def pobierz_plik(nazwa):
 
 @socketio.event
 def connect():
-    print("!!!!!!!!!!!!!!!!!!!! connect")
+    pass
 
 def getRandomString():
     letters = string.ascii_lowercase

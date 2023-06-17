@@ -53,42 +53,40 @@
 
                 return false;
             });
+
             // single media
-            socket.on('getMediaInfo_response', function(msg) {
+            socket.on('getMediaInfo_response', function (msg) {
                 console.log("getMediaInfo response");
                 console.log(msg["data"]);
                 var table = document.getElementById("media_info");
-                if (msg["data"] instanceof Object)
-                {
-                    var mediaInfo = ""
-                    var index = 1;
-                    var element = msg["data"];
-
-                        console.log(element);
-                        mediaInfo = " <a href=\"" + element["url"] +"\">" + index.toString() + "</a>"+ ": " + element["artist"] + " - " + element["title"] + "\n";
-                        var row = table.insertRow();
-                        var cell1 = row.insertCell();
-                        var cell2 = row.insertCell();
-                        cell1.innerHTML = mediaInfo;
-                        cell2.innerHTML = "";
-                        console.log(element);
-                        index = index + 1;
-
-                    console.log(mediaInfo)
-                }
-                else{
+                if ("error" in msg) {
                     var row = table.insertRow();
                     var cell1 = row.insertCell();
-                    cell1.innerHTML = msg;
+                    cell1.innerHTML = msg["error"];
+                    return
                 }
+
+                var mediaInfo = ""
+                var index = 1;
+                var element = msg["data"];
+
+                console.log(element);
+                mediaInfo = " <a href=\"" + element["url"] + "\">" + index.toString() + "</a>" + ": " + element["artist"] + " - " + element["title"] + "\n";
+                var row = table.insertRow();
+                var cell1 = row.insertCell();
+                var cell2 = row.insertCell();
+                cell1.innerHTML = mediaInfo;
+                cell2.innerHTML = "";
+                console.log(element);
+                index = index + 1;
+
+                console.log(mediaInfo)
             });
 
             socket.on('downloadMedia_response', function(msg) {
-                var index = 1;
-                downloadResult.push(msg["filename"]);
-                console.log("downloaded song with id: ", index);
+                downloadResult.push(msg["data"]["filename"]);
                 var table = document.getElementById("media_info");
-                var row = table.rows[index-1];
+                var row = table.rows[0];
                 row.deleteCell(1);
                 var cell =row.insertCell(1);
                 cell.innerHTML = "V";
@@ -121,9 +119,19 @@
                 }
             });
 
-            socket.on('downloadPlaylistMedia_response', function (msg) {
-                var index = msg["playlist_index"];
-                downloadResult.push(msg["filename"]);
+            socket.on('getPlaylistMediaInfo_response', function (msg) {
+
+                var table = document.getElementById("media_info");
+                if ("error" in msg)
+                {
+                    var row = table.insertRow();
+                    var cell1 = row.insertCell();
+                    cell1.innerHTML = msg;
+                    return
+                }
+                data = msg["data"]
+                var index = data["playlist_index"];
+                downloadResult.push(data["filename"]);
                 console.log("downloaded song with id: ", index);
                 var table = document.getElementById("media_info");
                 var row = table.rows[index-1];
@@ -140,14 +148,25 @@
                 loader.style.display = 'none';
                 if ("error" in msg) {
                     console.log("ERROR", msg["error"]);
+                    var table = document.getElementById("media_info");
+                    var row = table.insertRow();
+                    var cell1 = row.insertCell();
+                    cell1.innerHTML = msg["error"];
+                    var button = document.getElementById("btnFetch")
+                    button.disabled = false;
+                    return
                 }
-                else {
-                    console.log("hash");
-                    var hash = msg["data"]
-                    console.log(hash);
-                    var downloadLink = document.getElementById('downloadLink');
-                    downloadLink.innerHTML = '<a href="/pobierz/' + hash + '">Download file</a>';
-                }
+                console.log("hash");
+                var hash = msg["data"]
+                console.log(hash);
+                var downloadLink = document.getElementById('downloadLink');
+                downloadLink.innerHTML = '<a href="/youtubedl/pobierz/' + hash + '">Download file</a>';
+                //downloadLink.innerHTML = '<a href="/pobierz/' + hash + '">Download file</a>';
+            });
+
+            socket.on('yt', function (msg) {
+                console.log("yt logger")
+                console.log(msg)
             });
         });
     </script>
