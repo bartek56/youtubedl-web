@@ -65,7 +65,11 @@ else:
 mailManager = Mail()
 
 socketLogger = SocketLogger()
-socketLogger.settings(print=False, saveToFile=False, fileNameWihPath="/var/log/youtubedlweb_mylogger.log", logLevel=LogLevel.DEBUG)
+socketLogger.settings(saveToFile=False, print=False, fileNameWihPath="/var/log/youtubedlweb_mylogger.log",
+                      logLevel=LogLevel.DEBUG, showFilename=False,showLogLevel=False, showDate=False,
+                      skippingLogWith=["[youtube:tab]", "B/s ETA", "[ExtractAudio]", "B in 00:00:00", "100% of",
+                                       "[youtube]", "[info]", "Downloading item", "[dashsegments]", "Deleting original file"])
+#socketLogger.settings(print=True)
 #logging.basicConfig(format="%(asctime)s %(levelname)s-%(message)s",filename='/var/log/youtubedlweb.log', level=logging.NOTSET)
 logger = logging.getLogger(__name__)
 
@@ -470,22 +474,16 @@ def alarmOff():
 def isFile(file):
     return os.path.isfile(file)
 
-#Receive a request from client and send back a test response
-@socketio.on('download_playlist')
+@socketio.on('downloadPlaylists')
 def handle_message(msg):
-    playlistToDownload = msg['data']
-    url = youtubeConfig.getUrlOfPlaylist(playlistToDownload)
+    playlists = youtubeConfig.getPlaylists()
+    path = youtubeConfig.getPath()
 
-    ytData = youtubeManager.getPlaylistInfo(url)
-    if type(ytData) != str:
-        emit('downloadPlaylist_response', ytData)
-        for x in ytData:
-            data = youtubeManager.download_mp3(x["url"])
-            filename = data["path"].split("/")[-1]
-            emit('downloadSong_response', {"playlist_index":x["playlist_index"], "filename":filename})
-    else:
-        emit('downloadPlaylist_response', ytData)
-    emit('downloadPlaylist_finish', {"msg":"finished"})
+    for playlist in playlists:
+        ytData = youtubeManager.download_playlist_mp3(path, playlist["name"], playlist["link"])
+        emit('downloadPlaylist_response', {"data": ytData})
+
+    emit('downloadPlaylist_finish', {"data":"finished"})
 
 def downloadMediaOfType(url, type):
     if type == "mp3":

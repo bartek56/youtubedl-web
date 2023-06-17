@@ -15,55 +15,74 @@ class SocketLogger():
 
     def debug(self, *args):
         log = self.DEBUG(args)
-        emit("yt", log)
+        self.emitToSocket(log)
 
     def warning(self, *args):
         log = self.WARNING(args)
-        emit("yt", log)
+        self.emitToSocket(log)
 
     def error(self, *args):
         log = self.ERROR(args)
-        emit("yt", log)
+        self.emitToSocket(log)
+
+    def emitToSocket(self, log):
+        if log:
+            emit("yt", log)
 
     def DEBUG(self, args):
         if self.logLevel.value <= LogLevel.DEBUG.value:
             log = self.getLog("DEBUG", args)
-            self.writeToFile(log)
-            if self.isPrinting:
-                print(log)
-            return log
+            if log != None:
+                self.writeToFile(log)
+                if self.isPrinting:
+                    print(log)
+                return log
 
     def INFO(self, *args):
         if self.logLevel.value <= LogLevel.INFO.value:
             log = self.getLog("INFO", args)
-            self.writeToFile(log)
-            if self.isPrinting:
-                print(log)
-            return log
+            if log != None:
+                self.writeToFile(log)
+                if self.isPrinting:
+                    print(log)
+                return log
 
     def WARNING(self, *args):
         if self.logLevel.value <= LogLevel.WARNING.value:
             log = self.getLog("WARNING", args)
-            self.writeToFile(log)
-            if self.isPrinting:
-                print(log)
-            return log
+            if log != None:
+                self.writeToFile(log)
+                if self.isPrinting:
+                    print(log)
+                return log
 
     def ERROR(self, *args):
         if self.logLevel.value <= LogLevel.ERROR.value:
             log = self.getLog("ERROR", args)
-            self.writeToFile(log)
-            if self.isPrinting:
-                print(log)
-            return log
+            if log != None:
+                self.writeToFile(log)
+                if self.isPrinting:
+                    print(log)
+                return log
 
     def getLog(self, level, args):
-        log = self.getTime()
+        log=""
+        for x in self.skippingLogWith:
+            for y in args:
+               if x in str(y):
+                   return None
+        if self.showDate:
+            log += self.getTime()
         if self.showFilename:
-            log += " %s\t"%(self.getFilename())
+            if len(log) != 0:
+                log+= " "
+            log += "%s\t"%(self.getFilename())
         if self.showLogLevel:
-            log += " %s:"%(level)
-        log += " "
+            if len(log) != 0:
+                log+= " "
+            log += "%s:"%(level)
+        if len(log) != 0:
+            log+= " "
         log += self.getLogText(args)
         return log
 
@@ -93,10 +112,12 @@ class SocketLogger():
             f.write("\n")
             f.close()
 
-    def settings(self, logLevel = LogLevel.DEBUG, showFilename=True, showLogLevel=True, print=True, saveToFile=False, fileNameWihPath="logger.log"):
+    def settings(self, logLevel = LogLevel.DEBUG, showDate=True, showFilename=True, showLogLevel=True, print=True, saveToFile=False, fileNameWihPath="logger.log", skippingLogWith=[]):
+        self.showDate = showDate
         self.isSaveToFileEnable = saveToFile
         self.fileNameWithPath = fileNameWihPath
         self.showFilename = showFilename
         self.showLogLevel = showLogLevel
         self.logLevel = logLevel
         self.isPrinting = print
+        self.skippingLogWith = skippingLogWith

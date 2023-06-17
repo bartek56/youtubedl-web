@@ -22,105 +22,64 @@
 
             var socket = io.connect();
             socket.on('connect', function() {
-                console.log("connected with socket")
+                console.log("connected with socket");
             });
 
-            $('form#downloadForm').submit(function(msg) {
+            $('form#downloadPlaylists').submit(function(msg) {
                 // disable button
-                var button = document.getElementById("submitButton")
-                if (button.value == "DownloadPlaylists")
-                {
+                var button = document.getElementById("submitButton");
                 button.disabled = true;
+
                 var loader = document.getElementById("spinner");
                 loader.style.display = 'block';
 
-                console.log("download playlist")
-                var playlists = document.getElementById("playlists");
-                var playlistToDownload = playlists.value;
-                console.log("playlistToDownload", playlistToDownload)
-                socket.emit('download_playlist', {data: playlistToDownload});
-                }
-                /*
-                else if(button.value == "Download Zip")
-                {
-                    socket.emit('download_zip', {data:""});
-                }
-                */
+                var table = document.getElementById("playlists_info");
+                table.innerHTML = '';
+
+
+                socket.emit('downloadPlaylists', '');
                 return false;
             });
 
-            var form = document.getElementById("downloadZip");
-            form.addEventListener("submit", function (event) {
-                event.preventDefault();
-
-                var formData = new FormData();
-                for (var i = 0; i < downloadResult.length; i++) {
-                    var element = downloadResult[i];
-                    formData.append(i+1, element);
-                }
-
-                fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        var downloadLink = document.getElementById('downloadLink');
-                        downloadLink.innerHTML = '<a href="' + data.file_url + '">Download file</a>';
-                    })
-                    .catch(error => {
-                        console.error('Błąd:', error);
-                    });
-            });
-
-            //Test response received from server is handled here
-            socket.on('downloadPlaylist_response', function(msg) {
-                console.log("response from downloadPLaylist !!!!!!");
-                console.log("data", msg)
-
-                var table = document.getElementById("playlist_info");
-                if (Array.isArray(msg))
-                {
-                    var playlistInfo = ""
-                    for (const element of msg)
-                    {
-                        playlistInfo = " <a href=\"" + element["url"] +"\">" + element["playlist_index"] + "</a>"+ ": " + element["artist"] + " - " + element["title"] + "\n";
-                        var row = table.insertRow();
-                        var cell1 = row.insertCell();
-                        var cell2 = row.insertCell();
-                        cell1.innerHTML = playlistInfo;
-                        cell2.innerHTML = "";
-                        console.log(element);
-                    }
-                    console.log(playlistInfo)
-                }
-                else{
+            socket.on('downloadPlaylist_response', function (msg) {
+                if ("error" in msg) {
+                    console.log("error", msg["error"]);
+                    var table = document.getElementById("playlists_info");
                     var row = table.insertRow();
                     var cell1 = row.insertCell();
-                    cell1.innerHTML = msg;
+                    cell1.innerHTML = msg["error"];
+                    return;
                 }
-            })
-
-            socket.on('downloadSong_response', function(msg) {
-                var index = msg["playlist_index"];
-                downloadResult.push(msg["filename"]);
-                console.log("downloaded song with id: ", index);
-                var table = document.getElementById("playlist_info");
-                var row = table.rows[index-1];
-                row.deleteCell(1);
-                var cell =row.insertCell(1);
-                cell.innerHTML = "V";
-            })
+                console.log(msg["data"])
+           })
 
             socket.on('downloadPlaylist_finish', function(msg) {
-                console.log("finished download")
-                console.log(downloadResult)
                 // enable button
                 document.getElementById("submitButton").disabled = false;
                 // stop spinner
                 var loader = document.getElementById("spinner");
                 loader.style.display = 'none';
+
+                if ("error" in msg)
+                {
+                    console.log("error", msg["error"]);
+                    var table = document.getElementById("playlists_info");
+                    var row = table.insertRow();
+                    var cell1 = row.insertCell();
+                    cell1.innerHTML = msg["error"];
+                    return;
+                }
+                console.log(msg["data"]);
+
             })
+
+            socket.on('yt', function (msg) {
+                console.log(msg);
+                var table = document.getElementById("playlists_info");
+                var row = table.insertRow();
+                var cell1 = row.insertCell();
+                cell1.innerHTML = msg;
+            });
         });
     </script>
 
@@ -128,9 +87,9 @@
 
 
     <section class="layout-hero text-center">
-            <div class="spinner-border" style="width: 4rem; height: 4rem;" role="status" id="spinner">
-                <span class="visually-hidden">Loading...</span>
-            </div>
+        <div class="spinner-border" style="width: 4rem; height: 4rem;" role="status" id="spinner">
+            <span class="visually-hidden">Loading...</span>
+        </div>
 
         <!--        <form action="/playlists" method="POST"> -->
         <form action="/youtubedl/playlists" method="POST">
@@ -155,18 +114,14 @@
 
             <p><input type="submit" name="remove" value="remove" /></p>
         </form>
-        <form id="downloadForm" method="POST" action="#">
-           <input type="submit" value="DownloadPlaylists" id="submitButton">
+        <form id="downloadPlaylists" method="POST" action="#">
+            <input type="submit" value="Download playlists" id="submitButton">
             <br><br>
-       </form>
-           <br>
-    <form id="downloadZip" method="POST" action="/download_zip">
-        <table id="playlist_info" class="ms-auto me-auto">
+        </form>
+        <br>
+        <table id="playlists_info" class="ms-auto me-auto">
         </table>
-        <!--<input type="submit" value="DownloadZip" id="submitDownloadButton">-->
-        <button type="submit">Submit</button>
-    </form>
-    <div id="downloadLink"></div>
+        <div id="downloadLink"></div>
     </section>
 
     <script src="../static/bootstrap-5.0.0/js/bootstrap.js"></script>

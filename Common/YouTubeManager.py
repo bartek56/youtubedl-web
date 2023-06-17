@@ -11,6 +11,14 @@ class YoutubeConfig():
         self.CONFIG_FILE = configFile
         self.config = parser
 
+    def getPath(self):
+        path = None
+        self.config.clear()
+        self.config.read(self.CONFIG_FILE)
+        if "GLOBAL" in self.config.sections():
+            path = self.config["GLOBAL"]['path']
+        return path
+
     def getPlaylists(self):
         self.config.clear()
         self.config.read(self.CONFIG_FILE)
@@ -290,6 +298,72 @@ class YoutubeDl:
         metadata["title"] = result['title']
         metadata["ext"] = result['ext']
         return metadata
+
+    def download_playlist_mp3(self, playlistDir, playlistName, url):
+        path=os.path.join(playlistDir, playlistName)
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        ydl_opts = {
+              'format': 'bestaudio/best',
+              'download_archive': path+'/downloaded_songs.txt',
+              'addmetadata': True,
+              'logger': self.logger,
+              'outtmpl': path+'/'+'%(title)s.%(ext)s',
+              'postprocessors': [{
+                    'key': 'FFmpegExtractAudio',
+                    'preferredcodec': 'mp3',
+                    'preferredquality': '192',
+                    }],
+              'ignoreerrors': True,
+              'quiet': True
+              }
+        results = None
+        try:
+            results = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
+        except Exception as e:
+            return self.removeTagFromLogger(str(e))
+
+        if results is None:
+            return "No data"
+
+        for i in results['entries']:
+            if i is None:
+                warningInfo="not extract_info in results"
+                return warningInfo
+
+        info = "[INFO] started download playlist %s"%(playlistName)
+        print (info)
+
+        for i in results['entries']:
+            if i is None:
+                warningInfo="ERROR: not extract_info in results"
+                return warningInfo
+
+        artistList = []
+        playlistIndexList = []
+        songsTitleList = []
+
+        for i in results['entries']:
+            playlistIndexList.append(i['playlist_index'])
+            songsTitleList.append(i['title'])
+
+            if "artist" in i:
+                artistList.append(i['artist'])
+            else:
+                artistList.append("")
+
+        songCounter=0
+        for x in range(len(songsTitleList)):
+            songTitle = songsTitleList[x]
+            fileName="%s%s"%(songTitle, ".mp3")
+            if not os.path.isfile(os.path.join(path,fileName)):
+                print("[WARNING] File doesn't exist. Sanitize is require")
+                songTitle = yt_dlp.utils.sanitize_filename(songTitle)
+            self.metadataManager.rename_and_add_metadata_to_playlist(playlistDir, playlistIndexList[x], playlistName, artistList[x], songTitle)
+            songCounter+=1
+
+        return songCounter
 
     def createDirIfNotExist(self, path):
         if not os.path.exists(path): # pragma: no cover
