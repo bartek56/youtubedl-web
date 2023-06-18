@@ -101,7 +101,7 @@ class YoutubeDl:
         try:
             results = yt_dlp.YoutubeDL(ydl_opts).extract_info(url, download=False)
         except Exception as e:
-            return self.removeTagFromLogger(str(e))
+            return str(e)
 
         if results is None:
             return "Failed to download url: "+ url
@@ -138,7 +138,7 @@ class YoutubeDl:
         try:
             result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url, download=False)
         except Exception as e:
-            return self.removeTagFromLogger(str(e))
+            return str(e)
 
         if result is None:
             return "Failed to download url: "+ url
@@ -181,7 +181,7 @@ class YoutubeDl:
         try:
             result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
         except Exception as e:
-            return self.removeTagFromLogger(str(e))
+            return str(e)
 
         if result is None:
             return "Failed to download url: "+ url
@@ -286,7 +286,7 @@ class YoutubeDl:
         try:
             result = yt_dlp.YoutubeDL(yt_args).extract_info(url)
         except Exception as e:
-            return self.removeTagFromLogger(str(e))
+            return str(e)
 
         if result is None:
             return "Failed to download url: "+ url
@@ -319,7 +319,7 @@ class YoutubeDl:
         try:
             results = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
         except Exception as e:
-            return self.removeTagFromLogger(str(e))
+            return str(e)
 
         if results is None:
             return "Failed to download url: "+ url
@@ -365,11 +365,6 @@ class YoutubeDl:
     def createDirIfNotExist(self, path):
         if not os.path.exists(path): # pragma: no cover
             os.makedirs(path)
-
-    def removeTagFromLogger(self, log:str):
-        ENDC = '\033[0m'
-        splittedLog = log.split(ENDC)
-        return splittedLog[1]
 
 if __name__ == "__main__":
     yt = YoutubeDl()
