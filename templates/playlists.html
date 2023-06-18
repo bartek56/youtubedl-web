@@ -19,10 +19,8 @@
             var loader = document.getElementById("spinner");
             loader.style.display = 'none';
 
-
             var socket = io.connect();
             socket.on('connect', function() {
-                console.log("connected with socket");
             });
 
             $('form#downloadPlaylists').submit(function(msg) {
@@ -43,14 +41,16 @@
 
             socket.on('downloadPlaylist_response', function (msg) {
                 if ("error" in msg) {
-                    console.log("error", msg["error"]);
                     var table = document.getElementById("playlists_info");
                     var row = table.insertRow();
-                    var cell1 = row.insertCell();
-                    cell1.innerHTML = msg["error"];
+                    var cell = row.insertCell();
+                    cell.innerHTML = msg["error"];
                     return;
                 }
-                console.log(msg["data"])
+                var table = document.getElementById("playlists_info");
+                var row = table.insertRow();
+                var cell = row.insertCell();
+                cell.innerHTML = "-------------------------------------------------"
            })
 
             socket.on('downloadPlaylist_finish', function(msg) {
@@ -62,22 +62,20 @@
 
                 if ("error" in msg)
                 {
-                    console.log("error", msg["error"]);
                     var table = document.getElementById("playlists_info");
                     var row = table.insertRow();
                     var cell1 = row.insertCell();
                     cell1.innerHTML = msg["error"];
                     return;
                 }
-                console.log(msg["data"]);
 
             })
 
             socket.on('yt', function (msg) {
-                console.log(msg);
                 var table = document.getElementById("playlists_info");
                 var row = table.insertRow();
                 var cell1 = row.insertCell();
+                cell1.style.textAlign = 'left'
                 cell1.innerHTML = msg;
             });
         });
@@ -121,7 +119,7 @@
         <br>
         <table id="playlists_info" class="ms-auto me-auto">
         </table>
-        <div id="downloadLink"></div>
+        <br>
     </section>
 
     <script src="../static/bootstrap-5.0.0/js/bootstrap.js"></script>

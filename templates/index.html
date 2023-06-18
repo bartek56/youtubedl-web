@@ -22,15 +22,13 @@
             loader.style.display = 'none';
 
             var socket = io.connect();
-            socket.on('connect', function() {
-                console.log("connected with socket");
-            });
+            socket.on('connect', function() {});
 
             var form = document.getElementById("downloadForm");
             form.addEventListener("submit", function (event) {
                 event.preventDefault();
                 var table = document.getElementById("media_info");
-                table.innerHTML = '';
+                table.innerHTML = ' ';
                 downloadResult = [];
                 var downloadType = ""
                 var rbDownloadType = document.getElementsByName("quickdownload");
@@ -40,7 +38,6 @@
                         break;
                     }
                 }
-                console.log(downloadType)
                 // disable button
                 var button = document.getElementById("btnFetch")
                 button.disabled = true;
@@ -56,8 +53,6 @@
 
             // single media
             socket.on('getMediaInfo_response', function (msg) {
-                console.log("getMediaInfo response");
-                console.log(msg["data"]);
                 var table = document.getElementById("media_info");
                 if ("error" in msg) {
                     var row = table.insertRow();
@@ -70,47 +65,29 @@
                 var index = 1;
                 var element = msg["data"];
 
-                console.log(element);
-                mediaInfo = " <a href=\"" + element["url"] + "\">" + index.toString() + "</a>" + ": " + element["artist"] + " - " + element["title"] + "\n";
+                mediaInfo = element["artist"] + " - " + element["title"] + "\n";
                 var row = table.insertRow();
                 var cell1 = row.insertCell();
-                var cell2 = row.insertCell();
+                cell1.style.textAlign = 'left'
                 cell1.innerHTML = mediaInfo;
-                cell2.innerHTML = "";
-                console.log(element);
-                index = index + 1;
-
-                console.log(mediaInfo)
+                var cell2 = row.insertCell();
+                cell2.innerHTML = " ";
             });
-
-            socket.on('downloadMedia_response', function(msg) {
-                downloadResult.push(msg["data"]["filename"]);
-                var table = document.getElementById("media_info");
-                var row = table.rows[0];
-                row.deleteCell(1);
-                var cell =row.insertCell(1);
-                cell.innerHTML = "V";
-            })
-
 
             // playlist
             socket.on('getPlaylistInfo_response', function (msg) {
-                console.log("response from downloadPLaylist !!!!!!");
-                console.log("data", msg)
-
                 var table = document.getElementById("media_info");
                 if (Array.isArray(msg)) {
                     var playlistInfo = ""
                     for (const element of msg) {
-                        playlistInfo = " <a href=\"" + element["url"] + "\">" + element["playlist_index"] + "</a>" + ": " + element["artist"] + " - " + element["title"] + "\n";
+                        playlistInfo = " <a href=\"" + element["url"] + "\">" + element["playlist_index"] + "</a>" + ": " + element["title"] + "&nbsp;&nbsp;&nbsp;" + "\n";
                         var row = table.insertRow();
                         var cell1 = row.insertCell();
+                        cell1.style.textAlign = 'left'
                         var cell2 = row.insertCell();
                         cell1.innerHTML = playlistInfo;
-                        cell2.innerHTML = "";
-                        console.log(element);
+                        cell2.innerHTML = " ";
                     }
-                    console.log(playlistInfo)
                 }
                 else {
                     var row = table.insertRow();
@@ -124,16 +101,16 @@
                 var table = document.getElementById("media_info");
                 if ("error" in msg)
                 {
-                    var row = table.insertRow();
-                    var cell1 = row.insertCell();
-                    cell1.innerHTML = msg;
+                    var index = msg["playlist_index"];
+                    var row = table.rows[index-1];
+                    row.deleteCell(1);
+                    var cell = row.insertCell(1);
+                    cell.innerHTML = "X";
                     return
                 }
-                data = msg["data"]
+                var data = msg["data"]
                 var index = data["playlist_index"];
                 downloadResult.push(data["filename"]);
-                console.log("downloaded song with id: ", index);
-                var table = document.getElementById("media_info");
                 var row = table.rows[index-1];
                 row.deleteCell(1);
                 var cell = row.insertCell(1);
@@ -142,12 +119,10 @@
 
             // a both
             socket.on('downloadMedia_finish', function (msg) {
-                console.log("finished download")
                 // stop spinner
                 var loader = document.getElementById("spinner");
                 loader.style.display = 'none';
                 if ("error" in msg) {
-                    console.log("ERROR", msg["error"]);
                     var table = document.getElementById("media_info");
                     var row = table.insertRow();
                     var cell1 = row.insertCell();
@@ -156,14 +131,11 @@
                     button.disabled = false;
                     return
                 }
-                console.log("hash");
                 var hash = msg["data"]
-                console.log(hash);
                 var downloadLink = document.getElementById('downloadLink');
                 downloadLink.innerHTML = '<a href="/youtubedl/download/' + hash + '">Download file</a>';
                 //downloadLink.innerHTML = '<a href="/download/' + hash + '">Download file</a>';
             });
-
 
         });
     </script>
@@ -196,6 +168,7 @@
         </form>
         <table id="media_info" class="ms-auto me-auto">
         </table>
+        <br>
         <div id="downloadLink"></div>
 
     </section>

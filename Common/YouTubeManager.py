@@ -92,6 +92,7 @@ class YoutubeDl:
         ydl_opts = {
               'format': 'best/best',
               'logger': self.logger,
+              'extract_flat': 'in_playlist',
               'addmetadata': True,
               'ignoreerrors': False,
               'quiet':False
@@ -103,7 +104,7 @@ class YoutubeDl:
             return self.removeTagFromLogger(str(e))
 
         if results is None:
-            return "No data"
+            return "Failed to download url: "+ url
 
         for i in results['entries']:
             if i is None:
@@ -112,19 +113,15 @@ class YoutubeDl:
 
         data = []
         playlistTitle = results['title']
-
+        playlistIndex = 1
         for i in results['entries']:
             dictData = {}
             dictData['playlist_name'] = playlistTitle
-            dictData['playlist_index'] = i['playlist_index']
-            dictData['url'] = i['original_url']
+            dictData['playlist_index'] = playlistIndex
+            dictData['url'] = i['url']
             dictData['title'] = i['title']
-
-            if "artist" in i:
-                dictData['artist'] = i['artist']
-            else:
-                dictData['artist'] = ''
             data.append(dictData)
+            playlistIndex+=1
 
         return data
 
@@ -144,7 +141,7 @@ class YoutubeDl:
             return self.removeTagFromLogger(str(e))
 
         if result is None:
-            return "No data"
+            return "Failed to download url: "+ url
 
         mediaInfo = {}
         mediaInfo['url'] = result['original_url']
@@ -189,7 +186,7 @@ class YoutubeDl:
             return self.removeTagFromLogger(str(e))
 
         if result is None:
-            return "No data"
+            return "Failed to download url: "+ url
 
         songTitle = ""
         artist = ""
@@ -294,7 +291,7 @@ class YoutubeDl:
             return self.removeTagFromLogger(str(e))
 
         if result is None:
-            return "No data"
+            return "Failed to download url: "+ url
 
         metadata = {}
         metadata["title"] = result['title']
@@ -327,7 +324,7 @@ class YoutubeDl:
             return self.removeTagFromLogger(str(e))
 
         if results is None:
-            return "No data"
+            return "Failed to download url: "+ url
 
         for i in results['entries']:
             if i is None:

@@ -505,12 +505,16 @@ def downloadMedia(msg):
 
         if type(ytData) == str:
             emit('downloadMedia_finish', {"error":ytData})
+            print("error")
             return
         emit('getPlaylistInfo_response', ytData)
+        index = 0
         for x in ytData:
+            index += 1
             data = downloadMediaOfType(x["url"], downloadType)
+            print(x["playlist_index"], index)
             if type(data) == str:
-                emit("getPlaylistMediaInfo_response", {"error": data})
+                emit("getPlaylistMediaInfo_response", {"error": data, "playlist_index":index})
                 continue
             downloadedFiles.append(data["path"])
             filename = data["path"].split("/")[-1]
@@ -523,17 +527,16 @@ def downloadMedia(msg):
     else:
         mediaInfo = youtubeManager.getMediaInfo(url)
         if type(mediaInfo) == str:
-            emit('downloadMedia_finish', {"error":mediaInfo})
+            emit('downloadMedia_finish', {"error": "wrong url"})
             return
 
         emit('getMediaInfo_response', {"data": mediaInfo})
         data = downloadMediaOfType(url, downloadType)
 
         if type(data) == str:
-            emit('downloadMedia_finish', {"error":data})
+            emit('downloadMedia_finish', {"error": "problem with download media"})
             return
         filename = data["path"].split("/")[-1]
-        emit('downloadMedia_response', {"data":{"filename":filename}})
         randomHash = getRandomString()
         emit('downloadMedia_finish', {"data":randomHash})
         readyToDownload[randomHash] = filename
