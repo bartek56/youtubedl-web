@@ -173,8 +173,6 @@ class YoutubeDl:
                     'preferredquality': '192',
                  }],
               'ignoreerrors': False,
-               # TODO handle errors
-               #'download_archive': path+'/downloaded_songs.txt',
               'continue': True,
               'no-overwrites': True,
               'noplaylist': True

@@ -27,50 +27,45 @@ class SocketLogger():
 
     def emitToSocket(self, log):
         if log:
+            for x in self.skippingLogWith:
+                if x in log:
+                    return None
             emit("yt", log)
 
     def DEBUG(self, args):
+        log = self.getLog("DEBUG", args)
         if self.logLevel.value <= LogLevel.DEBUG.value:
-            log = self.getLog("DEBUG", args)
-            if log != None:
-                self.writeToFile(log)
-                if self.isPrinting:
-                    print(log)
-                return log
+            self.writeToFile(log)
+            if self.isPrinting:
+                print(log)
+        return log
 
     def INFO(self, *args):
+        log = self.getLog("INFO", args)
         if self.logLevel.value <= LogLevel.INFO.value:
-            log = self.getLog("INFO", args)
-            if log != None:
-                self.writeToFile(log)
-                if self.isPrinting:
-                    print(log)
-                return log
+            self.writeToFile(log)
+            if self.isPrinting:
+                print(log)
+        return log
 
     def WARNING(self, *args):
+        log = self.getLog("WARNING", args)
         if self.logLevel.value <= LogLevel.WARNING.value:
-            log = self.getLog("WARNING", args)
-            if log != None:
-                self.writeToFile(log)
-                if self.isPrinting:
-                    print(log)
-                return log
+            self.writeToFile(log)
+            if self.isPrinting:
+                print(log)
+        return log
 
     def ERROR(self, *args):
+        log = self.getLog("ERROR", args)
         if self.logLevel.value <= LogLevel.ERROR.value:
-            log = self.getLog("ERROR", args)
-            if log != None:
-                self.writeToFile(log)
-                if self.isPrinting:
-                    print(log)
-                return log
+            self.writeToFile(log)
+            if self.isPrinting:
+                print(log)
+        return log
 
     def getLog(self, level, args):
         log=""
-        for x in self.skippingLogWith:
-            for y in args:
-               if x in str(y):
-                   return None
         if self.showDate:
             log += self.getTime()
         if self.showFilename:
