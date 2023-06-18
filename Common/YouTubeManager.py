@@ -111,9 +111,11 @@ class YoutubeDl:
                 return warningInfo
 
         data = []
+        playlistTitle = results['title']
 
         for i in results['entries']:
             dictData = {}
+            dictData['playlist_name'] = playlistTitle
             dictData['playlist_index'] = i['playlist_index']
             dictData['url'] = i['original_url']
             dictData['title'] = i['title']

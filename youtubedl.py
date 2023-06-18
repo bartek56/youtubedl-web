@@ -515,10 +515,11 @@ def downloadMedia(msg):
             downloadedFiles.append(data["path"])
             filename = data["path"].split("/")[-1]
             emit("getPlaylistMediaInfo_response", {"data": {"playlist_index":x["playlist_index"], "filename":filename}})
-        compressToZip(downloadedFiles)
+        playlistName = ytData[0]["playlist_name"]
+        compressToZip(downloadedFiles, playlistName)
         randomHash = getRandomString()
         emit('downloadMedia_finish', {"data":randomHash})
-        readyToDownload[randomHash] = "playlistTest.zip"
+        readyToDownload[randomHash] = "%s.zip"%playlistName
     else:
         mediaInfo = youtubeManager.getMediaInfo(url)
         if type(mediaInfo) == str:
@@ -537,44 +538,19 @@ def downloadMedia(msg):
         emit('downloadMedia_finish', {"data":randomHash})
         readyToDownload[randomHash] = filename
 
-def compressToZip(files):
+def compressToZip(files, playlistName):
     # TODO zip fileName
-    with zipfile.ZipFile("/tmp/quick_download/playlistTest.zip", 'w') as zipf:
+    zipFileName = "%s.zip"%playlistName
+    zipFileWithPath = os.path.join("/tmp/quick_download", zipFileName)
+    with zipfile.ZipFile(zipFileWithPath, 'w') as zipf:
         for file_path in files:
             arcname = file_path.split("/")[-1]
             zipf.write(file_path, arcname)
 
-@socketio.on('downloadZip_data')
-def downloadZip_data(msg):
-    print("zip data")
-
-@app.route('/upload', methods=['POST'])
-def handle_upload():
-    if request.method == 'POST':
-        i = 1
-        file_paths = []
-        for x in range(len(request.form)):
-            fileName = request.form[str(i)]
-            i += 1
-            path = "/tmp/quick_download/" + fileName
-            file_paths.append(path)
-
-        # TODO zip fileName
-        with zipfile.ZipFile("/tmp/quick_download/playlistTest.zip", 'w') as zipf:
-            for file_path in file_paths:
-                arcname = file_path.replace("/tmp/quick_download/", "")
-                zipf.write(file_path, arcname)
-
-    return {'file_url': '/downloadPl'}
-
-@app.route('/downloadPl')
-def download_file():
-    return flask.send_file('/tmp/quick_download/playlistTest.zip', as_attachment=True)
-
-@app.route('/pobierz/<nazwa>')
-def pobierz_plik(nazwa):
-    if nazwa in readyToDownload.keys():
-        fileToDownload = readyToDownload[nazwa]
+@app.route('/download/<name>')
+def download_file(name):
+    if name in readyToDownload.keys():
+        fileToDownload = readyToDownload[name]
     else:
         return
     fullPath = "/tmp/quick_download/" + fileToDownload
