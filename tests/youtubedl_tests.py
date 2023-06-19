@@ -1,10 +1,50 @@
-from youtubedl import AlarmConfigFlask, AlarmConfigLinux, SystemdCommand
+from youtubedl import AlarmConfigFlask, AlarmConfigLinux, SystemdCommand, socketio
 import youtubedl
 import unittest
 import unittest.mock as mock
 from configparser import ConfigParser
 from Common.mailManager import Mail
 from Common.YouTubeManager import YoutubeDl, YoutubeConfig
+
+class FlaskSocketIO(unittest.TestCase):
+
+    def __init__(self, *args, **kwargs):
+        super(FlaskSocketIO, self).__init__(*args, **kwargs)
+
+    def setUp(self):
+        youtubedl.app.config['TESTING'] = True
+        self.app = youtubedl.app
+        self.socketio_test_client = socketio.test_client(self.app)
+        self.mailManager = youtubedl.mailManager
+        self.ytManager = youtubedl.youtubeManager
+        self.ytConfig = youtubedl.youtubeConfig
+
+    def tearDown(self):
+        pass
+
+    @mock.patch.object(YoutubeDl, 'download_720p', return_value={"title": "videoTitle","path":"/home/music/wideo.mp4"})
+    @mock.patch.object(YoutubeDl, 'getMediaInfo', return_value={"title": "videoTitle", "ext":"mp4", "path":"/tmp/videoTitle.mp4"})
+    def test_socketExample(self, mock_download720p, mock_getMediaInfo):
+        self.socketio_test_client.emit('downloadMedia', {"url":'https://youtube.com/watch?v=testHash', "type":"720p"})
+
+        received = self.socketio_test_client.get_received()
+        self.assertEqual(len(received), 2)
+        self.assertEqual(received[0]["name"], "getMediaInfo_response")
+        self.assertTrue("data" in received[0]["args"][0])
+
+        mediaData = received[0]["args"][0]["data"]
+        self.assertEqual(mediaData["title"], "videoTitle")
+        self.assertEqual(mediaData["ext"], "mp4")
+        self.assertEqual(mediaData["path"], "/tmp/videoTitle.mp4")
+        self.assertEqual(received[1]["name"], "downloadMedia_finish")
+        self.assertTrue("data" in received[1]["args"][0])
+
+        hashData = received[1]["args"][0]["data"]
+        self.assertEqual(type(hashData), str)
+        self.assertEqual(received[1]["name"], "downloadMedia_finish")
+
+        mock_download720p.assert_called_once_with("https://youtube.com/watch?v=testHash")
+        mock_getMediaInfo.assert_called_once_with("https://youtube.com/watch?v=testHash")
 
 
 class FlaskClientTestCase(unittest.TestCase):
