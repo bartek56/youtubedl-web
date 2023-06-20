@@ -225,7 +225,7 @@ class YoutubeDl:
               'logger': self.logger,
               'outtmpl': path+'/'+'%(title)s_4k.%(ext)s',
               'no-overwrites': True,
-              'ignoreerrors': True
+              'ignoreerrors': False
               }
         result = self.downloadVideo(ydl_opts, url)
         if type(result) == str:
@@ -247,7 +247,7 @@ class YoutubeDl:
               'logger': self.logger,
               'no-overwrites': True,
               'outtmpl': path+'/'+'%(title)s_720p.%(ext)s',
-              'ignoreerrors': True
+              'ignoreerrors': False
               }
         result = self.downloadVideo(ydl_opts, url)
         if type(result) == str:
@@ -270,7 +270,7 @@ class YoutubeDl:
               'logger': self.logger,
               'no-overwrites': True,
               'outtmpl': path+'/'+'%(title)s_360p.%(ext)s',
-              'ignoreerrors': True
+              'ignoreerrors': False
               }
 
         result = self.downloadVideo(ydl_opts, url)

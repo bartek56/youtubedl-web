@@ -517,12 +517,14 @@ def downloadMedia(msg):
                 continue
             downloadedFiles.append(data["path"])
             filename = data["path"].split("/")[-1]
-            emit("getPlaylistMediaInfo_response", {"data": {"playlist_index":x["playlist_index"], "filename":filename}})
+            randomHash = getRandomString()
+            readyToDownload[randomHash] = filename
+            emit("getPlaylistMediaInfo_response", {"data": {"playlist_index":x["playlist_index"], "filename":filename, "hash":randomHash}})
         playlistName = ytData[0]["playlist_name"]
         compressToZip(downloadedFiles, playlistName)
         randomHash = getRandomString()
-        emit('downloadMedia_finish', {"data":randomHash})
         readyToDownload[randomHash] = "%s.zip"%playlistName
+        emit('downloadMedia_finish', {"data":randomHash})
     else:
         mediaInfo = youtubeManager.getMediaInfo(url)
         if type(mediaInfo) == str:
