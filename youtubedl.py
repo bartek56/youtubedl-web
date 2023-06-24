@@ -69,8 +69,12 @@ socketLogger.settings(saveToFile=False, print=True, fileNameWihPath="/var/log/yo
                       logLevel=LogLevel.DEBUG, showFilename=True, showLogLevel=False, showDate=False,
                       skippingLogWith=["[youtube:tab]", "B/s ETA", "[ExtractAudio]", "B in 00:00:00", "100% of",
                                        "[info]", "Downloading item", "[dashsegments]", "Deleting original file", "Downloading android player", "Downloading webpage"])
-#logging.basicConfig(format="%(asctime)s %(levelname)s-%(message)s",filename='/var/log/youtubedlweb.log', level=logging.NOTSET)
+#logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s",filename='/var/log/youtubedlweb.log', level=logging.INFO)
+logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+#log = logging.getLogger('werkzeug')
+#log.setLevel(logging.ERROR)
 
 youtubeManager = YoutubeDl(socketLogger)
 youtubeConfig = YoutubeConfig()
@@ -235,7 +239,6 @@ def loadAlarmConfig():
 @app.route('/alarm.html')
 def alarm():
     remoteAddress = request.remote_addr
-    logger.info("alarm website")
 
     if ("192.168" in remoteAddress) or ("127.0.0.1" in remoteAddress):
         return render_template("alarm.html", **loadAlarmConfig())
@@ -304,7 +307,7 @@ def save_alarm_html():
                 flash("Failed to start alarm timer", 'danger')
                 return render_template("alarm.html", **loadAlarmConfig())
 
-        app.logger.info("alarm saved, systemctl daemon-reload")
+        logger.info("alarm saved, systemctl daemon-reload")
 
         flash("Successfull saved alarm", 'success')
 
@@ -444,27 +447,27 @@ def playlist():
 
 @app.route('/alarm_test_start')
 def alarmTestStart():
-    print('alarm test start')
+    logger.debug('alarm test start')
     subprocess.run(SystemdCommand.START_ALARM_SERVICE, shell=True)
     return "Nothing"
 
 @app.route('/alarm_test_stop')
 def alarmTestStop():
-    print('alarm test stop')
+    logger.debug('alarm test stop')
     subprocess.run(SystemdCommand.STOP_ALARM_SERVICE, shell=True)
     subprocess.run('/usr/bin/mpc stop', shell=True)
     return render_template("alarm.html", **loadAlarmConfig())
 
 @app.route('/alarm_on')
 def alarmOn():
-    print("alarm on")
+    logger.debug("alarm on")
     subprocess.run(SystemdCommand.ENABLE_ALARM_TIMER, shell=True)
     subprocess.run(SystemdCommand.START_ALARM_TIMER, shell=True)
     return render_template("alarm.html", **loadAlarmConfig())
 
 @app.route('/alarm_off')
 def alarmOff():
-    print('alarm off')
+    logger.debug('alarm off')
     subprocess.run(SystemdCommand.STOP_ALARM_TIMER, shell=True)
     subprocess.run(SystemdCommand.DISABLE_ALARM_TIMER, shell=True)
 
@@ -504,14 +507,13 @@ def downloadMedia(msg):
 
         if type(ytData) == str:
             emit('downloadMedia_finish', {"error":ytData})
-            print("error")
+            logger.info("Error to download media")
             return
         emit('getPlaylistInfo_response', ytData)
         index = 0
         for x in ytData:
             index += 1
             data = downloadMediaOfType(x["url"], downloadType)
-            print(x["playlist_index"], index)
             if type(data) == str:
                 emit("getPlaylistMediaInfo_response", {"error": data, "playlist_index":index})
                 continue

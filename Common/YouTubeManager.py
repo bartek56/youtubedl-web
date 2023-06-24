@@ -2,6 +2,10 @@ import os
 import yt_dlp
 import metadata_mp3
 import configparser
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class YoutubeConfig():
     def __init__(self):
@@ -104,10 +108,11 @@ class YoutubeDl:
             return str(e)
 
         if results is None:
-            return "Failed to download url: "+ url
+            logger.error("Failed to download url: %s", url)
 
         for i in results['entries']:
             if i is None:
+                logger.warning("not extract info in result")
                 warningInfo="not extract_info in results"
                 return warningInfo
 
@@ -160,7 +165,7 @@ class YoutubeDl:
         self.createDirIfNotExist(path)
 
         info = "[INFO] start download MP3 from link %s "%(url)
-        print(info)
+        logger.info(info)
 
         ydl_opts = {
               'format': 'bestaudio/best',
@@ -199,7 +204,7 @@ class YoutubeDl:
 
         fileName = "%s.mp3"%(songTitle)
         if not os.path.isfile(os.path.join(path, fileName)):
-            print("[WARNING] File doesn't exist. Sanitize is require")
+            logger.warning("File %s doesn't exist. Sanitize is require", fileName)
             songTitle = yt_dlp.utils.sanitize_filename(songTitle)
         full_path = self.metadataManager.rename_and_add_metadata_to_song(self.MUSIC_PATH, album, artist, songTitle)
 
@@ -216,8 +221,7 @@ class YoutubeDl:
     def download_4k(self, url):
         path=self.VIDEO_PATH
         self.createDirIfNotExist(path)
-        info = "[INFO] start download video [high quality] from link %s "%(url)
-        print(info)
+        logger.info("start download video [high quality] from link %s", url)
 
         ydl_opts = {
               'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best',
@@ -238,8 +242,7 @@ class YoutubeDl:
     def download_720p(self, url):
         path=self.VIDEO_PATH
         self.createDirIfNotExist(path)
-        info = "[INFO] start download video [medium quality] from link %s "%(url)
-        print(info)
+        logger.info("start download video [medium quality] from link %s", url)
 
         ydl_opts = {
               'format': 'bestvideo[height=720]/mp4',
@@ -261,8 +264,7 @@ class YoutubeDl:
         path=self.VIDEO_PATH
         self.createDirIfNotExist(path)
 
-        info = "[INFO] start download video [low quality] from link %s "%(url)
-        print(info)
+        logger.info("start download video [low quality] from link %s", url)
 
         ydl_opts = {
               'format': 'worse[height<=360]/mp4',
@@ -329,8 +331,7 @@ class YoutubeDl:
                 warningInfo="not extract_info in results"
                 return warningInfo
 
-        info = "[INFO] started download playlist %s"%(playlistName)
-        print (info)
+        logger.info("[INFO] started download playlist %s", playlistName)
 
         for i in results['entries']:
             if i is None:
@@ -355,7 +356,7 @@ class YoutubeDl:
             songTitle = songsTitleList[x]
             fileName="%s%s"%(songTitle, ".mp3")
             if not os.path.isfile(os.path.join(path,fileName)):
-                print("[WARNING] File doesn't exist. Sanitize is require")
+                logger.warning("File doesn't exist. Sanitize is require")
                 songTitle = yt_dlp.utils.sanitize_filename(songTitle)
             self.metadataManager.rename_and_add_metadata_to_playlist(playlistDir, playlistIndexList[x], playlistName, artistList[x], songTitle)
             songCounter+=1
