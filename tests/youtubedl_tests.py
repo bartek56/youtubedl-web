@@ -22,9 +22,71 @@ class FlaskSocketIO(unittest.TestCase):
     def tearDown(self):
         pass
 
+    @mock.patch.object(YoutubeDl, 'download_mp3', return_value={"title": "songTitle", "artist":"testArtist", "album": "testAlbum", "path":"/home/music/song.mp3"})
+    @mock.patch.object(YoutubeDl, 'getMediaInfo', return_value={"title": "songTitle", "ext":"mp3", "path":"/tmp/songTitle.mp3"})
+    def test_downloadMp3(self, mock_downloadMp3, mock_getMediaInfo):
+        self.socketio_test_client.emit('downloadMedia', {"url":'https://youtube.com/watch?v=testHash', "type":"mp3"})
+
+        received = self.socketio_test_client.get_received()
+        self.assertEqual(len(received), 2)
+        self.assertEqual(received[0]["name"], "getMediaInfo_response")
+        self.assertTrue("data" in received[0]["args"][0])
+
+        mediaData = received[0]["args"][0]["data"]
+        self.assertEqual(mediaData["title"], "songTitle")
+        self.assertEqual(mediaData["ext"], "mp3")
+        self.assertEqual(mediaData["path"], "/tmp/songTitle.mp3")
+
+        self.assertEqual(received[1]["name"], "downloadMedia_finish")
+        self.assertTrue("data" in received[1]["args"][0])
+
+        hashData = received[1]["args"][0]["data"]
+        self.assertEqual(type(hashData), str)
+
+        mock_downloadMp3.assert_called_once_with("https://youtube.com/watch?v=testHash")
+        mock_getMediaInfo.assert_called_once_with("https://youtube.com/watch?v=testHash")
+
+    @mock.patch.object(YoutubeDl, 'download_mp3', return_value={"title": "songTitle", "artist":"testArtist", "album": "testAlbum", "path":"/home/music/song.mp3"})
+    @mock.patch.object(YoutubeDl, 'getPlaylistInfo', return_value = 
+    [{"playlist_name": "playlistNameTest", "playlist_index":"1", "title":"song1", "url":"https://youtube.com/song1"}])
+    @mock.patch('youtubedl.compressToZip')
+    def test_downloadMp3Playlist(self, mock_zip, mock_getPlaylistInfo, mock_downloadMp3):
+        self.socketio_test_client.emit('downloadMedia', {"url":'https://youtube.com/playlist?list=testPlaylistLink', "type":"mp3"})
+
+        received = self.socketio_test_client.get_received()
+        self.assertEqual(len(received), 3)
+        self.assertEqual(received[0]["name"], "getPlaylistInfo_response")
+        self.assertEqual(received[1]["name"], "getPlaylistMediaInfo_response")
+        self.assertEqual(received[2]["name"], "downloadMedia_finish")
+
+        self.assertEqual(len(received[0]["args"]), 1)
+
+        mediaData = received[0]["args"][0][0]
+        self.assertEqual(mediaData["title"], "song1")
+        self.assertEqual(mediaData["playlist_index"], "1")
+        self.assertEqual(mediaData["playlist_name"], "playlistNameTest")
+        self.assertEqual(mediaData["url"], "https://youtube.com/song1")
+
+
+        self.assertTrue("data" in received[1]["args"][0])
+        playlistData = received[1]["args"][0]["data"]
+        self.assertEqual(playlistData["playlist_index"], '1')
+        self.assertEqual(playlistData["filename"], 'song.mp3')
+        self.assertEqual(len(playlistData["hash"]), 8)
+
+
+        self.assertTrue("data" in received[2]["args"][0])
+        hashData = received[2]["args"][0]["data"]
+        self.assertEqual(type(hashData), str)
+
+        mock_downloadMp3.assert_called_once_with("https://youtube.com/song1")
+        mock_getPlaylistInfo.assert_called_once_with("https://youtube.com/playlist?list=testPlaylistLink")
+        mock_zip.assert_called_once_with(['/home/music/song.mp3'], 'playlistNameTest')
+
+
     @mock.patch.object(YoutubeDl, 'download_720p', return_value={"title": "videoTitle","path":"/home/music/wideo.mp4"})
     @mock.patch.object(YoutubeDl, 'getMediaInfo', return_value={"title": "videoTitle", "ext":"mp4", "path":"/tmp/videoTitle.mp4"})
-    def test_socketExample(self, mock_download720p, mock_getMediaInfo):
+    def test_download720p(self, mock_download720p, mock_getMediaInfo):
         self.socketio_test_client.emit('downloadMedia', {"url":'https://youtube.com/watch?v=testHash', "type":"720p"})
 
         received = self.socketio_test_client.get_received()
