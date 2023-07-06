@@ -16,6 +16,37 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         pass
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
+    def test_getPlaylistInfo(self, mock_extractInfo):
+        mock_extractInfo.configure_mock(return_value={"title": "testPlaylist","entries":[{"playlist_name":"testPlaylist", "playlist_index":"1", "url":"https://www.youtube.com/watch?v=1111", "title":"firstTitle"},
+                                                      {"playlist_name":"testPlaylist", "playlist_index":"2", "url":"https://www.youtube.com/watch?v=2222", "title":"secondTitle"}]})
+
+        link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
+        data = self.ytManager.getPlaylistInfo(link)
+
+        self.assertEqual(data[0]["playlist_name"], "testPlaylist")
+        self.assertEqual(data[0]["playlist_index"], 1)
+        self.assertEqual(data[0]["url"], "https://www.youtube.com/watch?v=1111")
+        self.assertEqual(data[0]["title"], "firstTitle")
+
+        self.assertEqual(data[1]["playlist_name"], "testPlaylist")
+        self.assertEqual(data[1]["playlist_index"], 2)
+        self.assertEqual(data[1]["url"], "https://www.youtube.com/watch?v=2222")
+        self.assertEqual(data[1]["title"], "secondTitle")
+
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
+    def test_getMediaInfo(self, mock_extractInfo):
+        mock_extractInfo.configure_mock(return_value={"original_url":"https://www.youtube.com/watch?v=1111", "title":"firstTitle", "title":"testTitle", "artist":"testArtist", "album":"testAlbum"})
+
+        link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
+        data = self.ytManager.getMediaInfo(link)
+
+        self.assertEqual(data["url"], "https://www.youtube.com/watch?v=1111")
+        self.assertEqual(data["title"], "testTitle")
+        self.assertEqual(data["artist"], "testArtist")
+        self.assertEqual(data["album"], "testAlbum")
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "rename_and_add_metadata_to_song")
     def test_downloadMP3(self, mock_metadata, mock_extract_info):
         mock_extract_info.configure_mock(return_value={"title":"title_test", "artist":"artist_test", "album":"album_test"})
