@@ -4,7 +4,9 @@ from Common.YouTubeManager import YoutubeDl, YoutubeConfig
 from configparser import ConfigParser
 import yt_dlp
 import metadata_mp3
+import logging
 
+logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.ERROR)
 class YouTubeManagerDlTestCase(unittest.TestCase):
     def setUp(self):
         self.ytManager = YoutubeDl()
@@ -40,6 +42,22 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         self.assertEqual(result["title"], "title_test")
         self.assertEqual(result["artist"], "")
         self.assertEqual(result["album"], "album_test")
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
+    @mock.patch.object(metadata_mp3.MetadataManager, "rename_and_add_metadata_to_playlist")
+    def test_downloadMP3(self, mock_metadata, mock_extract_info):
+        mock_extract_info.configure_mock(return_value={"entries":[
+            {'playlist_index': "1","title":"first_title", "artist":"first_artist", "album":"first_album"},
+            {'playlist_index': "2","title":"second_title", "artist":"second_artist", "album":"second_album"}
+            ]})
+        link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
+        result = self.ytManager.download_playlist_mp3('/tmp/quick_download/', "test_playlist", link)
+
+        mock_extract_info.assert_called_once_with(link)
+        mock_metadata.assert_has_calls([mock.call('/tmp/quick_download/', '1', 'test_playlist', 'first_artist', 'first_title'),
+                                        mock.call('/tmp/quick_download/', '2', 'test_playlist', 'second_artist', 'second_title')])
+
+        self.assertEqual(result, 2)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", return_value={"title":"title_test", "artist":"artist_test", "ext":"mp4"})
     def test_download360p(self, mock_extract_info):
