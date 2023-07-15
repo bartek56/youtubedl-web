@@ -1,7 +1,7 @@
 import os
 import logging
 import zipfile
-from flask import Flask, render_template, redirect, url_for, request, jsonify, send_from_directory, flash
+from flask import Flask, render_template, redirect, url_for, request, jsonify, send_from_directory, flash, session
 from flask_socketio import SocketIO, emit
 from Common.mailManager import Mail
 from Common.YouTubeManager import YoutubeDl, YoutubeConfig
@@ -9,6 +9,7 @@ from Common.SocketLogger import SocketLogger, LogLevel
 import flask
 import random
 import string
+from flask_session import Session
 
 class AlarmConfigFlask():
     ALARM_TIME =          "alarm_time"
@@ -55,7 +56,7 @@ class SystemdCommand():
 
 app = Flask(__name__)
 app.secret_key = "super_extra_key"
-socketio = SocketIO(app)
+
 if app.debug == True: # pragma: no cover
     import sys
     sys.path.append("./tests")
@@ -63,6 +64,14 @@ if app.debug == True: # pragma: no cover
 else:
     import subprocess
 mailManager = Mail()
+
+
+app.config["SESSION_TYPE"] = "filesystem"
+app.config["SESSION_PERMANENT"] = False
+
+Session(app)
+
+socketio = SocketIO(app, manage_session=False)
 
 socketLogger = SocketLogger()
 socketLogger.settings(saveToFile=False, print=True, fileNameWihPath="/var/log/youtubedlweb_mylogger.log",
@@ -84,8 +93,6 @@ ALARM_TIMER="/etc/mediaserver/alarm.timer"
 ALARM_SCRIPT="/etc/mediaserver/alarm.sh"
 
 youtubeConfig.initialize(CONFIG_FILE)
-
-readyToDownload = {}
 
 @app.route('/')
 @app.route('/index.html')
@@ -520,12 +527,13 @@ def downloadMedia(msg):
             downloadedFiles.append(data["path"])
             filename = data["path"].split("/")[-1]
             randomHash = getRandomString()
-            readyToDownload[randomHash] = filename
+            session[randomHash] = filename
             emit("getPlaylistMediaInfo_response", {"data": {"playlist_index":x["playlist_index"], "filename":filename, "hash":randomHash}})
         playlistName = ytData[0]["playlist_name"]
         compressToZip(downloadedFiles, playlistName)
         randomHash = getRandomString()
-        readyToDownload[randomHash] = "%s.zip"%playlistName
+        print(flask.session)
+        session[randomHash] = "%s.zip"%playlistName
         emit('downloadMedia_finish', {"data":randomHash})
     else:
         mediaInfo = youtubeManager.getMediaInfo(url)
@@ -542,7 +550,7 @@ def downloadMedia(msg):
         filename = data["path"].split("/")[-1]
         randomHash = getRandomString()
         emit('downloadMedia_finish', {"data":randomHash})
-        readyToDownload[randomHash] = filename
+        session[randomHash] = filename
 
 def compressToZip(files, playlistName):
     # TODO zip fileName
@@ -555,8 +563,8 @@ def compressToZip(files, playlistName):
 
 @app.route('/download/<name>')
 def download_file(name):
-    if name in readyToDownload.keys():
-        fileToDownload = readyToDownload[name]
+    if name in session.keys():
+        fileToDownload = session[name]
     else:
         return
     fullPath = "/tmp/quick_download/" + fileToDownload
