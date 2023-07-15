@@ -53,9 +53,7 @@ class SystemdCommand():
     DAEMON_RELOAD =         "sudo /bin/systemctl daemon-reload"
     IS_ACTIVE_ALARM_TIMER = "systemctl is-active alarm.timer"
 
-
 app = Flask(__name__)
-app.secret_key = "super_extra_key"
 
 if app.debug == True: # pragma: no cover
     import sys
@@ -63,14 +61,14 @@ if app.debug == True: # pragma: no cover
     import subprocessDebug as subprocess
 else:
     import subprocess
-mailManager = Mail()
 
-
+app.secret_key = "super_extra_key"
 app.config["SESSION_TYPE"] = "filesystem"
-app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_PERMANENT"] = True
 
 Session(app)
 
+mailManager = Mail()
 socketio = SocketIO(app, manage_session=False)
 
 socketLogger = SocketLogger()
@@ -549,8 +547,8 @@ def downloadMedia(msg):
             return
         filename = data["path"].split("/")[-1]
         randomHash = getRandomString()
-        emit('downloadMedia_finish', {"data":randomHash})
         session[randomHash] = filename
+        emit('downloadMedia_finish', {"data":randomHash})
 
 def compressToZip(files, playlistName):
     # TODO zip fileName
@@ -563,10 +561,11 @@ def compressToZip(files, playlistName):
 
 @app.route('/download/<name>')
 def download_file(name):
-    if name in session.keys():
-        fileToDownload = session[name]
-    else:
-        return
+    print(session)
+    if name not in session.keys():
+        app.logger.error("key for download_file doesn't exist !!!!")
+        return render_template('index.html')
+    fileToDownload = session[name]
     fullPath = "/tmp/quick_download/" + fileToDownload
     return flask.send_file(fullPath, as_attachment=True)
 
