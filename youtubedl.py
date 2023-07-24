@@ -77,7 +77,7 @@ socketLogger.settings(saveToFile=False, print=True, fileNameWihPath="/var/log/yo
                       skippingLogWith=["[youtube:tab]", "B/s ETA", "[ExtractAudio]", "B in 00:00:00", "100% of",
                                        "[info]", "Downloading item", "[dashsegments]", "Deleting original file", "Downloading android player", "Downloading webpage"])
 #logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s",filename='/var/log/youtubedlweb.log', level=logging.INFO)
-logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.INFO)
+logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 #log = logging.getLogger('werkzeug')
@@ -537,6 +537,7 @@ def downloadMedia(msg):
         mediaInfo = youtubeManager.getMediaInfo(url)
         if type(mediaInfo) == str:
             emit('downloadMedia_finish', {"error": "wrong url"})
+            logger.warning("wrong url: %s", mediaInfo)
             return
 
         emit('getMediaInfo_response', {"data": mediaInfo})
