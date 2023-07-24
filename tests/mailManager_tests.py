@@ -24,7 +24,6 @@ class MailManagerTestCase(unittest.TestCase):
         mailManager = MailManagerTest(self.senderMail, gmailMock)
         mailManager.initialize()
         self.assertTrue(mailManager.sendMail(self.destinationMail, self.subjectTest, self.textTest))
-        print(gmailMock.call_args_list)
         gmailMock.assert_has_calls([mock.call(to=self.destinationMail, sender=self.senderMail, subject=self.subjectTest, msg_html=self.textTest, signature=True)])
 
     def test_sendMainWithoutInitialize(self):

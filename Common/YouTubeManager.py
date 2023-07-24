@@ -80,7 +80,7 @@ class YoutubeConfig():
 
         return playlistUrl
 
-    def save(self):
+    def save(self): # pragma: no cover
         with open(self.CONFIG_FILE,'w') as fp:
             self.config.write(fp)
 
@@ -90,6 +90,24 @@ class YoutubeDl:
         self.logger = logger
         self.MUSIC_PATH='/tmp/quick_download/'
         self.VIDEO_PATH='/tmp/quick_download/'
+
+    def validateYTResult(self, results):
+        if results is None:
+            warningInfo = "Failed to download"
+            logger.warning(warningInfo)
+            return warningInfo
+
+        if 'entries' not in results:
+            warningInfo="not entries in results"
+            logger.warning(warningInfo)
+            return warningInfo
+
+        for i in results['entries']:
+            if i is None:
+                warningInfo="not extract_info in results"
+                logger.warning(warningInfo)
+                return warningInfo
+        return None
 
     def getPlaylistInfo(self, url):
 
@@ -105,16 +123,13 @@ class YoutubeDl:
         try:
             results = yt_dlp.YoutubeDL(ydl_opts).extract_info(url, download=False)
         except Exception as e:
-            return str(e)
+            exceptionMsg = str(e)
+            logger.warning("Exception: %s", exceptionMsg)
+            return exceptionMsg
 
-        if results is None:
-            logger.error("Failed to download url: %s", url)
-
-        for i in results['entries']:
-            if i is None:
-                logger.warning("not extract info in result")
-                warningInfo="not extract_info in results"
-                return warningInfo
+        resultOfValidate = self.validateYTResult(results)
+        if resultOfValidate is not None:
+            return resultOfValidate
 
         data = []
         playlistTitle = results['title']
@@ -143,9 +158,12 @@ class YoutubeDl:
         try:
             result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url, download=False)
         except Exception as e:
-            return str(e)
+            exceptionMsg = str(e)
+            logger.warning("Exception: %s", exceptionMsg)
+            return exceptionMsg
 
         if result is None:
+            logger.error("Failed to download url: %s", url)
             return "Failed to download url: "+ url
 
         mediaInfo = {}
@@ -288,7 +306,9 @@ class YoutubeDl:
         try:
             result = yt_dlp.YoutubeDL(yt_args).extract_info(url)
         except Exception as e:
-            return str(e)
+            exceptionMsg = str(e)
+            logger.warning("Exception: %s", exceptionMsg)
+            return exceptionMsg
 
         if result is None:
             return "Failed to download url: "+ url
@@ -300,8 +320,7 @@ class YoutubeDl:
 
     def download_playlist_mp3(self, playlistDir, playlistName, url):
         path=os.path.join(playlistDir, playlistName)
-        if not os.path.exists(path):
-            os.makedirs(path)
+        self.createDirIfNotExist(path)
 
         ydl_opts = {
               'format': 'bestaudio/best',
@@ -318,25 +337,18 @@ class YoutubeDl:
               'quiet': True
               }
         results = None
+
+        logger.info("started download playlist %s, url: %s", playlistName, url)
         try:
             results = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
         except Exception as e:
-            return str(e)
+            warningMsg = str(e)
+            logger.warning("Exception: %s", warningMsg)
+            return warningMsg
 
-        if results is None:
-            return "Failed to download url: "+ url
-
-        for i in results['entries']:
-            if i is None:
-                warningInfo="not extract_info in results"
-                return warningInfo
-
-        logger.info("[INFO] started download playlist %s", playlistName)
-
-        for i in results['entries']:
-            if i is None:
-                warningInfo="ERROR: not extract_info in results"
-                return warningInfo
+        resultOfValidate = self.validateYTResult(results)
+        if resultOfValidate is not None:
+            return resultOfValidate
 
         artistList = []
         playlistIndexList = []
