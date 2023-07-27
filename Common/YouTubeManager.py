@@ -84,7 +84,7 @@ class YoutubeConfig():
         with open(self.CONFIG_FILE,'w') as fp:
             self.config.write(fp)
 
-class YoutubeDl:
+class YoutubeManager:
     def __init__(self, logger=None):
         self.metadataManager = metadata_mp3.MetadataManager()
         self.logger = logger
@@ -380,5 +380,5 @@ class YoutubeDl:
             os.makedirs(path)
 
 if __name__ == "__main__":
-    yt = YoutubeDl()
+    yt = YoutubeManager()
     yt.download_mp3("https://www.youtube.com/watch?v=J9LgHNf2Qy0")

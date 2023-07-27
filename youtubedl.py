@@ -4,7 +4,7 @@ import zipfile
 from flask import Flask, render_template, redirect, url_for, request, jsonify, send_from_directory, flash, session
 from flask_socketio import SocketIO, emit
 from Common.mailManager import Mail
-from Common.YouTubeManager import YoutubeDl, YoutubeConfig
+from Common.YouTubeManager import YoutubeManager, YoutubeConfig
 from Common.SocketLogger import SocketLogger, LogLevel
 import flask
 import random
@@ -83,7 +83,7 @@ logger = logging.getLogger(__name__)
 #log = logging.getLogger('werkzeug')
 #log.setLevel(logging.ERROR)
 
-youtubeManager = YoutubeDl(socketLogger)
+youtubeManager = YoutubeManager(socketLogger)
 youtubeConfig = YoutubeConfig()
 
 CONFIG_FILE="/etc/mediaserver/youtubedl.ini"
@@ -530,7 +530,6 @@ def downloadMedia(msg):
         playlistName = ytData[0]["playlist_name"]
         compressToZip(downloadedFiles, playlistName)
         randomHash = getRandomString()
-        print(flask.session)
         session[randomHash] = "%s.zip"%playlistName
         emit('downloadMedia_finish', {"data":randomHash})
     else:
@@ -562,7 +561,6 @@ def compressToZip(files, playlistName):
 
 @app.route('/download/<name>')
 def download_file(name):
-    print(session)
     if name not in session.keys():
         app.logger.error("key for download_file doesn't exist !!!!")
         return render_template('index.html')

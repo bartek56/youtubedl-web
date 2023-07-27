@@ -4,7 +4,10 @@ import unittest
 import unittest.mock as mock
 from configparser import ConfigParser
 from Common.mailManager import Mail
-from Common.YouTubeManager import YoutubeDl, YoutubeConfig
+from Common.YouTubeManager import YoutubeManager, YoutubeConfig
+import logging
+
+logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.FATAL)
 
 class FlaskSocketIO(unittest.TestCase):
 
@@ -22,8 +25,37 @@ class FlaskSocketIO(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @mock.patch.object(YoutubeDl, 'download_mp3', return_value={"title": "songTitle", "artist":"testArtist", "album": "testAlbum", "path":"/home/music/song.mp3"})
-    @mock.patch.object(YoutubeDl, 'getMediaInfo', return_value={"title": "songTitle", "ext":"mp3", "path":"/tmp/songTitle.mp3"})
+    @mock.patch.object(YoutubeManager, 'download_playlist_mp3', return_value={"title": "songTitle", "ext":"mp3", "path":"/tmp/songTitle.mp3"})
+    @mock.patch.object(YoutubeConfig, 'getPlaylists', return_value=[{"name":"playlist1", "link":"link1"},{"name":"playlist2", "link":"link2"},{"name":"playlist3", "link":"link3"}])
+    @mock.patch.object(YoutubeConfig, 'getPath', return_value="/tmp/tempPath")
+    def test_downloadPlaylists(self, mock_getPath, mock_getPlayists, mock_downloadPlaylistMp3):
+        self.socketio_test_client.emit('downloadPlaylists', {"url":'https://youtube.com/watch?v=testHash', "type":"mp3"})
+
+        mock_getPath.assert_called_once()
+        mock_getPlayists.assert_called_once()
+        mock_downloadPlaylistMp3.assert_has_calls([mock.call('/tmp/tempPath', 'playlist1', 'link1'),
+                                                   mock.call('/tmp/tempPath', 'playlist2', 'link2'),
+                                                   mock.call('/tmp/tempPath', 'playlist3', 'link3')])
+        received = self.socketio_test_client.get_received()
+        self.assertEqual(len(received), 4)
+
+        for x in range(3):
+            self.assertEqual(received[x]["name"], "downloadPlaylist_response")
+            self.assertTrue("data" in received[x]["args"][0])
+            dataPlaylist = received[x]["args"][0]["data"]
+            self.assertEqual(len(dataPlaylist), 3)
+            self.assertEqual(dataPlaylist["title"], "songTitle")
+            self.assertEqual(dataPlaylist["ext"], "mp3")
+            self.assertEqual(dataPlaylist["path"], "/tmp/songTitle.mp3")
+
+        self.assertEqual(received[3]["name"], "downloadPlaylist_finish")
+        self.assertTrue("data" in received[3]["args"][0])
+        dataPlaylist = received[3]["args"][0]["data"]
+        self.assertEqual(dataPlaylist, "finished")
+
+
+    @mock.patch.object(YoutubeManager, 'download_mp3', return_value={"title": "songTitle", "artist":"testArtist", "album": "testAlbum", "path":"/home/music/song.mp3"})
+    @mock.patch.object(YoutubeManager, 'getMediaInfo', return_value={"title": "songTitle", "ext":"mp3", "path":"/tmp/songTitle.mp3"})
     def test_downloadMp3(self, mock_downloadMp3, mock_getMediaInfo):
         self.socketio_test_client.emit('downloadMedia', {"url":'https://youtube.com/watch?v=testHash', "type":"mp3"})
 
@@ -46,8 +78,8 @@ class FlaskSocketIO(unittest.TestCase):
         mock_downloadMp3.assert_called_once_with("https://youtube.com/watch?v=testHash")
         mock_getMediaInfo.assert_called_once_with("https://youtube.com/watch?v=testHash")
 
-    @mock.patch.object(YoutubeDl, 'download_mp3', return_value={"title": "songTitle", "artist":"testArtist", "album": "testAlbum", "path":"/home/music/song.mp3"})
-    @mock.patch.object(YoutubeDl, 'getPlaylistInfo', return_value = 
+    @mock.patch.object(YoutubeManager, 'download_mp3', return_value={"title": "songTitle", "artist":"testArtist", "album": "testAlbum", "path":"/home/music/song.mp3"})
+    @mock.patch.object(YoutubeManager, 'getPlaylistInfo', return_value = 
     [{"playlist_name": "playlistNameTest", "playlist_index":"1", "title":"song1", "url":"https://youtube.com/song1"}])
     @mock.patch('youtubedl.compressToZip')
     def test_downloadMp3Playlist(self, mock_zip, mock_getPlaylistInfo, mock_downloadMp3):
@@ -84,8 +116,8 @@ class FlaskSocketIO(unittest.TestCase):
         mock_zip.assert_called_once_with(['/home/music/song.mp3'], 'playlistNameTest')
 
 
-    @mock.patch.object(YoutubeDl, 'download_720p', return_value={"title": "videoTitle","path":"/home/music/wideo.mp4"})
-    @mock.patch.object(YoutubeDl, 'getMediaInfo', return_value={"title": "videoTitle", "ext":"mp4", "path":"/tmp/videoTitle.mp4"})
+    @mock.patch.object(YoutubeManager, 'download_720p', return_value={"title": "videoTitle","path":"/home/music/wideo.mp4"})
+    @mock.patch.object(YoutubeManager, 'getMediaInfo', return_value={"title": "videoTitle", "ext":"mp4", "path":"/tmp/videoTitle.mp4"})
     def test_download720p(self, mock_download720p, mock_getMediaInfo):
         self.socketio_test_client.emit('downloadMedia', {"url":'https://youtube.com/watch?v=testHash', "type":"720p"})
 
@@ -179,7 +211,7 @@ class FlaskClientTestCase(unittest.TestCase):
         quickdownload=type
     ), follow_redirects=True)
 
-    @mock.patch.object(YoutubeDl, 'download_mp3', return_value={"title": "song","path":"/home/music/song.mp3"})
+    @mock.patch.object(YoutubeManager, 'download_mp3', return_value={"title": "song","path":"/home/music/song.mp3"})
     @mock.patch('youtubedl.isFile', return_value=False)
     def test_failed_download_mp3(self, mock_isFile, mock_mp3):
         ytLink = "https://youtu.be/q1MmYVcDyMs"
@@ -189,7 +221,7 @@ class FlaskClientTestCase(unittest.TestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertIn(b'Failed downloaded', rv.data)
 
-    @mock.patch.object(YoutubeDl, 'download_mp3', return_value={"title": "song example","path":"/home/music/song.mp3"})
+    @mock.patch.object(YoutubeManager, 'download_mp3', return_value={"title": "song example","path":"/home/music/song.mp3"})
     @mock.patch('youtubedl.isFile', return_value=True)
     def test_download_mp3(self, mock_isFile, mock_mp3):
         ytLink = "https://youtu.be/q1MmYVcDyMs"
@@ -201,7 +233,7 @@ class FlaskClientTestCase(unittest.TestCase):
         self.assertIn(b'Type: MP3 audio', rv.data)
         self.assertIn(b'title: song example', rv.data)
 
-    @mock.patch.object(YoutubeDl, 'download_360p', return_value={"title": "video example","path":"/home/music/wideo.mp4"})
+    @mock.patch.object(YoutubeManager, 'download_360p', return_value={"title": "video example","path":"/home/music/wideo.mp4"})
     @mock.patch('youtubedl.isFile', return_value=True)
     def test_download_360p(self, mock_isFile, mock_download):
         ytLink = "https://youtu.be/q1MmYVcDyMs"
@@ -213,7 +245,7 @@ class FlaskClientTestCase(unittest.TestCase):
         self.assertIn(b'Type: video', rv.data)
         self.assertIn(b'title: video example', rv.data)
 
-    @mock.patch.object(YoutubeDl, 'download_720p', return_value={"title": "video example","path":"/home/music/wideo.mp4"})
+    @mock.patch.object(YoutubeManager, 'download_720p', return_value={"title": "video example","path":"/home/music/wideo.mp4"})
     @mock.patch('youtubedl.isFile', return_value=True)
     def test_download_720p(self, mock_isFile, mock_download):
         ytLink = "https://youtu.be/q1MmYVcDyMs"
@@ -225,7 +257,7 @@ class FlaskClientTestCase(unittest.TestCase):
         self.assertIn(b'Type: video', rv.data)
         self.assertIn(b'title: video example', rv.data)
 
-    @mock.patch.object(YoutubeDl, 'download_4k', return_value={"title": "video example","path":"/home/music/wideo.mp4"})
+    @mock.patch.object(YoutubeManager, 'download_4k', return_value={"title": "video example","path":"/home/music/wideo.mp4"})
     @mock.patch('youtubedl.isFile', return_value=True)
     def test_download_4k(self, mock_isFile, mock_download):
         ytLink = "https://youtu.be/q1MmYVcDyMs"

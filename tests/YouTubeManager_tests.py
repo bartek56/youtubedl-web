@@ -1,6 +1,6 @@
 import unittest
 import unittest.mock as mock
-from Common.YouTubeManager import YoutubeDl, YoutubeConfig
+from Common.YouTubeManager import YoutubeManager, YoutubeConfig
 from configparser import ConfigParser
 import yt_dlp
 from yt_dlp import utils
@@ -10,7 +10,7 @@ import logging
 logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.FATAL)
 class YouTubeManagerDlTestCase(unittest.TestCase):
     def setUp(self):
-        self.ytManager = YoutubeDl()
+        self.ytManager = YoutubeManager()
         self.ytManager.createDirIfNotExist = mock.MagicMock()
 
     def tearDown(self):
