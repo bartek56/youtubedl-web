@@ -152,7 +152,8 @@ class YoutubeManager:
               'logger': self.logger,
               'addmetadata': True,
               'ignoreerrors': False,
-              'quiet':True
+              'quiet':True,
+              'noplaylist':True
               }
         result = None
         try:
@@ -247,6 +248,7 @@ class YoutubeManager:
               'logger': self.logger,
               'outtmpl': path+'/'+'%(title)s_4k.%(ext)s',
               'no-overwrites': True,
+              'noplaylist': True,
               'ignoreerrors': False
               }
         result = self.downloadVideo(ydl_opts, url)
@@ -268,6 +270,7 @@ class YoutubeManager:
               'logger': self.logger,
               'no-overwrites': True,
               'outtmpl': path+'/'+'%(title)s_720p.%(ext)s',
+              'noplaylist': True,
               'ignoreerrors': False
               }
         result = self.downloadVideo(ydl_opts, url)
@@ -290,6 +293,7 @@ class YoutubeManager:
               'logger': self.logger,
               'no-overwrites': True,
               'outtmpl': path+'/'+'%(title)s_360p.%(ext)s',
+              'noplaylist': True,
               'ignoreerrors': False
               }
 
