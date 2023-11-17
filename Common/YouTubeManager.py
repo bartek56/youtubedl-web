@@ -182,6 +182,7 @@ class YoutubeManager:
     def download_mp3(self, url):
         path=self.MUSIC_PATH
         self.createDirIfNotExist(path)
+        downloadOrNot = True
 
         info = "[INFO] start download MP3 from link %s "%(url)
         logger.info(info)
@@ -191,6 +192,7 @@ class YoutubeManager:
               'addmetadata': True,
               'logger': self.logger,
               'outtmpl': path+'/'+'%(title)s.%(ext)s',
+              'download_archive': path+'/downloaded_songs.txt',
               'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
                     'preferredcodec': 'mp3',
@@ -202,8 +204,18 @@ class YoutubeManager:
               'noplaylist': True
               }
 
+        if os.path.isfile(path+'/downloaded_songs.txt'):
+            with open(path+'/downloaded_songs.txt', 'r') as plik:
+                zawartosc = plik.read()
+                if url in zawartosc:
+                    # only get information about media, file exists
+                    logger.debug("clip exists, only get information about it")
+                    downloadOrNot = False
+                    ydl_opts.pop('download_archive')
+                    ydl_opts.pop('postprocessors')
+
         try:
-            result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
+            result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url, download=downloadOrNot)
         except Exception as e:
             return str(e)
 
@@ -221,11 +233,19 @@ class YoutubeManager:
         if "album" in result:
             album = result['album']
 
-        fileName = "%s.mp3"%(songTitle)
-        if not os.path.isfile(os.path.join(path, fileName)):
-            logger.warning("File %s doesn't exist. Sanitize is require", fileName)
-            songTitle = yt_dlp.utils.sanitize_filename(songTitle)
-        full_path = self.metadataManager.rename_and_add_metadata_to_song(self.MUSIC_PATH, album, artist, songTitle)
+        full_path = ""
+        if downloadOrNot == True:
+            fileName = "%s.mp3"%(songTitle)
+            if not os.path.isfile(os.path.join(path, fileName)):
+                logger.warning("File %s doesn't exist. Sanitize is require", fileName)
+                songTitle = yt_dlp.utils.sanitize_filename(songTitle)
+            full_path = self.metadataManager.rename_and_add_metadata_to_song(self.MUSIC_PATH, album, artist, songTitle)
+        else:
+            full_path = self.lookingForFile(path, songTitle, artist)
+
+        if full_path is None:
+            logger.error("couldn't find a file")
+            return "couldn't find a file"
 
         metadata = {}
         metadata["path"] = full_path
@@ -382,6 +402,39 @@ class YoutubeManager:
     def createDirIfNotExist(self, path):
         if not os.path.exists(path): # pragma: no cover
             os.makedirs(path)
+
+    def lookingForFile(self, path, songTitle, artist):
+        fileName = "%s.mp3"%(songTitle)
+        full_path = os.path.join(path,fileName)
+        if os.path.isfile(full_path):
+            return full_path
+        songName = self.metadataManager.lookingForFileAccordWithYTFilename(path,songTitle,artist)
+        fileName = "%s.mp3"%(songName)
+        full_path = os.path.join(path,fileName)
+        if os.path.isfile(full_path):
+            return full_path
+        songTitleTemp = yt_dlp.utils.sanitize_filename(songTitle)
+        songName = self.metadataManager.lookingForFileAccordWithYTFilename(path,songTitleTemp,artist)
+        fileName = "%s.mp3"%(songName)
+        full_path = os.path.join(path, fileName)
+        if os.path.isfile(full_path):
+            return full_path
+        artistTemp = yt_dlp.utils.sanitize_filename(artist)
+        songName = self.metadataManager.lookingForFileAccordWithYTFilename(path, songTitleTemp, artistTemp)
+        fileName = "%s.mp3"%(songName)
+        full_path = os.path.join(path, fileName)
+        if os.path.isfile(full_path):
+            return full_path
+        logger.error("clip is archived, but doesn't exists in server")
+        return None
+
+    def getMediaHashFromLink(self, url):
+        mediaData = url.split('.com/')[1]
+        parametersFromLink = mediaData.split("&")
+        for param in parametersFromLink:
+            if "watch" in param:
+                return param.split("=")[1]
+
 
 if __name__ == "__main__":
     yt = YoutubeManager()

@@ -21,6 +21,14 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         message = "Video unavailable"
         raise utils.ExtractorError(message, expected=True)
 
+    def test_getMediaHash(self):
+        hash = self.ytManager.getMediaHashFromLink("https://www.youtube.com/watch?v=Lr4x3sCH7l0&list=PL6uhlddQJkfh4YsbxgPE70a6KeFOCDgG")
+        self.assertEqual(hash, "Lr4x3sCH7l0")
+
+    def test_getMediaHash(self):
+        hash = self.ytManager.getMediaHashFromLink("https://www.youtube.com/watch?v=Lr4x3sCH7l0")
+        self.assertEqual(hash, "Lr4x3sCH7l0")
+
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     def test_getPlaylistInfo(self, mock_extractInfo):
         mock_extractInfo.configure_mock(return_value={"title": "testPlaylist","entries":[{"playlist_name":"testPlaylist", "playlist_index":"1", "url":"https://www.youtube.com/watch?v=1111", "title":"firstTitle"},
@@ -111,7 +119,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
         result = self.ytManager.download_mp3(link)
 
-        mock_extract_info.assert_called_once_with(link)
+        mock_extract_info.assert_called_once_with(link, download=True)
         mock_metadata.assert_called_with('/tmp/quick_download/', 'album_test', 'artist_test', 'title_test')
 
         self.assertEqual(result["title"], "title_test")
@@ -124,7 +132,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
         result = self.ytManager.download_mp3(link)
 
-        mock_extract_info.assert_called_with(link)
+        mock_extract_info.assert_called_with(link, download=True)
         mock_metadata.assert_called_with('/tmp/quick_download/', 'album_test', '', 'title_test')
 
         self.assertEqual(result["title"], "title_test")
@@ -137,7 +145,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
         result = self.ytManager.download_mp3(link)
 
-        mock_extract_info.assert_called_once_with(link)
+        mock_extract_info.assert_called_once_with(link, download=True)
         self.assertEqual(result, "Failed to download url: https://www.youtube.com/watch?v=yqq3p-brlyc")
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", side_effect=raiseYtError)
@@ -145,7 +153,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
         result = self.ytManager.download_mp3(link)
 
-        mock_extract_info.assert_called_once_with(link)
+        mock_extract_info.assert_called_once_with(link, download=True)
         self.assertEqual(result, "Video unavailable")
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
