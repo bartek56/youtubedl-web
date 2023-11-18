@@ -12,6 +12,8 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
     def setUp(self):
         self.ytManager = YoutubeManager()
         self.ytManager.createDirIfNotExist = mock.MagicMock()
+        self.ytManager.openFile = mock.MagicMock()
+        self.ytManager.lookingForFile = mock.MagicMock()
 
     def tearDown(self):
         pass
@@ -119,12 +121,24 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
         result = self.ytManager.download_mp3(link)
 
-        mock_extract_info.assert_called_once_with(link, download=True)
+        mock_extract_info.assert_called_once_with(link)
         mock_metadata.assert_called_with('/tmp/quick_download/', 'album_test', 'artist_test', 'title_test')
 
         self.assertEqual(result["title"], "title_test")
         self.assertEqual(result["artist"], "artist_test")
         self.assertEqual(result["album"], "album_test")
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
+    @mock.patch.object(metadata_mp3.MetadataManager, "rename_and_add_metadata_to_song", return_value=None)
+    def test_downloadMP3_failedWithModyfiMetadata(self, mock_metadata, mock_extract_info):
+        mock_extract_info.configure_mock(return_value={"title":"title_test", "artist":"artist_test", "album":"album_test"})
+        link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
+        result = self.ytManager.download_mp3(link)
+
+        mock_extract_info.assert_called_once_with(link)
+        mock_metadata.assert_called_with('/tmp/quick_download/', 'album_test', 'artist_test', 'title_test')
+
+        self.assertEqual(result, "couldn't find a file")
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", return_value={"title":"title_test", "artist":"", "album":"album_test"})
     @mock.patch.object(metadata_mp3.MetadataManager, "rename_and_add_metadata_to_song")
@@ -132,7 +146,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
         result = self.ytManager.download_mp3(link)
 
-        mock_extract_info.assert_called_with(link, download=True)
+        mock_extract_info.assert_called_with(link)
         mock_metadata.assert_called_with('/tmp/quick_download/', 'album_test', '', 'title_test')
 
         self.assertEqual(result["title"], "title_test")
@@ -145,7 +159,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
         result = self.ytManager.download_mp3(link)
 
-        mock_extract_info.assert_called_once_with(link, download=True)
+        mock_extract_info.assert_called_once_with(link)
         self.assertEqual(result, "Failed to download url: https://www.youtube.com/watch?v=yqq3p-brlyc")
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", side_effect=raiseYtError)
@@ -153,8 +167,61 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
         result = self.ytManager.download_mp3(link)
 
-        mock_extract_info.assert_called_once_with(link, download=True)
+        mock_extract_info.assert_called_once_with(link)
         self.assertEqual(result, "Video unavailable")
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
+    def test_downloadMP3_onlyMetadata(self, mock_extract_info):
+        mock_extract_info.configure_mock(return_value={"title":"title_test", "artist":"artist_test", "album":"album_test"})
+        self.ytManager.openFile.configure_mock(return_value="yqq3p-brlyc")
+        self.ytManager.lookingForFile.configure_mock(return_value="/tmp/quick_download/title_test.mp3")
+
+        link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
+        result = self.ytManager.download_mp3(link)
+        mock_extract_info.assert_called_once_with(link, download=False)
+        self.ytManager.openFile.assert_called_with('/tmp/quick_download/', 'downloaded_songs.txt')
+        self.ytManager.lookingForFile.assert_called_with('/tmp/quick_download/','title_test', 'artist_test')
+
+        self.assertEqual(result["title"], "title_test")
+        self.assertEqual(result["artist"], "artist_test")
+        self.assertEqual(result["album"], "album_test")
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", side_effect=raiseYtError)
+    def test_downloadMP3_onlyMetadata_exception(self, mock_extract_info):
+        mock_extract_info.configure_mock(return_value={"title":"title_test", "artist":"artist_test", "album":"album_test"})
+        self.ytManager.openFile.configure_mock(return_value="yqq3p-brlyc")
+
+        link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
+        result = self.ytManager.download_mp3(link)
+        mock_extract_info.assert_called_once_with(link, download=False)
+        self.ytManager.openFile.assert_called_with('/tmp/quick_download/', 'downloaded_songs.txt')
+
+        self.assertEqual(result, "Video unavailable")
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", return_value=None)
+    def test_downloadMP3_onlyMetadata_NoneResult(self, mock_extract_info):
+        self.ytManager.openFile.configure_mock(return_value="yqq3p-brlyc")
+
+        link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
+        result = self.ytManager.download_mp3(link)
+        mock_extract_info.assert_called_once_with(link, download=False)
+        self.ytManager.openFile.assert_called_with('/tmp/quick_download/', 'downloaded_songs.txt')
+
+        self.assertEqual(result, "Failed to download url: https://www.youtube.com/watch?v=yqq3p-brlyc")
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
+    def test_downloadMP3_onlyMetadata_FileNotFound(self, mock_extract_info):
+        mock_extract_info.configure_mock(return_value={"title":"title_test", "artist":"artist_test", "album":"album_test"})
+        self.ytManager.openFile.configure_mock(return_value="yqq3p-brlyc")
+        self.ytManager.lookingForFile.configure_mock(return_value=None)
+
+        link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
+        result = self.ytManager.download_mp3(link)
+        mock_extract_info.assert_called_once_with(link, download=False)
+        self.ytManager.openFile.assert_called_with('/tmp/quick_download/', 'downloaded_songs.txt')
+        self.ytManager.lookingForFile.assert_called_with('/tmp/quick_download/','title_test', 'artist_test')
+
+        self.assertEqual(result, "couldn't find a file")
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "rename_and_add_metadata_to_playlist")

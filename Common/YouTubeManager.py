@@ -89,20 +89,21 @@ class Mp3Data():
         self.title = title
         self.artist = artist
         self.album = album
-    def __str__(self):
+
+    def __str__(self): # pragma: no cover
         str = ""
-        if self.title is not None:
+        if self.title is not None and len(self.title)>0:
             str += "title: %s"%(self.title)
-        if self.artist is not None:
+        if self.artist is not None and len(self.artist)>0:
             if len(str) > 0:
                 str += " "
             str += "artist: %s"%(self.artist)
-        if self.album is not None:
+        if self.album is not None and len(self.album)>0:
             if len(str) > 0:
                 str += " "
             str += "album: %s"%(self.album)
 
-        return "title: %s, artist: %s, album: %s "%(self.title, self.artist, self.album)
+        return str
 
 class YoutubeManager:
     def __init__(self, logger=None):
@@ -205,15 +206,12 @@ class YoutubeManager:
         logger.info(info)
         metadata = None
         hash = self.getMediaHashFromLink(url)
-        if os.path.isdir(path):
-            if os.path.isfile(path+'/downloaded_songs.txt'):
-                with open(path+'/downloaded_songs.txt', 'r') as plik:
-                    zawartosc = plik.read()
-                    if hash in zawartosc:
-                        # only get information about media, file exists
-                        logger.debug("clip exists, only get information about MP3")
-                        metadata = self._getMetadataFromYTForMp3(url)
-        if metadata is None:
+        contentOfFile = self.openFile(path, "downloaded_songs.txt")
+        if contentOfFile is not None and hash in contentOfFile:
+            # only get information about media, file exists
+            logger.debug("clip exists, only get information about MP3")
+            metadata = self._getMetadataFromYTForMp3(url)
+        else:
             logger.debug("Download MP3")
             metadata = self._download_mp3(url)
 
@@ -474,18 +472,18 @@ class YoutubeManager:
         if not os.path.exists(path): # pragma: no cover
             os.makedirs(path)
 
-    def lookingForFile(self, path, songTitle, artist):
+    def lookingForFile(self, path, songTitle, artist): # pragma: no cover
         fileName = "%s.mp3"%(songTitle)
         full_path = os.path.join(path,fileName)
         if os.path.isfile(full_path):
             return full_path
-        songName = self.metadataManager.lookingForFileAccordWithYTFilename(path,songTitle,artist)
+        songName = self.metadataManager.lookingForFileAccordWithYTFilename(path, songTitle, artist)
         fileName = "%s.mp3"%(songName)
         full_path = os.path.join(path,fileName)
         if os.path.isfile(full_path):
             return full_path
         songTitleTemp = yt_dlp.utils.sanitize_filename(songTitle)
-        songName = self.metadataManager.lookingForFileAccordWithYTFilename(path,songTitleTemp,artist)
+        songName = self.metadataManager.lookingForFileAccordWithYTFilename(path, songTitleTemp, artist)
         fileName = "%s.mp3"%(songName)
         full_path = os.path.join(path, fileName)
         if os.path.isfile(full_path):
@@ -506,6 +504,13 @@ class YoutubeManager:
             if "watch" in param:
                 return param.split("=")[1]
 
+    def openFile(self, path, fileName): # pragma: no cover
+        content = None
+        if os.path.isdir(path):
+            if os.path.isfile(path+'/'+fileName):
+                with open(path+'/'+fileName, 'r') as file:
+                    content = file.read()
+        return content
 
 if __name__ == "__main__":
     yt = YoutubeManager()
