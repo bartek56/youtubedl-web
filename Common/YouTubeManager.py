@@ -84,6 +84,26 @@ class YoutubeConfig():
         with open(self.CONFIG_FILE,'w') as fp:
             self.config.write(fp)
 
+class Mp3Data():
+    def __init__(self, title, artist, album):
+        self.title = title
+        self.artist = artist
+        self.album = album
+    def __str__(self):
+        str = ""
+        if self.title is not None:
+            str += "title: %s"%(self.title)
+        if self.artist is not None:
+            if len(str) > 0:
+                str += " "
+            str += "artist: %s"%(self.artist)
+        if self.album is not None:
+            if len(str) > 0:
+                str += " "
+            str += "album: %s"%(self.album)
+
+        return "title: %s, artist: %s, album: %s "%(self.title, self.artist, self.album)
+
 class YoutubeManager:
     def __init__(self, logger=None):
         self.metadataManager = metadata_mp3.MetadataManager()
@@ -181,11 +201,68 @@ class YoutubeManager:
 
     def download_mp3(self, url):
         path=self.MUSIC_PATH
-        self.createDirIfNotExist(path)
-        downloadOrNot = True
-
         info = "[INFO] start download MP3 from link %s "%(url)
         logger.info(info)
+        metadata = None
+        hash = self.getMediaHashFromLink(url)
+        if os.path.isdir(path):
+            if os.path.isfile(path+'/downloaded_songs.txt'):
+                with open(path+'/downloaded_songs.txt', 'r') as plik:
+                    zawartosc = plik.read()
+                    if hash in zawartosc:
+                        # only get information about media, file exists
+                        logger.debug("clip exists, only get information about MP3")
+                        metadata = self._getMetadataFromYTForMp3(url)
+        if metadata is None:
+            logger.debug("Download MP3")
+            metadata = self._download_mp3(url)
+
+        return metadata
+
+    def _getMetadataFromYTForMp3(self, url):
+        path=self.MUSIC_PATH
+
+        ydl_opts = {
+              'format': 'bestaudio/best',
+              'addmetadata': True,
+              'logger': self.logger,
+              'outtmpl': path+'/'+'%(title)s.%(ext)s',
+              'ignoreerrors': False,
+              'continue': True,
+              'no-overwrites': True,
+              'noplaylist': True
+              }
+
+        try:
+            result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url, download=False)
+        except Exception as e:
+            return str(e)
+
+        if result is None:
+            return "Failed to download url: "+ url
+        logger.debug("Succesfull got information")
+        mp3Data = self._get_metadataForMP3(result)
+        logger.debug(mp3Data)
+        full_path = self.lookingForFile(path, mp3Data.title, mp3Data.artist)
+
+        if full_path is None:
+            logger.error("couldn't find a file")
+            return "couldn't find a file"
+
+        metadata = {}
+        metadata["path"] = full_path
+        if(mp3Data.artist is not None):
+            metadata["artist"] = mp3Data.artist
+        metadata["title"] = mp3Data.title
+        if(mp3Data.album is not None):
+            metadata["album"] = mp3Data.album
+
+        return metadata
+
+
+    def _download_mp3(self, url):
+        path=self.MUSIC_PATH
+        self.createDirIfNotExist(path)
 
         ydl_opts = {
               'format': 'bestaudio/best',
@@ -204,44 +281,23 @@ class YoutubeManager:
               'noplaylist': True
               }
 
-        if os.path.isfile(path+'/downloaded_songs.txt'):
-            with open(path+'/downloaded_songs.txt', 'r') as plik:
-                zawartosc = plik.read()
-                if url in zawartosc:
-                    # only get information about media, file exists
-                    logger.debug("clip exists, only get information about it")
-                    downloadOrNot = False
-                    ydl_opts.pop('download_archive')
-                    ydl_opts.pop('postprocessors')
-
         try:
-            result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url, download=downloadOrNot)
+            result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
         except Exception as e:
             return str(e)
 
         if result is None:
             return "Failed to download url: "+ url
+        logger.debug("succesfull download")
 
-        songTitle = ""
-        artist = ""
-        album = ""
+        mp3Data = self._get_metadataForMP3(result)
+        logger.debug(mp3Data)
 
-        if "title" in result:
-            songTitle = result['title']
-        if "artist" in result:
-            artist = result['artist']
-        if "album" in result:
-            album = result['album']
-
-        full_path = ""
-        if downloadOrNot == True:
-            fileName = "%s.mp3"%(songTitle)
-            if not os.path.isfile(os.path.join(path, fileName)):
-                logger.warning("File %s doesn't exist. Sanitize is require", fileName)
-                songTitle = yt_dlp.utils.sanitize_filename(songTitle)
-            full_path = self.metadataManager.rename_and_add_metadata_to_song(self.MUSIC_PATH, album, artist, songTitle)
-        else:
-            full_path = self.lookingForFile(path, songTitle, artist)
+        fileName = "%s.mp3"%(mp3Data.title)
+        if not os.path.isfile(os.path.join(path, fileName)):
+            logger.warning("File %s doesn't exist. Sanitize is require", fileName)
+            mp3Data.title = yt_dlp.utils.sanitize_filename(mp3Data.title)
+        full_path = self.metadataManager.rename_and_add_metadata_to_song(self.MUSIC_PATH, mp3Data.album, mp3Data.artist, mp3Data.title)
 
         if full_path is None:
             logger.error("couldn't find a file")
@@ -249,13 +305,28 @@ class YoutubeManager:
 
         metadata = {}
         metadata["path"] = full_path
-        if(artist is not None):
-            metadata["artist"] = artist
-        metadata["title"] = songTitle
-        if(album is not None):
-            metadata["album"] = album
+        if(mp3Data.artist is not None):
+            metadata["artist"] = mp3Data.artist
+        metadata["title"] = mp3Data.title
+        if(mp3Data.album is not None):
+            metadata["album"] = mp3Data.album
 
         return metadata
+
+
+    def _get_metadataForMP3(self, data):
+        songTitle = ""
+        artist = ""
+        album = ""
+
+        if "title" in data:
+            songTitle = data['title']
+        if "artist" in data:
+            artist = data['artist']
+        if "album" in data:
+            album = data['album']
+
+        return Mp3Data(songTitle, artist, album)
 
     def download_4k(self, url):
         path=self.VIDEO_PATH
