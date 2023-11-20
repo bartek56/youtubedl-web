@@ -37,7 +37,9 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
                                                       {"playlist_name":"testPlaylist", "playlist_index":"2", "url":"https://www.youtube.com/watch?v=2222", "title":"secondTitle"}]})
 
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
-        data = self.ytManager.getPlaylistInfo(link)
+        result = self.ytManager.getPlaylistInfo(link)
+        self.assertTrue(result.IsSuccess())
+        data = result.data()
 
         mock_extractInfo.assert_called_once_with(link, download=False)
         self.assertEqual(data[0]["playlist_name"], "testPlaylist")
@@ -55,36 +57,39 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         mock_extractInfo.configure_mock(return_value=None)
 
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
-        data = self.ytManager.getPlaylistInfo(link)
+        result = self.ytManager.getPlaylistInfo(link)
 
         mock_extractInfo.assert_called_once_with(link, download=False)
-        self.assertEqual(data, "Failed to download")
+
+        self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     def test_getPlaylistInfoEmptyEntries(self, mock_extractInfo):
         mock_extractInfo.configure_mock(return_value={"title": "testPlaylist", "entries":[{}, None]})
 
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
-        data = self.ytManager.getPlaylistInfo(link)
+        result = self.ytManager.getPlaylistInfo(link)
 
         mock_extractInfo.assert_called_once_with(link, download=False)
-        self.assertEqual(data, "not extract_info in results")
+        self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", side_effect=raiseYtError)
     def test_getPlaylistInfoException(self, mock_extractInfo):
 
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
-        data = self.ytManager.getPlaylistInfo(link)
+        result = self.ytManager.getPlaylistInfo(link)
 
         mock_extractInfo.assert_called_once_with(link, download=False)
-        self.assertEqual(data, "Video unavailable")
+        self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     def test_getMediaInfo(self, mock_extractInfo):
         mock_extractInfo.configure_mock(return_value={"original_url":"https://www.youtube.com/watch?v=1111", "title":"firstTitle", "title":"testTitle", "artist":"testArtist", "album":"testAlbum"})
 
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
-        data = self.ytManager.getMediaInfo(link)
+        result = self.ytManager.getMediaInfo(link)
+        self.assertTrue(result.IsSuccess())
+        data = result.data()
 
         mock_extractInfo.assert_called_once_with(link, download=False)
         self.assertEqual(data["url"], "https://www.youtube.com/watch?v=1111")
@@ -97,22 +102,18 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         mock_extractInfo.configure_mock(return_value=None)
 
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
-        data = self.ytManager.getMediaInfo(link)
-        data = self.ytManager.getPlaylistInfo(link)
+        result = self.ytManager.getMediaInfo(link)
 
-        mock_extractInfo.assert_has_calls([mock.call(link, download=False),
-                                        mock.call(link, download=False)])
-        self.assertEqual(data, "Failed to download")
+        mock_extractInfo.assert_has_calls([mock.call(link, download=False)])
+        self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", side_effect=raiseYtError)
     def test_getMediaInfoException(self, mock_extractInfo):
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
-        data = self.ytManager.getMediaInfo(link)
-        data = self.ytManager.getPlaylistInfo(link)
+        result = self.ytManager.getMediaInfo(link)
 
-        mock_extractInfo.assert_has_calls([mock.call(link, download=False),
-                                        mock.call(link, download=False)])
-        self.assertEqual(data, "Video unavailable")
+        mock_extractInfo.assert_has_calls([mock.call(link, download=False)])
+        self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "rename_and_add_metadata_to_song")
@@ -120,13 +121,14 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         mock_extract_info.configure_mock(return_value={"title":"title_test", "artist":"artist_test", "album":"album_test"})
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
         result = self.ytManager.download_mp3(link)
+        data = result.data()
 
         mock_extract_info.assert_called_once_with(link)
         mock_metadata.assert_called_with('/tmp/quick_download/', 'album_test', 'artist_test', 'title_test')
 
-        self.assertEqual(result["title"], "title_test")
-        self.assertEqual(result["artist"], "artist_test")
-        self.assertEqual(result["album"], "album_test")
+        self.assertEqual(data["title"], "title_test")
+        self.assertEqual(data["artist"], "artist_test")
+        self.assertEqual(data["album"], "album_test")
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "rename_and_add_metadata_to_song", return_value=None)
@@ -138,13 +140,13 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         mock_extract_info.assert_called_once_with(link)
         mock_metadata.assert_called_with('/tmp/quick_download/', 'album_test', 'artist_test', 'title_test')
 
-        self.assertEqual(result, "couldn't find a file")
+        self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", return_value={"title":"title_test", "artist":"", "album":"album_test"})
     @mock.patch.object(metadata_mp3.MetadataManager, "rename_and_add_metadata_to_song")
     def test_downloadMP3_without_artist(self, mock_metadata, mock_extract_info):
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
-        result = self.ytManager.download_mp3(link)
+        result = self.ytManager.download_mp3(link).data()
 
         mock_extract_info.assert_called_with(link)
         mock_metadata.assert_called_with('/tmp/quick_download/', 'album_test', '', 'title_test')
@@ -160,7 +162,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         result = self.ytManager.download_mp3(link)
 
         mock_extract_info.assert_called_once_with(link)
-        self.assertEqual(result, "Failed to download url: https://www.youtube.com/watch?v=yqq3p-brlyc")
+        self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", side_effect=raiseYtError)
     def test_downloadMP3Exception(self, mock_extract_info):
@@ -168,7 +170,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         result = self.ytManager.download_mp3(link)
 
         mock_extract_info.assert_called_once_with(link)
-        self.assertEqual(result, "Video unavailable")
+        self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     def test_downloadMP3_onlyMetadata(self, mock_extract_info):
@@ -178,13 +180,15 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
 
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
         result = self.ytManager.download_mp3(link)
+        self.assertTrue(result.IsSuccess())
+        data = result.data()
         mock_extract_info.assert_called_once_with(link, download=False)
         self.ytManager.openFile.assert_called_with('/tmp/quick_download/', 'downloaded_songs.txt')
         self.ytManager.lookingForFile.assert_called_with('/tmp/quick_download/','title_test', 'artist_test')
 
-        self.assertEqual(result["title"], "title_test")
-        self.assertEqual(result["artist"], "artist_test")
-        self.assertEqual(result["album"], "album_test")
+        self.assertEqual(data["title"], "title_test")
+        self.assertEqual(data["artist"], "artist_test")
+        self.assertEqual(data["album"], "album_test")
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", side_effect=raiseYtError)
     def test_downloadMP3_onlyMetadata_exception(self, mock_extract_info):
@@ -196,7 +200,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         mock_extract_info.assert_called_once_with(link, download=False)
         self.ytManager.openFile.assert_called_with('/tmp/quick_download/', 'downloaded_songs.txt')
 
-        self.assertEqual(result, "Video unavailable")
+        self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", return_value=None)
     def test_downloadMP3_onlyMetadata_NoneResult(self, mock_extract_info):
@@ -207,7 +211,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         mock_extract_info.assert_called_once_with(link, download=False)
         self.ytManager.openFile.assert_called_with('/tmp/quick_download/', 'downloaded_songs.txt')
 
-        self.assertEqual(result, "Failed to download url: https://www.youtube.com/watch?v=yqq3p-brlyc")
+        self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     def test_downloadMP3_onlyMetadata_FileNotFound(self, mock_extract_info):
@@ -221,7 +225,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         self.ytManager.openFile.assert_called_with('/tmp/quick_download/', 'downloaded_songs.txt')
         self.ytManager.lookingForFile.assert_called_with('/tmp/quick_download/','title_test', 'artist_test')
 
-        self.assertEqual(result, "couldn't find a file")
+        self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "rename_and_add_metadata_to_playlist")
@@ -232,13 +236,15 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
             ]})
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
         result = self.ytManager.download_playlist_mp3('/tmp/quick_download/', "test_playlist", link)
+        self.assertTrue(result.IsSuccess())
 
+        data = result.data()
         mock_extract_info.assert_called_once_with(link)
         mock_metadata.assert_has_calls([mock.call('/tmp/quick_download/', '1', 'test_playlist', 'first_artist', 'first_title'),
                                         mock.call('/tmp/quick_download/', '2', 'test_playlist', '', 'second_title')])
 
         self.ytManager.createDirIfNotExist.assert_called_once_with("/tmp/quick_download/test_playlist")
-        self.assertEqual(result, 2)
+        self.assertEqual(data, 2)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     def test_downloadMP3PlaylistEmptyResult(self, mock_extract_info):
@@ -249,7 +255,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
 
         mock_extract_info.assert_called_once_with(link)
         self.ytManager.createDirIfNotExist.assert_called_once_with("/tmp/quick_download/test_playlist")
-        self.assertEqual(result, "Failed to download")
+        self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     def test_downloadMP3PlaylistWrongResult(self, mock_extract_info):
@@ -260,7 +266,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
 
         mock_extract_info.assert_called_once_with(link)
         self.ytManager.createDirIfNotExist.assert_called_once_with("/tmp/quick_download/test_playlist")
-        self.assertEqual(result, "not entries in results")
+        self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     def test_downloadMP3PlaylistEmptyEntries(self, mock_extract_info):
@@ -271,7 +277,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
 
         mock_extract_info.assert_called_once_with(link)
         self.ytManager.createDirIfNotExist.assert_called_once_with("/tmp/quick_download/test_playlist")
-        self.assertEqual(result, "not extract_info in results")
+        self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", side_effect=raiseYtError)
     def test_downloadMP3PlaylistException(self, mock_extract_info):
@@ -281,17 +287,19 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
 
         mock_extract_info.assert_called_once_with(link)
         self.ytManager.createDirIfNotExist.assert_called_once_with("/tmp/quick_download/test_playlist")
-        self.assertEqual(result, "Video unavailable")
+        self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", return_value={"title":"title_test", "artist":"artist_test", "ext":"mp4"})
     def test_download360p(self, mock_extract_info):
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
         result = self.ytManager.download_360p(link)
+        data = result.data()
+        self.assertTrue(result.IsSuccess())
 
         mock_extract_info.assert_called_with(link)
 
-        self.assertEqual(result["title"], "title_test")
-        self.assertEqual(result["path"], "/tmp/quick_download//title_test_360p.mp4")
+        self.assertEqual(data["title"], "title_test")
+        self.assertEqual(data["path"], "/tmp/quick_download//title_test_360p.mp4")
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", return_value=None)
     def test_download360pFailed(self, mock_extract_info):
@@ -299,18 +307,19 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         result = self.ytManager.download_360p(link)
 
         mock_extract_info.assert_called_with(link)
-        error = "Failed to download url: " + link
-        self.assertEqual(result, error)
+        self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", return_value={"title":"title_test", "artist":"artist_test", "ext":"mp4"})
     def test_download720p(self, mock_extract_info):
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
         result = self.ytManager.download_720p(link)
+        self.assertTrue(result.IsSuccess())
+        data = result.data()
 
         mock_extract_info.assert_called_with(link)
 
-        self.assertEqual(result["title"], "title_test")
-        self.assertEqual(result["path"], "/tmp/quick_download//title_test_720p.mp4")
+        self.assertEqual(data["title"], "title_test")
+        self.assertEqual(data["path"], "/tmp/quick_download//title_test_720p.mp4")
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", return_value=None)
     def test_download720pFailed(self, mock_extract_info):
@@ -318,27 +327,26 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         result = self.ytManager.download_720p(link)
 
         mock_extract_info.assert_called_with(link)
-        error = "Failed to download url: " + link
-        self.assertEqual(result, error)
+        self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", return_value={"title":"title_test", "artist":"artist_test", "ext":"mp4"})
     def test_download4k(self, mock_extract_info):
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
         result = self.ytManager.download_4k(link)
+        self.assertTrue(result.IsSuccess())
+        data = result.data()
 
         mock_extract_info.assert_called_with(link)
 
-        self.assertEqual(result["title"], "title_test")
-        self.assertEqual(result["path"], "/tmp/quick_download//title_test_4k.mp4")
+        self.assertEqual(data["title"], "title_test")
+        self.assertEqual(data["path"], "/tmp/quick_download//title_test_4k.mp4")
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", return_value=None)
     def test_download4kFailed(self, mock_extract_info):
         link = "https://www.youtube.com/watch?v=yqq3p-brlyc"
         result = self.ytManager.download_4k(link)
-
         mock_extract_info.assert_called_with(link)
-        error = "Failed to download url: " + link
-        self.assertEqual(result, error)
+        self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", side_effect=raiseYtError)
     def test_download4kFailedRaise(self, mock_extract_info):
@@ -346,7 +354,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         result = self.ytManager.download_4k(link)
 
         mock_extract_info.assert_called_with(link)
-        self.assertEqual(result, "Video unavailable")
+        self.assertFalse(result.IsSuccess())
 
 class CustomConfigParser(ConfigParser):
     def read(self, filename):

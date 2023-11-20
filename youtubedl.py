@@ -73,15 +73,19 @@ socketio = SocketIO(app, manage_session=False)
 
 socketLogger = SocketLogger()
 socketLogger.settings(saveToFile=False, print=True, fileNameWihPath="/var/log/youtubedlweb_mylogger.log",
-                      logLevel=LogLevel.DEBUG, showFilename=True, showLogLevel=False, showDate=False,
+                      logLevel=LogLevel.ERROR, showFilename=True, showLogLevel=False, showDate=False,
                       skippingLogWith=["[youtube:tab]", "B/s ETA", "[ExtractAudio]", "B in 00:00:00", "100% of",
                                        "[info]", "Downloading item", "[dashsegments]", "Deleting original file", "Downloading android player", "Downloading webpage"])
 #logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s",filename='/var/log/youtubedlweb.log', level=logging.INFO)
-logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.DEBUG)
+if __name__ == "__main__":
+    logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.DEBUG)
+else:
+    logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.FATAL)
+
 logger = logging.getLogger(__name__)
 
-#log = logging.getLogger('werkzeug')
-#log.setLevel(logging.ERROR)
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 youtubeManager = YoutubeManager(socketLogger)
 youtubeConfig = YoutubeConfig()
@@ -487,7 +491,8 @@ def handle_message(msg):
     path = youtubeConfig.getPath()
 
     for playlist in playlists:
-        ytData = youtubeManager.download_playlist_mp3(path, playlist["name"], playlist["link"])
+        response = youtubeManager.download_playlist_mp3(path, playlist["name"], playlist["link"])
+        ytData = response.data()
         emit('downloadPlaylist_response', {"data": ytData})
 
     emit('downloadPlaylist_finish', {"data":"finished"})
@@ -508,20 +513,22 @@ def downloadMedia(msg):
     downloadType = str(msg['type'])
     if "playlist?list" in url and "watch?v" not in url:
         downloadedFiles = []
-        ytData = youtubeManager.getPlaylistInfo(url)
+        result = youtubeManager.getPlaylistInfo(url)
 
-        if type(ytData) == str:
-            emit('downloadMedia_finish', {"error":ytData})
+        if result.IsFailed():
+            emit('downloadMedia_finish', {"error":"Failed to get info playlist"})
             logger.info("Error to download media")
             return
+        ytData = result.data()
         emit('getPlaylistInfo_response', ytData)
         index = 0
         for x in ytData:
             index += 1
-            data = downloadMediaOfType(x["url"], downloadType)
-            if type(data) == str:
-                emit("getPlaylistMediaInfo_response", {"error": data, "playlist_index":index})
+            result = downloadMediaOfType(x["url"], downloadType)
+            if result.IsFailed():
+                emit("getPlaylistMediaInfo_response", {"error": "Failed to download info from playlist", "playlist_index":index})
                 continue
+            data = result.data()
             downloadedFiles.append(data["path"])
             filename = data["path"].split("/")[-1]
             randomHash = getRandomString()
@@ -533,18 +540,20 @@ def downloadMedia(msg):
         session[randomHash] = "%s.zip"%playlistName
         emit('downloadMedia_finish', {"data":randomHash})
     else:
-        mediaInfo = youtubeManager.getMediaInfo(url)
-        if type(mediaInfo) == str:
-            emit('downloadMedia_finish', {"error": "wrong url"})
+        result = youtubeManager.getMediaInfo(url)
+        if result.IsFailed():
+            emit('downloadMedia_finish', {"error": result.data()})
             logger.warning("wrong url: %s", mediaInfo)
             return
-
+        mediaInfo = result.data()
         emit('getMediaInfo_response', {"data": mediaInfo})
-        data = downloadMediaOfType(url, downloadType)
+        result2 = downloadMediaOfType(url, downloadType)
 
-        if type(data) == str:
-            emit('downloadMedia_finish', {"error": "problem with download media"})
+        if result2.IsFailed():
+            emit('downloadMedia_finish', {"error": "problem with download media: " + result2.data()})
             return
+
+        data = result2.data()
         filename = data["path"].split("/")[-1]
         randomHash = getRandomString()
         session[randomHash] = filename

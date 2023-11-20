@@ -4,10 +4,8 @@ import unittest
 import unittest.mock as mock
 from configparser import ConfigParser
 from Common.mailManager import Mail
-from Common.YouTubeManager import YoutubeManager, YoutubeConfig
+from Common.YouTubeManager import YoutubeManager, YoutubeConfig, ResultOfDownload
 import logging
-
-logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.FATAL)
 
 class FlaskSocketIO(unittest.TestCase):
 
@@ -25,7 +23,7 @@ class FlaskSocketIO(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @mock.patch.object(YoutubeManager, 'download_playlist_mp3', return_value={"title": "songTitle", "ext":"mp3", "path":"/tmp/songTitle.mp3"})
+    @mock.patch.object(YoutubeManager, 'download_playlist_mp3', return_value=ResultOfDownload({"title": "songTitle", "ext":"mp3", "path":"/tmp/songTitle.mp3"}))
     @mock.patch.object(YoutubeConfig, 'getPlaylists', return_value=[{"name":"playlist1", "link":"link1"},{"name":"playlist2", "link":"link2"},{"name":"playlist3", "link":"link3"}])
     @mock.patch.object(YoutubeConfig, 'getPath', return_value="/tmp/tempPath")
     def test_downloadPlaylists(self, mock_getPath, mock_getPlayists, mock_downloadPlaylistMp3):
@@ -54,8 +52,8 @@ class FlaskSocketIO(unittest.TestCase):
         self.assertEqual(dataPlaylist, "finished")
 
 
-    @mock.patch.object(YoutubeManager, 'download_mp3', return_value={"title": "songTitle", "artist":"testArtist", "album": "testAlbum", "path":"/home/music/song.mp3"})
-    @mock.patch.object(YoutubeManager, 'getMediaInfo', return_value={"title": "songTitle", "ext":"mp3", "path":"/tmp/songTitle.mp3"})
+    @mock.patch.object(YoutubeManager, 'download_mp3', return_value=ResultOfDownload({"title": "songTitle", "artist":"testArtist", "album": "testAlbum", "path":"/home/music/song.mp3"}))
+    @mock.patch.object(YoutubeManager, 'getMediaInfo', return_value=ResultOfDownload({"title": "songTitle", "ext":"mp3", "path":"/tmp/songTitle.mp3"}))
     def test_downloadMp3(self, mock_downloadMp3, mock_getMediaInfo):
         self.socketio_test_client.emit('downloadMedia', {"url":'https://youtube.com/watch?v=testHash', "type":"mp3"})
 
@@ -78,9 +76,9 @@ class FlaskSocketIO(unittest.TestCase):
         mock_downloadMp3.assert_called_once_with("https://youtube.com/watch?v=testHash")
         mock_getMediaInfo.assert_called_once_with("https://youtube.com/watch?v=testHash")
 
-    @mock.patch.object(YoutubeManager, 'download_mp3', return_value={"title": "songTitle", "artist":"testArtist", "album": "testAlbum", "path":"/home/music/song.mp3"})
-    @mock.patch.object(YoutubeManager, 'getPlaylistInfo', return_value = 
-    [{"playlist_name": "playlistNameTest", "playlist_index":"1", "title":"song1", "url":"https://youtube.com/song1"}])
+    @mock.patch.object(YoutubeManager, 'download_mp3', return_value=ResultOfDownload({"title": "songTitle", "artist":"testArtist", "album": "testAlbum", "path":"/home/music/song.mp3"}))
+    @mock.patch.object(YoutubeManager, 'getPlaylistInfo', return_value =
+        ResultOfDownload([{"playlist_name": "playlistNameTest", "playlist_index":"1", "title":"song1", "url":"https://youtube.com/song1"}]))
     @mock.patch('youtubedl.compressToZip')
     def test_downloadMp3Playlist(self, mock_zip, mock_getPlaylistInfo, mock_downloadMp3):
         self.socketio_test_client.emit('downloadMedia', {"url":'https://youtube.com/playlist?list=testPlaylistLink', "type":"mp3"})
@@ -116,8 +114,8 @@ class FlaskSocketIO(unittest.TestCase):
         mock_zip.assert_called_once_with(['/home/music/song.mp3'], 'playlistNameTest')
 
 
-    @mock.patch.object(YoutubeManager, 'download_720p', return_value={"title": "videoTitle","path":"/home/music/wideo.mp4"})
-    @mock.patch.object(YoutubeManager, 'getMediaInfo', return_value={"title": "videoTitle", "ext":"mp4", "path":"/tmp/videoTitle.mp4"})
+    @mock.patch.object(YoutubeManager, 'download_720p', return_value=ResultOfDownload({"title": "videoTitle","path":"/home/music/wideo.mp4"}))
+    @mock.patch.object(YoutubeManager, 'getMediaInfo', return_value=ResultOfDownload({"title": "videoTitle", "ext":"mp4", "path":"/tmp/videoTitle.mp4"}))
     def test_download720p(self, mock_download720p, mock_getMediaInfo):
         self.socketio_test_client.emit('downloadMedia', {"url":'https://youtube.com/watch?v=testHash', "type":"720p"})
 

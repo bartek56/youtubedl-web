@@ -6,6 +6,30 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+class YoutubeManagerLogs():
+    DOWNLOAD_FAILED="download failed"
+    EMPTY_RESULT="None information from yt"
+    NOT_FOUND="couldn't find a downloaded file"
+    NOT_ENTRIES="not entries in results"
+    NOT_EXTRACT_INFO="not extract_info in results"
+
+class ResultOfDownload:
+    def __init__(self, data):
+        self._data = data
+
+    def IsSuccess(self):
+        return type(self._data) is not str
+
+    def IsFailed(self):
+        return type(self._data) is str
+
+    def data(self):
+        if type(self._data) is not str:
+            return self._data
+
+    def error(self):
+        if type(self._data) is str:
+            return self._data
 
 class YoutubeConfig():
     def __init__(self):
@@ -112,25 +136,22 @@ class YoutubeManager:
         self.MUSIC_PATH='/tmp/quick_download/'
         self.VIDEO_PATH='/tmp/quick_download/'
 
-    def validateYTResult(self, results):
+    def _validateYTResult(self, results):
         if results is None:
-            warningInfo = "Failed to download"
-            logger.warning(warningInfo)
-            return warningInfo
+            logger.error(YoutubeManagerLogs.EMPTY_RESULT)
+            return False
 
         if 'entries' not in results:
-            warningInfo="not entries in results"
-            logger.warning(warningInfo)
-            return warningInfo
+            logger.error(YoutubeManagerLogs.NOT_ENTRIES)
+            return False
 
         for i in results['entries']:
             if i is None:
-                warningInfo="not extract_info in results"
-                logger.warning(warningInfo)
-                return warningInfo
-        return None
+                logger.error(YoutubeManagerLogs.NOT_EXTRACT_INFO)
+                return False
+        return True
 
-    def getPlaylistInfo(self, url):
+    def getPlaylistInfo(self, url) -> ResultOfDownload:
 
         ydl_opts = {
               'format': 'best/best',
@@ -145,12 +166,13 @@ class YoutubeManager:
             results = yt_dlp.YoutubeDL(ydl_opts).extract_info(url, download=False)
         except Exception as e:
             exceptionMsg = str(e)
-            logger.warning("Exception: %s", exceptionMsg)
-            return exceptionMsg
+            logger.error(YoutubeManagerLogs.DOWNLOAD_FAILED+ ": " + exceptionMsg)
+            return ResultOfDownload(YoutubeManagerLogs.DOWNLOAD_FAILED + ": " + exceptionMsg)
 
-        resultOfValidate = self.validateYTResult(results)
-        if resultOfValidate is not None:
-            return resultOfValidate
+        resultOfValidate = self._validateYTResult(results)
+        if resultOfValidate is False:
+            logger.error(YoutubeManagerLogs.NOT_ENTRIES)
+            return ResultOfDownload(YoutubeManagerLogs.NOT_ENTRIES)
 
         data = []
         playlistTitle = results['title']
@@ -164,9 +186,9 @@ class YoutubeManager:
             data.append(dictData)
             playlistIndex+=1
 
-        return data
+        return ResultOfDownload(data)
 
-    def getMediaInfo(self, url):
+    def getMediaInfo(self, url) -> ResultOfDownload:
 
         ydl_opts = {
               'format': 'best/best',
@@ -180,13 +202,13 @@ class YoutubeManager:
         try:
             result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url, download=False)
         except Exception as e:
-            exceptionMsg = str(e)
-            logger.warning("Exception: %s", exceptionMsg)
-            return exceptionMsg
+            log = str(e)
+            logger.error(log)
+            return ResultOfDownload(log)
 
         if result is None:
-            logger.error("Failed to download url: %s", url)
-            return "Failed to download url: "+ url
+            logger.error(YoutubeManagerLogs.EMPTY_RESULT + ": " + url)
+            return ResultOfDownload(YoutubeManagerLogs.EMPTY_RESULT + ": " + url)
 
         mediaInfo = {}
         mediaInfo['url'] = result['original_url']
@@ -198,26 +220,25 @@ class YoutubeManager:
         if "album" in result:
             mediaInfo['album'] = result['album']
 
-        return mediaInfo
+        return ResultOfDownload(mediaInfo)
 
-    def download_mp3(self, url):
+    def download_mp3(self, url) -> ResultOfDownload:
         path=self.MUSIC_PATH
         info = "[INFO] start download MP3 from link %s "%(url)
         logger.info(info)
-        metadata = None
         hash = self.getMediaHashFromLink(url)
         contentOfFile = self.openFile(path, "downloaded_songs.txt")
         if contentOfFile is not None and hash in contentOfFile:
             # only get information about media, file exists
             logger.debug("clip exists, only get information about MP3")
-            metadata = self._getMetadataFromYTForMp3(url)
+            result = self._getMetadataFromYTForMp3(url)
         else:
             logger.debug("Download MP3")
-            metadata = self._download_mp3(url)
+            result = self._download_mp3(url)
 
-        return metadata
+        return result
 
-    def _getMetadataFromYTForMp3(self, url):
+    def _getMetadataFromYTForMp3(self, url) -> ResultOfDownload:
         path=self.MUSIC_PATH
 
         ydl_opts = {
@@ -234,18 +255,24 @@ class YoutubeManager:
         try:
             result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url, download=False)
         except Exception as e:
-            return str(e)
+            log = YoutubeManagerLogs.DOWNLOAD_FAILED+": "+str(e)
+            logger.error(log)
+            return ResultOfDownload(log)
 
         if result is None:
-            return "Failed to download url: "+ url
+            log = YoutubeManagerLogs.EMPTY_RESULT+": "+url
+            logger.error(log)
+            return ResultOfDownload(log)
+
         logger.debug("Succesfull got information")
         mp3Data = self._get_metadataForMP3(result)
         logger.debug(mp3Data)
         full_path = self.lookingForFile(path, mp3Data.title, mp3Data.artist)
 
         if full_path is None:
-            logger.error("couldn't find a file")
-            return "couldn't find a file"
+            log = YoutubeManagerLogs.NOT_FOUND
+            logger.error(log)
+            return ResultOfDownload(log)
 
         metadata = {}
         metadata["path"] = full_path
@@ -255,10 +282,9 @@ class YoutubeManager:
         if(mp3Data.album is not None):
             metadata["album"] = mp3Data.album
 
-        return metadata
+        return ResultOfDownload(metadata)
 
-
-    def _download_mp3(self, url):
+    def _download_mp3(self, url) -> ResultOfDownload:
         path=self.MUSIC_PATH
         self.createDirIfNotExist(path)
 
@@ -282,10 +308,14 @@ class YoutubeManager:
         try:
             result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
         except Exception as e:
-            return str(e)
+            log = YoutubeManagerLogs.DOWNLOAD_FAILED+": "+str(e)
+            logger.error(log)
+            return ResultOfDownload(log)
 
         if result is None:
-            return "Failed to download url: "+ url
+            log = YoutubeManagerLogs.EMPTY_RESULT+": "+url
+            logger.error(log)
+            return ResultOfDownload(log)
         logger.debug("succesfull download")
 
         mp3Data = self._get_metadataForMP3(result)
@@ -298,8 +328,9 @@ class YoutubeManager:
         full_path = self.metadataManager.rename_and_add_metadata_to_song(self.MUSIC_PATH, mp3Data.album, mp3Data.artist, mp3Data.title)
 
         if full_path is None:
-            logger.error("couldn't find a file")
-            return "couldn't find a file"
+            log = YoutubeManagerLogs.NOT_FOUND
+            logger.error(log)
+            return ResultOfDownload(log)
 
         metadata = {}
         metadata["path"] = full_path
@@ -309,8 +340,7 @@ class YoutubeManager:
         if(mp3Data.album is not None):
             metadata["album"] = mp3Data.album
 
-        return metadata
-
+        return ResultOfDownload(metadata)
 
     def _get_metadataForMP3(self, data):
         songTitle = ""
@@ -326,7 +356,7 @@ class YoutubeManager:
 
         return Mp3Data(songTitle, artist, album)
 
-    def download_4k(self, url):
+    def download_4k(self, url) -> ResultOfDownload:
         path=self.VIDEO_PATH
         self.createDirIfNotExist(path)
         logger.info("start download video [high quality] from link %s", url)
@@ -341,14 +371,14 @@ class YoutubeManager:
               'ignoreerrors': False
               }
         result = self.downloadVideo(ydl_opts, url)
-        if type(result) == str:
+        if result.IsFailed():
             return result
+        data = result.data()
+        full_path= "%s/%s_4k.%s"%(path,yt_dlp.utils.sanitize_filename(data['title']),data['ext'])
+        data["path"] = full_path
+        return ResultOfDownload(data)
 
-        full_path= "%s/%s_4k.%s"%(path,yt_dlp.utils.sanitize_filename(result['title']),result['ext'])
-        result["path"] = full_path
-        return result
-
-    def download_720p(self, url):
+    def download_720p(self, url) -> ResultOfDownload:
         path=self.VIDEO_PATH
         self.createDirIfNotExist(path)
         logger.info("start download video [medium quality] from link %s", url)
@@ -363,14 +393,14 @@ class YoutubeManager:
               'ignoreerrors': False
               }
         result = self.downloadVideo(ydl_opts, url)
-        if type(result) == str:
+        if result.IsFailed():
             return result
+        data = result.data()
+        full_path = "%s/%s_720p.%s"%(path,yt_dlp.utils.sanitize_filename(data['title']), data['ext'])
+        data["path"] = full_path
+        return ResultOfDownload(data)
 
-        full_path = "%s/%s_720p.%s"%(path,yt_dlp.utils.sanitize_filename(result['title']),result['ext'])
-        result["path"] = full_path
-        return result
-
-    def download_360p(self, url):
+    def download_360p(self, url) -> ResultOfDownload:
         path=self.VIDEO_PATH
         self.createDirIfNotExist(path)
 
@@ -388,30 +418,33 @@ class YoutubeManager:
 
         result = self.downloadVideo(ydl_opts, url)
 
-        if type(result) == str:
+        if result.IsFailed():
             return result
+        data = result.data()
+        full_path = "%s/%s_360p.%s"%(path, yt_dlp.utils.sanitize_filename(data['title']), data['ext'])
 
-        full_path = "%s/%s_360p.%s"%(path, yt_dlp.utils.sanitize_filename(result['title']), result['ext'])
-        result["path"] = full_path
-        return result
+        data["path"] = full_path
+        return ResultOfDownload(data)
 
-    def downloadVideo(self, yt_args, url):
+    def downloadVideo(self, yt_args, url) -> ResultOfDownload:
         try:
             result = yt_dlp.YoutubeDL(yt_args).extract_info(url)
         except Exception as e:
-            exceptionMsg = str(e)
-            logger.warning("Exception: %s", exceptionMsg)
-            return exceptionMsg
+            log = YoutubeManagerLogs.DOWNLOAD_FAILED + ": " + str(e)
+            logger.error(log)
+            return ResultOfDownload(log)
 
         if result is None:
-            return "Failed to download url: "+ url
+            log = YoutubeManagerLogs.EMPTY_RESULT + ": " + url
+            logger.error(log)
+            return ResultOfDownload(log)
 
         metadata = {}
         metadata["title"] = result['title']
         metadata["ext"] = result['ext']
-        return metadata
+        return ResultOfDownload(metadata)
 
-    def download_playlist_mp3(self, playlistDir, playlistName, url):
+    def download_playlist_mp3(self, playlistDir, playlistName, url) -> ResultOfDownload:
         path=os.path.join(playlistDir, playlistName)
         self.createDirIfNotExist(path)
 
@@ -435,13 +468,15 @@ class YoutubeManager:
         try:
             results = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
         except Exception as e:
-            warningMsg = str(e)
-            logger.warning("Exception: %s", warningMsg)
-            return warningMsg
+            log = YoutubeManagerLogs.DOWNLOAD_FAILED+": "+str(e)
+            logger.error(log)
+            return ResultOfDownload(log)
 
-        resultOfValidate = self.validateYTResult(results)
-        if resultOfValidate is not None:
-            return resultOfValidate
+        resultOfValidate = self._validateYTResult(results)
+        if resultOfValidate is False:
+            log = YoutubeManagerLogs.NOT_ENTRIES
+            logger.error(log)
+            return ResultOfDownload(log)
 
         artistList = []
         playlistIndexList = []
@@ -466,7 +501,7 @@ class YoutubeManager:
             self.metadataManager.rename_and_add_metadata_to_playlist(playlistDir, playlistIndexList[x], playlistName, artistList[x], songTitle)
             songCounter+=1
 
-        return songCounter
+        return ResultOfDownload(songCounter)
 
     def createDirIfNotExist(self, path):
         if not os.path.exists(path): # pragma: no cover
@@ -503,6 +538,7 @@ class YoutubeManager:
         for param in parametersFromLink:
             if "watch" in param:
                 return param.split("=")[1]
+        logger.error("error with getting hash from link")
 
     def openFile(self, path, fileName): # pragma: no cover
         content = None
