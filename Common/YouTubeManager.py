@@ -6,7 +6,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class YoutubeManagerLogs():
+class YoutubeManagerLogs:
     DOWNLOAD_FAILED="download failed"
     EMPTY_RESULT="None information from yt"
     NOT_FOUND="couldn't find a downloaded file"
@@ -31,7 +31,7 @@ class ResultOfDownload:
         if type(self._data) is str:
             return self._data
 
-class YoutubeConfig():
+class YoutubeConfig:
     def __init__(self):
         pass
 
@@ -108,11 +108,23 @@ class YoutubeConfig():
         with open(self.CONFIG_FILE,'w') as fp:
             self.config.write(fp)
 
-class Mp3Data():
-    def __init__(self, title, artist, album):
+class MediaFromPlaylist:
+    def __init__(self, index:str, url:str, title:str):
+        self.playlistIndex = index
+        self.url = url
+        self.title = title
+
+class PlaylistInfo:
+    def __init__(self, name:str, listOfMedia:list):
+        self.playlistName = name
+        self.listOfMedia = listOfMedia
+
+class MediaInfo:
+    def __init__(self, title:str=None, artist:str=None, album:str=None, url:str=None):
         self.title = title
         self.artist = artist
         self.album = album
+        self.url = url
 
     def __str__(self): # pragma: no cover
         str = ""
@@ -126,15 +138,36 @@ class Mp3Data():
             if len(str) > 0:
                 str += " "
             str += "album: %s"%(self.album)
+        if self.url is not None and len(self.url)>0:
+            if len(str) > 0:
+                str += " "
+            str += "url: %s"%(self.url)
+        return str
+
+class Mp3Data(MediaInfo):
+    def __init__(self, path:str=None, url:str=None, title:str=None, artist:str=None, album:str=None):
+        super().__init__(title, artist, album, url)
+        self.path = path
+
+    def setPath(self, path):
+        self.path = path
+
+    def __str__(self): # pragma: no cover
+        str = super().__str__()
+        if self.path is not None and len(self.path)>0:
+            if len(str) > 0:
+                str += " "
+            str += "path: %s"%(self.album)
 
         return str
 
 class YoutubeManager:
-    def __init__(self, logger=None):
+    def __init__(self, musicPath="/tmp/quick_download/", videoPath="/tmp/quick_download/", mp3ArchiveFilename="downloaded_songs.txt", logger=None):
         self.metadataManager = metadata_mp3.MetadataManager()
         self.logger = logger
-        self.MUSIC_PATH='/tmp/quick_download/'
-        self.VIDEO_PATH='/tmp/quick_download/'
+        self.MUSIC_PATH=musicPath
+        self.VIDEO_PATH=videoPath
+        self.mp3DownloadedListFileName=mp3ArchiveFilename
 
     def _validateYTResult(self, results):
         if results is None:
@@ -178,15 +211,10 @@ class YoutubeManager:
         playlistTitle = results['title']
         playlistIndex = 1
         for i in results['entries']:
-            dictData = {}
-            dictData['playlist_name'] = playlistTitle
-            dictData['playlist_index'] = playlistIndex
-            dictData['url'] = i['url']
-            dictData['title'] = i['title']
-            data.append(dictData)
+            data.append(MediaFromPlaylist(playlistIndex, i['url'], i['title']))
             playlistIndex+=1
 
-        return ResultOfDownload(data)
+        return ResultOfDownload(PlaylistInfo(playlistTitle, data))
 
     def getMediaInfo(self, url) -> ResultOfDownload:
 
@@ -210,24 +238,24 @@ class YoutubeManager:
             logger.error(YoutubeManagerLogs.EMPTY_RESULT + ": " + url)
             return ResultOfDownload(YoutubeManagerLogs.EMPTY_RESULT + ": " + url)
 
-        mediaInfo = {}
-        mediaInfo['url'] = result['original_url']
-
+        title=None
+        artist=None
+        album=None
         if "title" in result:
-            mediaInfo['title'] = result['title']
+            title = result['title']
         if "artist" in result:
-            mediaInfo['artist'] = result['artist']
+            artist = result['artist']
         if "album" in result:
-            mediaInfo['album'] = result['album']
+            album = result['album']
 
-        return ResultOfDownload(mediaInfo)
+        return ResultOfDownload(MediaInfo(title,artist,album,result['original_url']))
 
     def download_mp3(self, url) -> ResultOfDownload:
         path=self.MUSIC_PATH
         info = "[INFO] start download MP3 from link %s "%(url)
         logger.info(info)
         hash = self.getMediaHashFromLink(url)
-        contentOfFile = self.openFile(path, "downloaded_songs.txt")
+        contentOfFile = self.openFile(path, self.mp3DownloadedListFileName)
         if contentOfFile is not None and hash in contentOfFile:
             # only get information about media, file exists
             logger.debug("clip exists, only get information about MP3")
@@ -274,15 +302,9 @@ class YoutubeManager:
             logger.error(log)
             return ResultOfDownload(log)
 
-        metadata = {}
-        metadata["path"] = full_path
-        if(mp3Data.artist is not None):
-            metadata["artist"] = mp3Data.artist
-        metadata["title"] = mp3Data.title
-        if(mp3Data.album is not None):
-            metadata["album"] = mp3Data.album
+        mp3Data.setPath(full_path)
 
-        return ResultOfDownload(metadata)
+        return ResultOfDownload(mp3Data)
 
     def _download_mp3(self, url) -> ResultOfDownload:
         path=self.MUSIC_PATH
@@ -293,7 +315,7 @@ class YoutubeManager:
               'addmetadata': True,
               'logger': self.logger,
               'outtmpl': path+'/'+'%(title)s.%(ext)s',
-              'download_archive': path+'/downloaded_songs.txt',
+              'download_archive': path+'/'+self.mp3DownloadedListFileName,
               'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
                     'preferredcodec': 'mp3',
@@ -332,17 +354,10 @@ class YoutubeManager:
             logger.error(log)
             return ResultOfDownload(log)
 
-        metadata = {}
-        metadata["path"] = full_path
-        if(mp3Data.artist is not None):
-            metadata["artist"] = mp3Data.artist
-        metadata["title"] = mp3Data.title
-        if(mp3Data.album is not None):
-            metadata["album"] = mp3Data.album
+        mp3Data.setPath(full_path)
+        return ResultOfDownload(mp3Data)
 
-        return ResultOfDownload(metadata)
-
-    def _get_metadataForMP3(self, data):
+    def _get_metadataForMP3(self, data) -> Mp3Data:
         songTitle = ""
         artist = ""
         album = ""
@@ -354,7 +369,7 @@ class YoutubeManager:
         if "album" in data:
             album = data['album']
 
-        return Mp3Data(songTitle, artist, album)
+        return Mp3Data(title=songTitle, artist=artist, album=album)
 
     def download_4k(self, url) -> ResultOfDownload:
         path=self.VIDEO_PATH
@@ -450,7 +465,7 @@ class YoutubeManager:
 
         ydl_opts = {
               'format': 'bestaudio/best',
-              'download_archive': path+'/downloaded_songs.txt',
+              'download_archive': path+'/'+self.mp3DownloadedListFileName,
               'addmetadata': True,
               'logger': self.logger,
               'outtmpl': path+'/'+'%(title)s.%(ext)s',
