@@ -1,6 +1,6 @@
 import unittest
 import unittest.mock as mock
-from Common.YouTubeManager import YoutubeManager, YoutubeConfig, PlaylistInfo, MediaFromPlaylist, MediaInfo, Mp3Data
+from Common.YouTubeManager import YoutubeManager, YoutubeConfig, PlaylistInfo, MediaFromPlaylist, MediaInfo, Mp3Data, ResultOfDownload
 from configparser import ConfigParser
 import yt_dlp
 from yt_dlp import utils
@@ -517,6 +517,27 @@ class YouTubeManagerConfigTestCase(unittest.TestCase):
         self.assertFalse(self.ytConfig.removePlaylist("wrongName"))
         self.assertEqual(mock_save.call_count, 0)
         self.assertEqual(removeSectionMock.call_count, 0)
+
+class ResultOfDownloadTestCase(unittest.TestCase):
+    def test_resultSuccess(self):
+        data = ["data"]
+
+        result = ResultOfDownload(data)
+
+        self.assertTrue(result.IsSuccess())
+        self.assertFalse(result.IsFailed())
+        self.assertIsNone(result.error())
+        self.assertListEqual(data, result.data())
+
+    def test_resultFailed(self):
+        error = "error"
+
+        result = ResultOfDownload(error)
+
+        self.assertFalse(result.IsSuccess())
+        self.assertTrue(result.IsFailed())
+        self.assertIsNone(result.data())
+        self.assertEqual(result.error(), error)
 
 if __name__ == "__main__":
     unittest.main()
