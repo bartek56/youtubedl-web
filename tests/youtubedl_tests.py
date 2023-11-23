@@ -139,10 +139,10 @@ class FlaskSocketIO(unittest.TestCase):
         mock_getMediaInfo.assert_called_once_with("https://youtube.com/watch?v=testHash")
 
 
-class FlaskClientTestCase(unittest.TestCase):
+class FlaskClientMailTestCase(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
-        super(FlaskClientTestCase, self).__init__(*args, **kwargs)
+        super(FlaskClientMailTestCase, self).__init__(*args, **kwargs)
         self.checked="checked"
         self.unchecked="unchecked"
         self.empty=""
@@ -151,11 +151,6 @@ class FlaskClientTestCase(unittest.TestCase):
         youtubedl.app.config['TESTING'] = True
         self.app = youtubedl.app.test_client()
         self.mailManager = youtubedl.mailManager
-        self.ytManager = youtubedl.youtubeManager
-        self.ytConfig = youtubedl.youtubeConfig
-
-    def tearDown(self):
-        pass
 
     def test_home_page(self):
         rv = self.app.get('/index.html')
@@ -202,6 +197,19 @@ class FlaskClientTestCase(unittest.TestCase):
     def test_wrong_mail(self, mock_Gmail):
         rv = self.mail('jkk', '')
         assert b'You have to fill in the fields' in rv.data
+
+class FlaskClientYoutubeTestCase(unittest.TestCase):
+
+    def __init__(self, *args, **kwargs):
+        super(FlaskClientYoutubeTestCase, self).__init__(*args, **kwargs)
+        self.checked="checked"
+        self.unchecked="unchecked"
+        self.empty=""
+
+    def setUp(self):
+        youtubedl.app.config['TESTING'] = True
+        self.app = youtubedl.app.test_client()
+        self.ytConfig = youtubedl.youtubeConfig
 
     def yt_dlp(self, url, type):
         return self.app.post('/download', data=dict(
@@ -313,6 +321,21 @@ class FlaskClientTestCase(unittest.TestCase):
         assert rv.status_code == 200
         assert b'<title>Media Server</title>' in rv.data
         assert b'Failed to remove Youtube playlist:' in rv.data
+
+class FlaskClientAlarmTestCase(unittest.TestCase):
+
+    def __init__(self, *args, **kwargs):
+        super(FlaskClientAlarmTestCase, self).__init__(*args, **kwargs)
+        self.checked="checked"
+        self.unchecked="unchecked"
+        self.empty=""
+
+    def setUp(self):
+        youtubedl.app.config['TESTING'] = True
+        self.app = youtubedl.app.test_client()
+
+    def tearDown(self):
+        pass
 
     @mock.patch('subprocess.check_output')
     @mock.patch('youtubedl.loadConfig')
