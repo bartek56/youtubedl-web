@@ -1,6 +1,6 @@
 import unittest
 import unittest.mock as mock
-from Common.YouTubeManager import YoutubeManager, YoutubeConfig, PlaylistInfo, MediaFromPlaylist, MediaInfo, Mp3Data, ResultOfDownload
+from Common.YouTubeManager import YoutubeManager, YoutubeConfig, PlaylistInfo, MediaFromPlaylist, MediaInfo, Mp3Data, VideoData, ResultOfDownload
 from configparser import ConfigParser
 import yt_dlp
 from yt_dlp import utils
@@ -97,6 +97,10 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         else:
             self.assertEqual(mp3Data.album, None)
             self.assertEqual(ytResponse["album"], self.empty)
+
+    def checkVideoData(self, data:VideoData, ytResponse, videoResolution):
+        self.assertEqual(data.title, ytResponse["title"])
+        self.assertEqual(data.path, self.videoPath+"/"+ytResponse["title"]+"_"+videoResolution+"."+ytResponse["ext"])
 
     def raiseYtError(param, **kwargs):
         #message = f'Video unavailable: {", ".join(playability_errors)}'
@@ -332,9 +336,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
 
         mock_extract_info.assert_called_with(self.ytLink)
         self.assertTrue(result.IsSuccess())
-        data = result.data()
-        self.assertEqual(data["title"], self.title)
-        self.assertEqual(data["path"], self.videoPath+"/"+self.title+"_"+self.resolution360p+"."+self.extMp4)
+        self.checkVideoData(result.data(), self.ytDownloadVideoResponse, self.resolution360p)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", return_value=None)
     def test_download360pFailed(self, mock_extract_info):
@@ -352,9 +354,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
 
         mock_extract_info.assert_called_with(self.ytLink)
         self.assertTrue(result.IsSuccess())
-        data = result.data()
-        self.assertEqual(data["title"], self.title)
-        self.assertEqual(data["path"], self.videoPath+"/"+self.title+"_"+self.resolution720p+"."+self.extMp4)
+        self.checkVideoData(result.data(), self.ytDownloadVideoResponse, self.resolution720p)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", return_value=None)
     def test_download720pFailed(self, mock_extract_info):
@@ -372,9 +372,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
 
         mock_extract_info.assert_called_with(self.ytLink)
         self.assertTrue(result.IsSuccess())
-        data = result.data()
-        self.assertEqual(data["title"], self.title)
-        self.assertEqual(data["path"], self.videoPath+"/"+self.title+"_"+self.resolution4k+"."+self.extMp4)
+        self.checkVideoData(result.data(), self.ytDownloadVideoResponse, self.resolution4k)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", return_value=None)
     def test_download4kFailed(self, mock_extract_info):

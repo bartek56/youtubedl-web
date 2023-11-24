@@ -3,7 +3,8 @@ import yt_dlp
 import metadata_mp3
 import configparser
 import logging
-
+from enum import Enum
+from abc import ABC, abstractmethod
 logger = logging.getLogger(__name__)
 
 class YoutubeManagerLogs:
@@ -12,6 +13,7 @@ class YoutubeManagerLogs:
     NOT_FOUND="couldn't find a downloaded file"
     NOT_ENTRIES="not entries in results"
     NOT_EXTRACT_INFO="not extract_info in results"
+
 
 class ResultOfDownload:
     def __init__(self, data):
@@ -160,7 +162,65 @@ class Mp3Data(MediaInfo):
             str += "path: %s"%(self.album)
 
         return str
+class VideoData:
+    def __init__(self, path:str=None, title:str=None, ext:str=None):
+        self.path = path
+        self.title = title
+        self.ext = ext
 
+    def setPath(self, path):
+        self.path = path
+
+    def __str__(self): # pragma: no cover
+        str = ""
+        if self.title is not None and len(self.title)>0:
+            str += "title: %s"%(self.title)
+        if self.ext is not None and len(self.ext)>0:
+            if len(str) > 0:
+                str += " "
+            str += "ext: %s"%(self.ext)
+        if self.path is not None and len(self.path)>0:
+            if len(str) > 0:
+                str += " "
+            str += "path: %s"%(self.path)
+        return str
+
+class VideoSettings(ABC):
+    @abstractmethod
+    def getFormat(self):
+        pass
+
+    @abstractmethod
+    def getSubname(self):
+        pass
+
+class Hight4kFormatSettings(VideoSettings):
+    format="bestvideo[ext=mp4]+bestaudio[ext=m4a]/best"
+    subname="_4k"
+
+    def getFormat(self):
+        self.format
+
+    def getSubname(self):
+        return self.subname
+class Medium720pFormatSettings(VideoSettings):
+    format="bestvideo[height=720]/mp4"
+    subname="_720p"
+
+    def getFormat(self):
+        self.format
+
+    def getSubname(self):
+        return self.subname
+class Low360pFormatSettings(VideoSettings):
+    format="worse[height<=360]/mp4"
+    subname="_360p"
+
+    def getFormat(self):
+        self.format
+
+    def getSubname(self):
+        return self.subname
 class YoutubeManager:
     def __init__(self, musicPath="/tmp/quick_download/", videoPath="/tmp/quick_download/", mp3ArchiveFilename="downloaded_songs.txt", logger=None):
         self.metadataManager = metadata_mp3.MetadataManager()
@@ -168,6 +228,17 @@ class YoutubeManager:
         self.MUSIC_PATH=musicPath
         self.VIDEO_PATH=videoPath
         self.mp3DownloadedListFileName=mp3ArchiveFilename
+        self.videoConfig = {
+              'addmetadata': True,
+              'logger': self.logger,
+              'no-overwrites': True,
+              'noplaylist': True,
+              'ignoreerrors': False
+              }
+
+        self.high4kSettings =     Hight4kFormatSettings()
+        self.medium720pSettings = Medium720pFormatSettings()
+        self.low360pSettings =    Low360pFormatSettings()
 
     def _validateYTResult(self, results):
         if results is None:
@@ -372,76 +443,24 @@ class YoutubeManager:
         return Mp3Data(title=songTitle, artist=artist, album=album)
 
     def download_4k(self, url) -> ResultOfDownload:
-        path=self.VIDEO_PATH
-        self.createDirIfNotExist(path)
         logger.info("start download video [high quality] from link %s", url)
-
-        ydl_opts = {
-              'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best',
-              'addmetadata': True,
-              'logger': self.logger,
-              'outtmpl': path+'/'+'%(title)s_4k.%(ext)s',
-              'no-overwrites': True,
-              'noplaylist': True,
-              'ignoreerrors': False
-              }
-        result = self.downloadVideo(ydl_opts, url)
-        if result.IsFailed():
-            return result
-        data = result.data()
-        full_path= "%s/%s_4k.%s"%(path,yt_dlp.utils.sanitize_filename(data['title']),data['ext'])
-        data["path"] = full_path
-        return ResultOfDownload(data)
+        return self._downloadVideo(url, self.high4kSettings)
 
     def download_720p(self, url) -> ResultOfDownload:
-        path=self.VIDEO_PATH
-        self.createDirIfNotExist(path)
         logger.info("start download video [medium quality] from link %s", url)
-
-        ydl_opts = {
-              'format': 'bestvideo[height=720]/mp4',
-              'addmetadata': True,
-              'logger': self.logger,
-              'no-overwrites': True,
-              'outtmpl': path+'/'+'%(title)s_720p.%(ext)s',
-              'noplaylist': True,
-              'ignoreerrors': False
-              }
-        result = self.downloadVideo(ydl_opts, url)
-        if result.IsFailed():
-            return result
-        data = result.data()
-        full_path = "%s/%s_720p.%s"%(path,yt_dlp.utils.sanitize_filename(data['title']), data['ext'])
-        data["path"] = full_path
-        return ResultOfDownload(data)
+        return self._downloadVideo(url, self.medium720pSettings)
 
     def download_360p(self, url) -> ResultOfDownload:
+        logger.info("start download video [low quality] from link %s", url)
+        return self._downloadVideo(url, self.low360pSettings)
+
+    def _downloadVideo(self, url, config:VideoSettings) -> ResultOfDownload:
         path=self.VIDEO_PATH
         self.createDirIfNotExist(path)
+        yt_args = self.videoConfig
+        yt_args["format"] = config.getFormat()
+        yt_args["outtmpl"] = path+'/'+'%(title)s'+config.getSubname()+'%(ext)s'
 
-        logger.info("start download video [low quality] from link %s", url)
-
-        ydl_opts = {
-              'format': 'worse[height<=360]/mp4',
-              'addmetadata': True,
-              'logger': self.logger,
-              'no-overwrites': True,
-              'outtmpl': path+'/'+'%(title)s_360p.%(ext)s',
-              'noplaylist': True,
-              'ignoreerrors': False
-              }
-
-        result = self.downloadVideo(ydl_opts, url)
-
-        if result.IsFailed():
-            return result
-        data = result.data()
-        full_path = "%s/%s_360p.%s"%(path, yt_dlp.utils.sanitize_filename(data['title']), data['ext'])
-
-        data["path"] = full_path
-        return ResultOfDownload(data)
-
-    def downloadVideo(self, yt_args, url) -> ResultOfDownload:
         try:
             result = yt_dlp.YoutubeDL(yt_args).extract_info(url)
         except Exception as e:
@@ -454,10 +473,10 @@ class YoutubeManager:
             logger.error(log)
             return ResultOfDownload(log)
 
-        metadata = {}
-        metadata["title"] = result['title']
-        metadata["ext"] = result['ext']
-        return ResultOfDownload(metadata)
+        title = yt_dlp.utils.sanitize_filename(result['title'])
+        ext = result['ext']
+        full_path = "%s/%s%s.%s"%(path, title, config.getSubname(), ext)
+        return ResultOfDownload(VideoData(full_path,title,ext))
 
     def download_playlist_mp3(self, playlistDir, playlistName, url) -> ResultOfDownload:
         path=os.path.join(playlistDir, playlistName)
