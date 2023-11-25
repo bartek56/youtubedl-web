@@ -222,7 +222,7 @@ class Hight4kFormatSettings(VideoSettings):
     subname="_4k"
 
     def getFormat(self):
-        self.format
+        return self.format
 
     def getSubname(self):
         return self.subname
@@ -232,7 +232,7 @@ class Medium720pFormatSettings(VideoSettings):
     subname="_720p"
 
     def getFormat(self):
-        self.format
+        return self.format
 
     def getSubname(self):
         return self.subname
@@ -242,7 +242,7 @@ class Low360pFormatSettings(VideoSettings):
     subname="_360p"
 
     def getFormat(self):
-        self.format
+        return self.format
 
     def getSubname(self):
         return self.subname
@@ -484,9 +484,9 @@ class YoutubeManager:
     def _downloadVideo(self, url, config:VideoSettings) -> ResultOfDownload:
         path=self.VIDEO_PATH
         self.createDirIfNotExist(path)
-        yt_args = self.videoConfig
+        yt_args = dict(self.videoConfig)
         yt_args["format"] = config.getFormat()
-        yt_args["outtmpl"] = path+'/'+'%(title)s'+config.getSubname()+'%(ext)s'
+        yt_args["outtmpl"] = path+'/'+'%(title)s'+config.getSubname()+".%(ext)s"
 
         try:
             result = yt_dlp.YoutubeDL(yt_args).extract_info(url)
