@@ -67,8 +67,10 @@ class FlaskSocketIO(unittest.TestCase):
         self.ytManager = youtubedl.youtubeManager
         self.ytConfig = youtubedl.youtubeConfig
 
-    def tearDown(self):
-        pass
+
+    def getDataFromMessage(self, message):
+        self.assertIn("data", message["args"][0])
+        return message["args"][0]["data"]
 
     @mock.patch.object(YoutubeManager, 'download_playlist_mp3')
     @mock.patch.object(YoutubeConfig, 'getPlaylists')
@@ -90,11 +92,11 @@ class FlaskSocketIO(unittest.TestCase):
 
         for x in range(3):
             self.assertEqual(received[x]["name"], SocketMessages.DownloadPlaylist_response().message)
-            numberOfDownloadedSongs = received[x]["args"][0]["data"]
+            numberOfDownloadedSongs = self.getDataFromMessage(received[x])
             self.assertEqual(numberOfDownloadedSongs, x+1)
 
         self.assertEqual(received[3]["name"], SocketMessages.DownloadPlaylist_finish().message)
-        numberOfDownloadedPlaylists = received[3]["args"][0]["data"]
+        numberOfDownloadedPlaylists = self.getDataFromMessage(received[3])
         self.assertEqual(numberOfDownloadedPlaylists, 3)
 
 
@@ -118,18 +120,14 @@ class FlaskSocketIO(unittest.TestCase):
 
         firstEmit = received[0]
         self.assertEqual(firstEmit["name"], SocketMessages.MediaInfo_response().message)
-        self.assertTrue("data" in firstEmit["args"][0])
-
-        mediaData = firstEmit["args"][0]["data"]
+        mediaData = self.getDataFromMessage(firstEmit)
         self.assertEqual(mediaData["title"], self.title)
         self.assertEqual(mediaData["artist"], self.artist)
 
 
         secondEmit = received[1]
         self.assertEqual(secondEmit["name"], SocketMessages.DownloadMedia_finish().message)
-        self.assertTrue("data" in received[1]["args"][0])
-
-        hashData = received[1]["args"][0]["data"]
+        hashData = self.getDataFromMessage(received[1])
         self.assertEqual(hashData, self.randomString)
 
 
@@ -171,7 +169,7 @@ class FlaskSocketIO(unittest.TestCase):
                         SocketMessages.MediaFromPlaylist(self.index2FromPlaylist, self.url2FromPlaylist, self.songTitle2FromPlaylist),
                         SocketMessages.MediaFromPlaylist(self.index3FromPlaylist, self.url3FromPlaylist, self.songTitle3FromPlaylist)]
         for x in range(3):
-            dataOfPlaylistInfoMessage = playlistInfoMessage["args"][0]["data"][x]
+            dataOfPlaylistInfoMessage = self.getDataFromMessage(playlistInfoMessage)[x]
             expected = expectedData[x]
             self.assertEqual(dataOfPlaylistInfoMessage["playlist_index"], expected.playlistIndex)
             self.assertEqual(dataOfPlaylistInfoMessage["title"], expected.title)
@@ -185,7 +183,7 @@ class FlaskSocketIO(unittest.TestCase):
             playlistMediaInfoMessage = received[x+1]
             self.assertEqual(playlistMediaInfoMessage["name"], SocketMessages.PlaylistMediaInfo_response().message)
             expected = expectedData[x]
-            dataOfPlaylistMediaInfoMessage = playlistMediaInfoMessage["args"][0]["data"]
+            dataOfPlaylistMediaInfoMessage = self.getDataFromMessage(playlistMediaInfoMessage)
 
             self.assertEqual(dataOfPlaylistMediaInfoMessage["playlist_index"], expected.playlistIndex)
             self.assertEqual(dataOfPlaylistMediaInfoMessage["filename"], expected.filename)
@@ -194,7 +192,7 @@ class FlaskSocketIO(unittest.TestCase):
         # DwonloadMedia_finish
         downloadMediaFinishMessage = received[4]
         self.assertEqual(downloadMediaFinishMessage["name"], SocketMessages.DownloadMedia_finish().message)
-        dataOfDownloadMediaFinish = downloadMediaFinishMessage["args"][0]["data"]
+        dataOfDownloadMediaFinish = self.getDataFromMessage(downloadMediaFinishMessage)
         self.assertEqual(dataOfDownloadMediaFinish, self.randomString)
 
 
@@ -218,15 +216,14 @@ class FlaskSocketIO(unittest.TestCase):
 
         # getMediaInfo_response
         self.assertEqual(received[0]["name"], SocketMessages.MediaInfo_response().message)
-        mediaData = received[0]["args"][0]["data"]
+        mediaData = self.getDataFromMessage(received[0])
         self.assertEqual(mediaData["title"], self.title)
         self.assertEqual(mediaData["artist"], self.artist)
 
         # DownloadMedia_finish
         self.assertEqual(received[1]["name"], SocketMessages.DownloadMedia_finish().message)
-        hashData = received[1]["args"][0]["data"]
+        hashData = self.getDataFromMessage(received[1])
         self.assertEqual(hashData, self.randomString)
-
 
 class FlaskClientMailTestCase(unittest.TestCase):
 

@@ -77,9 +77,17 @@
             // playlist
             socket.on('getPlaylistInfo_response', function (msg) {
                 var table = document.getElementById("media_info");
-                if (Array.isArray(msg)) {
+                if ("error" in msg)
+                {
+                    var row = table.insertRow();
+                    var cell1 = row.insertCell();
+                    cell1.innerHTML = msg;
+                }
+                else
+                {
                     var playlistInfo = ""
-                    for (const element of msg) {
+                    data = msg["data"]
+                    for (const element of data) {
                         playlistInfo = " <a href=\"" + element["url"] + "\">" + element["playlist_index"] + "</a>" + ": " + element["title"] + "&nbsp;&nbsp;&nbsp;" + "\n";
                         var row = table.insertRow();
                         var cell1 = row.insertCell();
@@ -88,11 +96,6 @@
                         cell1.innerHTML = playlistInfo;
                         cell2.innerHTML = " ";
                     }
-                }
-                else {
-                    var row = table.insertRow();
-                    var cell1 = row.insertCell();
-                    cell1.innerHTML = msg;
                 }
             });
 
