@@ -47,7 +47,7 @@ class Message:
         self._emitMessage()
 
     def sendError(self, error:str):
-        self._messageContent[self.errorKey] = error
+        self._messageContent[self._errorKey] = error
         self._emitMessage()
 
     def _addMessageToContent(self):

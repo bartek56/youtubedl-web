@@ -97,7 +97,7 @@ $(document).ready(function () {
         var row = table.rows[index-1];
         row.deleteCell(1);
         var cell = row.insertCell(1);
-        cell.innerHTML = '<a href="/youtubedl/download/' + hash + '">V</a>';
+        cell.innerHTML = '<a href="/youtubedl/download/' + data.hash + '">V</a>';
         //cell.innerHTML = '<a href="/download/' + data.hash + '">V</a?>';
     });
 
