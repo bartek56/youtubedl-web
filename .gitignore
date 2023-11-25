@@ -8,7 +8,7 @@ __pycache__
 #Flask
 static/bootstrap-*
 static/clockpicker
-_
+flask_session
 #googleAPI
 client_secret.json
 gmail_token.json

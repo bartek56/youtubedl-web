@@ -5,6 +5,7 @@ import configparser
 import logging
 from enum import Enum
 from abc import ABC, abstractmethod
+from typing import List
 logger = logging.getLogger(__name__)
 
 class YoutubeManagerLogs:
@@ -13,7 +14,6 @@ class YoutubeManagerLogs:
     NOT_FOUND="couldn't find a downloaded file"
     NOT_ENTRIES="not entries in results"
     NOT_EXTRACT_INFO="not extract_info in results"
-
 
 class ResultOfDownload:
     def __init__(self, data):
@@ -117,7 +117,7 @@ class MediaFromPlaylist:
         self.title = title
 
 class PlaylistInfo:
-    def __init__(self, name:str, listOfMedia:list):
+    def __init__(self, name:str, listOfMedia:List[MediaFromPlaylist]):
         self.playlistName = name
         self.listOfMedia = listOfMedia
 
@@ -146,30 +146,53 @@ class MediaInfo:
             str += "url: %s"%(self.url)
         return str
 
-class Mp3Data(MediaInfo):
-    def __init__(self, path:str=None, url:str=None, title:str=None, artist:str=None, album:str=None):
-        super().__init__(title, artist, album, url)
+class YoutubeClipData:
+    def __init__(self, path:str=None, title:str=None):
         self.path = path
+        self.title=title
 
     def setPath(self, path):
         self.path = path
 
     def __str__(self): # pragma: no cover
-        str = super().__str__()
+        str = ""
+        if self.title is not None and len(self.title)>0:
+            str += "title: %s"%(self.title)
         if self.path is not None and len(self.path)>0:
             if len(str) > 0:
                 str += " "
-            str += "path: %s"%(self.album)
+            str += "path: %s"%(self.path)
+        return str
+
+class AudioData(YoutubeClipData):
+    def __init__(self, path:str=None, title:str=None, artist:str=None, album:str=None):
+        super().__init__(path, title)
+        self.artist = artist
+        self.album = album
+
+    def __str__(self): # pragma: no cover
+        str = ""
+        if self.title is not None:
+            str += "title: %s"%(self.title)
+        if self.artist is not None:
+            if len(str) > 0:
+                str += " "
+            str += "artist: %s"%(self.artist)
+        if self.album is not None:
+            if len(str) > 0:
+                str += " "
+            str += "album: %s"%(self.album)
+        if self.path is not None:
+            if len(str) > 0:
+                str += " "
+            str += "path: %s"%(self.path)
 
         return str
-class VideoData:
-    def __init__(self, path:str=None, title:str=None, ext:str=None):
-        self.path = path
-        self.title = title
-        self.ext = ext
 
-    def setPath(self, path):
-        self.path = path
+class VideoData(YoutubeClipData):
+    def __init__(self, path:str=None, title:str=None, ext:str=None):
+        super().__init__(path,title)
+        self.ext = ext
 
     def __str__(self): # pragma: no cover
         str = ""
@@ -203,6 +226,7 @@ class Hight4kFormatSettings(VideoSettings):
 
     def getSubname(self):
         return self.subname
+
 class Medium720pFormatSettings(VideoSettings):
     format="bestvideo[height=720]/mp4"
     subname="_720p"
@@ -212,6 +236,7 @@ class Medium720pFormatSettings(VideoSettings):
 
     def getSubname(self):
         return self.subname
+
 class Low360pFormatSettings(VideoSettings):
     format="worse[height<=360]/mp4"
     subname="_360p"
@@ -221,6 +246,7 @@ class Low360pFormatSettings(VideoSettings):
 
     def getSubname(self):
         return self.subname
+
 class YoutubeManager:
     def __init__(self, musicPath="/tmp/quick_download/", videoPath="/tmp/quick_download/", mp3ArchiveFilename="downloaded_songs.txt", logger=None):
         self.metadataManager = metadata_mp3.MetadataManager()
@@ -284,6 +310,7 @@ class YoutubeManager:
         for i in results['entries']:
             data.append(MediaFromPlaylist(playlistIndex, i['url'], i['title']))
             playlistIndex+=1
+
 
         return ResultOfDownload(PlaylistInfo(playlistTitle, data))
 
@@ -428,7 +455,7 @@ class YoutubeManager:
         mp3Data.setPath(full_path)
         return ResultOfDownload(mp3Data)
 
-    def _get_metadataForMP3(self, data) -> Mp3Data:
+    def _get_metadataForMP3(self, data) -> AudioData:
         songTitle = ""
         artist = ""
         album = ""
@@ -440,7 +467,7 @@ class YoutubeManager:
         if "album" in data:
             album = data['album']
 
-        return Mp3Data(title=songTitle, artist=artist, album=album)
+        return AudioData(title=songTitle, artist=artist, album=album)
 
     def download_4k(self, url) -> ResultOfDownload:
         logger.info("start download video [high quality] from link %s", url)

@@ -6,10 +6,14 @@ from flask_socketio import SocketIO, emit
 from Common.mailManager import Mail
 from Common.YouTubeManager import YoutubeManager, YoutubeConfig
 from Common.SocketLogger import SocketLogger, LogLevel
+from Common.SocketMessages import PlaylistInfo_response, MediaInfo_response, DownloadPlaylist_response, PlaylistMediaInfo_response
+from Common.SocketMessages import DownloadMedia_finish, DownloadPlaylist_finish
 import flask
 import random
 import string
 from flask_session import Session
+import Common.YouTubeManager as YTManager
+import Common.SocketMessages as SocketMessages
 
 class AlarmConfigFlask():
     ALARM_TIME =          "alarm_time"
@@ -87,7 +91,7 @@ logger = logging.getLogger(__name__)
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-youtubeManager = YoutubeManager(socketLogger)
+youtubeManager = YoutubeManager(logger=socketLogger)
 youtubeConfig = YoutubeConfig()
 
 CONFIG_FILE="/etc/mediaserver/youtubedl.ini"
@@ -374,50 +378,6 @@ def playlists():
     else:
         return alert_info("You do not have access to Youtube playlists")
 
-@app.route('/download',methods = ['POST', 'GET'])
-def download():
-    path=''
-    info = {"path": "path"}
-
-    if request.method == 'POST':
-        link = request.form['link']
-        app.logger.debug("link: %s",link)
-        option = request.form['quickdownload']
-        if option == 'mp3':
-            app.logger.debug("mp3")
-            info = youtubeManager.download_mp3(link)
-            path = info["path"]
-            del info["path"]
-            info["Type"] = "MP3 audio"
-        elif option == '360p':
-            app.logger.debug("360p")
-            info = youtubeManager.download_360p(link)
-            path = info["path"]
-            del info["path"]
-            info["Type"] = "video"
-        elif option == '720p':
-            app.logger.debug("720p")
-            info = youtubeManager.download_720p(link)
-            path = info["path"]
-            del info["path"]
-            info["Type"] = "video"
-        elif option == '4k':
-            app.logger.debug("4k")
-            info = youtubeManager.download_4k(link)
-            path = info["path"]
-            del info["path"]
-            info["Type"] = "video"
-    if not isFile(path):
-        # TODO sanitaize
-        path = path.replace("|", "_")
-        path = path.replace("\"", "'")
-        path = path.replace(":", "-")
-    if isFile(path):
-        return render_template('download.html', full_path=path, file_info=info)
-    else:
-        app.logger.debug("error")
-        return alert_info("Failed downloaded")
-
 @app.route('/download_file',methods = ['POST', 'GET'])
 def downloadFile():
    path=''
@@ -492,10 +452,12 @@ def handle_message(msg):
 
     for playlist in playlists:
         response = youtubeManager.download_playlist_mp3(path, playlist["name"], playlist["link"])
-        ytData = response.data()
-        emit('downloadPlaylist_response', {"data": ytData})
+        if response.IsFailed():
+            logger.error("Failed to download playlist %s from link %s - %s", playlist["name"], playlist["link"], response.error())
+        numberOfDownloadedSongs:int = response.data()
+        DownloadPlaylist_response().sendMessage(numberOfDownloadedSongs)
 
-    emit('downloadPlaylist_finish', {"data":"finished"})
+    DownloadPlaylist_finish().sendMessage(numberOfDownloadedSongs)
 
 def downloadMediaOfType(url, type):
     if type == "mp3":
@@ -513,51 +475,57 @@ def downloadMedia(msg):
     downloadType = str(msg['type'])
     if "playlist?list" in url and "watch?v" not in url:
         downloadedFiles = []
-        result = youtubeManager.getPlaylistInfo(url)
+        resultOfPLaylist = youtubeManager.getPlaylistInfo(url)
 
-        if result.IsFailed():
-            emit('downloadMedia_finish', {"error":"Failed to get info playlist"})
-            logger.info("Error to download media")
+        if resultOfPLaylist.IsFailed():
+            DownloadMedia_finish().sendError("Failed to get info playlist")
+
+            logger.info("Error to download media: %s", resultOfPLaylist.error())
             return
-        ytData = result.data()
-        emit('getPlaylistInfo_response', ytData)
+
+        ytData:YTManager.PlaylistInfo = resultOfPLaylist.data()
+
+        PlaylistInfo_response().sendMessage(SocketMessages.PlaylistInfo(ytData.playlistName, ytData.listOfMedia))
         index = 0
-        for x in ytData:
+        for x in ytData.listOfMedia:
             index += 1
-            result = downloadMediaOfType(x["url"], downloadType)
-            if result.IsFailed():
-                emit("getPlaylistMediaInfo_response", {"error": "Failed to download info from playlist", "playlist_index":index})
+            resultOfMedia = downloadMediaOfType(x.url, downloadType)
+            if resultOfMedia.IsFailed():
+                PlaylistInfo_response().sendError("Failed to download info from playlist")
                 continue
-            data = result.data()
-            downloadedFiles.append(data["path"])
-            filename = data["path"].split("/")[-1]
+            data:YTManager.YoutubeClipData = resultOfMedia.data()
+            downloadedFiles.append(data.path)
+            filename = data.path.split("/")[-1]
             randomHash = getRandomString()
             session[randomHash] = filename
-            emit("getPlaylistMediaInfo_response", {"data": {"playlist_index":x["playlist_index"], "filename":filename, "hash":randomHash}})
-        playlistName = ytData[0]["playlist_name"]
+            PlaylistMediaInfo_response().sendMessage(SocketMessages.PlaylistMediaInfo(x.playlistIndex, filename, randomHash))
+        playlistName = ytData.playlistName
         compressToZip(downloadedFiles, playlistName)
         randomHash = getRandomString()
         session[randomHash] = "%s.zip"%playlistName
-        emit('downloadMedia_finish', {"data":randomHash})
+
+        DownloadMedia_finish().sendMessage(randomHash)
     else:
         result = youtubeManager.getMediaInfo(url)
         if result.IsFailed():
-            emit('downloadMedia_finish', {"error": result.data()})
-            logger.warning("wrong url: %s", mediaInfo)
+            DownloadMedia_finish().sendError(result.error())
+            logger.error("Failed download from url %s - error: %s", url, result.error())
             return
-        mediaInfo = result.data()
-        emit('getMediaInfo_response', {"data": mediaInfo})
+        mediaInfo:YTManager.MediaInfo = result.data()
+
+        MediaInfo_response().sendMessage(SocketMessages.MediaInfo(mediaInfo.title, mediaInfo.artist))
         result2 = downloadMediaOfType(url, downloadType)
 
         if result2.IsFailed():
-            emit('downloadMedia_finish', {"error": "problem with download media: " + result2.data()})
+            logger.error("Failed with download media %s - %s", url, result2.error())
+            DownloadMedia_finish().sendError("problem with download media: " + result2.error())
             return
 
-        data = result2.data()
-        filename = data["path"].split("/")[-1]
+        data:YTManager.YoutubeClipData = result2.data()
+        filename = data.path.split("/")[-1]
         randomHash = getRandomString()
         session[randomHash] = filename
-        emit('downloadMedia_finish', {"data":randomHash})
+        DownloadMedia_finish().sendMessage(randomHash)
 
 def compressToZip(files, playlistName):
     # TODO zip fileName

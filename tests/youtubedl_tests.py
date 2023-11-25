@@ -2,12 +2,59 @@ from youtubedl import AlarmConfigFlask, AlarmConfigLinux, SystemdCommand, socket
 import youtubedl
 import unittest
 import unittest.mock as mock
+from unittest.mock import MagicMock
 from configparser import ConfigParser
 from Common.mailManager import Mail
 from Common.YouTubeManager import YoutubeManager, YoutubeConfig, ResultOfDownload
+import Common.YouTubeManager as YTManager
+import Common.SocketMessages as SocketMessages
 import logging
 
 class FlaskSocketIO(unittest.TestCase):
+    randomString = "ABCDEFGHI"
+    randomString1 = "AAAAAAAA"
+    randomString2 = "BBBBBBBB"
+    randomString3 = "CCCCCCCC"
+    empty = " "
+    title = "test_title"
+    artist = "test_artist"
+    album = "test_album"
+    extMp3 = "mp3"
+    extMp4 = "mp4"
+    path = "/tmp/" + title+".mp3"
+    downloadDir = "/home/music"
+    url = "https://www.youtube.com/watch?v=1Pl-FT0VCNs"
+    playlistUrl = "https://www.youtube.com/playlist?list=PL6uhlddQJkfh4YsbxgPE70a6KeFOCDgG_"
+
+    playlistsPath = "/home/music/youtube playlists"
+    playlistName = "playlistNameTest"
+
+    playlist1Name = "playlist1"
+    playlist2Name = "playlist2"
+    playlist3Name = "playlist3"
+    playlist1Link = "https://www.youtube.com/playlist?list=PL111111111"
+    playlist2Link = "https://www.youtube.com/playlist?list=PL222222222"
+    playlist3Link = "https://www.youtube.com/playlist?list=PL333333333"
+    playlistsConfiguration = [{"name":playlist1Name, "link":playlist1Link},{"name":playlist2Name, "link":playlist2Link},{"name":playlist3Name, "link":playlist3Link}]
+
+    songTitle1FromPlaylist = "song1"
+    songTitle2FromPlaylist = "song2"
+    songTitle3FromPlaylist = "song3"
+    songArtist1FromPlaylist = "artist1"
+    songArtist2FromPlaylist = "artist2"
+    songArtist3FromPlaylist = "artist3"
+    songAlbum1FromPlaylist = "album1"
+    songAlbum2FromPlaylist = "album2"
+    songAlbum3FromPlaylist = "album3"
+
+
+    url1FromPlaylist = "https:/www.youtube.com/watch?v=11111"
+    url2FromPlaylist = "https:/www.youtube.com/watch?v=22222"
+    url3FromPlaylist = "https:/www.youtube.com/watch?v=33333"
+
+    index1FromPlaylist = "1"
+    index2FromPlaylist = "2"
+    index3FromPlaylist = "3"
 
     def __init__(self, *args, **kwargs):
         super(FlaskSocketIO, self).__init__(*args, **kwargs)
@@ -23,120 +70,162 @@ class FlaskSocketIO(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @mock.patch.object(YoutubeManager, 'download_playlist_mp3', return_value=ResultOfDownload({"title": "songTitle", "ext":"mp3", "path":"/tmp/songTitle.mp3"}))
-    @mock.patch.object(YoutubeConfig, 'getPlaylists', return_value=[{"name":"playlist1", "link":"link1"},{"name":"playlist2", "link":"link2"},{"name":"playlist3", "link":"link3"}])
-    @mock.patch.object(YoutubeConfig, 'getPath', return_value="/tmp/tempPath")
-    def test_downloadPlaylists(self, mock_getPath, mock_getPlayists, mock_downloadPlaylistMp3):
-        self.socketio_test_client.emit('downloadPlaylists', {"url":'https://youtube.com/watch?v=testHash', "type":"mp3"})
+    @mock.patch.object(YoutubeManager, 'download_playlist_mp3')
+    @mock.patch.object(YoutubeConfig, 'getPlaylists')
+    @mock.patch.object(YoutubeConfig, 'getPath')
+    def test_downloadPlaylists(self, mock_getPath:MagicMock, mock_getPlaylists:MagicMock, mock_downloadPlaylistMp3:MagicMock):
+        mock_getPlaylists.configure_mock(return_value=self.playlistsConfiguration)
+        mock_downloadPlaylistMp3.configure_mock(side_effect=[ResultOfDownload(1),ResultOfDownload(2),ResultOfDownload(3)])
+        mock_getPath.configure_mock(return_value=self.playlistsPath)
+
+        self.socketio_test_client.emit('downloadPlaylists', '')
 
         mock_getPath.assert_called_once()
-        mock_getPlayists.assert_called_once()
-        mock_downloadPlaylistMp3.assert_has_calls([mock.call('/tmp/tempPath', 'playlist1', 'link1'),
-                                                   mock.call('/tmp/tempPath', 'playlist2', 'link2'),
-                                                   mock.call('/tmp/tempPath', 'playlist3', 'link3')])
+        mock_getPlaylists.assert_called_once()
+        mock_downloadPlaylistMp3.assert_has_calls([mock.call(self.playlistsPath, self.playlist1Name, self.playlist1Link),
+                                                   mock.call(self.playlistsPath, self.playlist2Name, self.playlist2Link),
+                                                   mock.call(self.playlistsPath, self.playlist3Name, self.playlist3Link)])
         received = self.socketio_test_client.get_received()
         self.assertEqual(len(received), 4)
 
         for x in range(3):
-            self.assertEqual(received[x]["name"], "downloadPlaylist_response")
-            self.assertTrue("data" in received[x]["args"][0])
-            dataPlaylist = received[x]["args"][0]["data"]
-            self.assertEqual(len(dataPlaylist), 3)
-            self.assertEqual(dataPlaylist["title"], "songTitle")
-            self.assertEqual(dataPlaylist["ext"], "mp3")
-            self.assertEqual(dataPlaylist["path"], "/tmp/songTitle.mp3")
+            self.assertEqual(received[x]["name"], SocketMessages.DownloadPlaylist_response().message)
+            numberOfDownloadedSongs = received[x]["args"][0]["data"]
+            self.assertEqual(numberOfDownloadedSongs, x+1)
 
-        self.assertEqual(received[3]["name"], "downloadPlaylist_finish")
-        self.assertTrue("data" in received[3]["args"][0])
-        dataPlaylist = received[3]["args"][0]["data"]
-        self.assertEqual(dataPlaylist, "finished")
+        self.assertEqual(received[3]["name"], SocketMessages.DownloadPlaylist_finish().message)
+        numberOfDownloadedPlaylists = received[3]["args"][0]["data"]
+        self.assertEqual(numberOfDownloadedPlaylists, 3)
 
 
-    @mock.patch.object(YoutubeManager, 'download_mp3', return_value=ResultOfDownload({"title": "songTitle", "artist":"testArtist", "album": "testAlbum", "path":"/home/music/song.mp3"}))
-    @mock.patch.object(YoutubeManager, 'getMediaInfo', return_value=ResultOfDownload({"title": "songTitle", "ext":"mp3", "path":"/tmp/songTitle.mp3"}))
-    def test_downloadMp3(self, mock_downloadMp3, mock_getMediaInfo):
-        self.socketio_test_client.emit('downloadMedia', {"url":'https://youtube.com/watch?v=testHash', "type":"mp3"})
+    @mock.patch.object(YoutubeManager, 'download_mp3')
+    @mock.patch.object(YoutubeManager, 'getMediaInfo')
+    @mock.patch('youtubedl.getRandomString')
+    def test_downloadMp3(self, mock_getRandomString:MagicMock, mock_getMediaInfo:MagicMock, mock_downloadMp3:MagicMock):
+        mock_getMediaInfo.configure_mock(return_value=ResultOfDownload(YTManager.MediaInfo(self.title,self.artist,self.album,self.url)))
+        mock_downloadMp3.configure_mock(return_value=ResultOfDownload(YTManager.AudioData(self.path, self.title, self.artist, self.album)))
+        mock_getRandomString.configure_mock(return_value=self.randomString)
+
+        self.socketio_test_client.emit('downloadMedia', {"url":self.url, "type":self.extMp3})
+
+        mock_downloadMp3.assert_called_once_with(self.url)
+        mock_getMediaInfo.assert_called_once_with(self.url)
+        mock_getRandomString.assert_called_once()
+
 
         received = self.socketio_test_client.get_received()
         self.assertEqual(len(received), 2)
-        self.assertEqual(received[0]["name"], "getMediaInfo_response")
-        self.assertTrue("data" in received[0]["args"][0])
 
-        mediaData = received[0]["args"][0]["data"]
-        self.assertEqual(mediaData["title"], "songTitle")
-        self.assertEqual(mediaData["ext"], "mp3")
-        self.assertEqual(mediaData["path"], "/tmp/songTitle.mp3")
+        firstEmit = received[0]
+        self.assertEqual(firstEmit["name"], SocketMessages.MediaInfo_response().message)
+        self.assertTrue("data" in firstEmit["args"][0])
 
-        self.assertEqual(received[1]["name"], "downloadMedia_finish")
+        mediaData = firstEmit["args"][0]["data"]
+        self.assertEqual(mediaData["title"], self.title)
+        self.assertEqual(mediaData["artist"], self.artist)
+
+
+        secondEmit = received[1]
+        self.assertEqual(secondEmit["name"], SocketMessages.DownloadMedia_finish().message)
         self.assertTrue("data" in received[1]["args"][0])
 
         hashData = received[1]["args"][0]["data"]
-        self.assertEqual(type(hashData), str)
+        self.assertEqual(hashData, self.randomString)
 
-        mock_downloadMp3.assert_called_once_with("https://youtube.com/watch?v=testHash")
-        mock_getMediaInfo.assert_called_once_with("https://youtube.com/watch?v=testHash")
 
-    @mock.patch.object(YoutubeManager, 'download_mp3', return_value=ResultOfDownload({"title": "songTitle", "artist":"testArtist", "album": "testAlbum", "path":"/home/music/song.mp3"}))
-    @mock.patch.object(YoutubeManager, 'getPlaylistInfo', return_value =
-        ResultOfDownload([{"playlist_name": "playlistNameTest", "playlist_index":"1", "title":"song1", "url":"https://youtube.com/song1"}]))
+    @mock.patch.object(YoutubeManager, 'download_mp3')
+    @mock.patch.object(YoutubeManager, 'getPlaylistInfo')
+    @mock.patch('youtubedl.getRandomString')
     @mock.patch('youtubedl.compressToZip')
-    def test_downloadMp3Playlist(self, mock_zip, mock_getPlaylistInfo, mock_downloadMp3):
-        self.socketio_test_client.emit('downloadMedia', {"url":'https://youtube.com/playlist?list=testPlaylistLink', "type":"mp3"})
+    def test_downloadMp3Playlist(self, mock_zip:MagicMock, mock_getRandomString:MagicMock, mock_getPlaylistInfo:MagicMock, mock_downloadMp3:MagicMock):
+        mock_getPlaylistInfo.configure_mock(return_value = ResultOfDownload(
+            YTManager.PlaylistInfo(self.playlistName,
+                                   [YTManager.MediaFromPlaylist(self.index1FromPlaylist, self.url1FromPlaylist, self.songTitle1FromPlaylist),
+                                    YTManager.MediaFromPlaylist(self.index2FromPlaylist, self.url2FromPlaylist, self.songTitle2FromPlaylist),
+                                    YTManager.MediaFromPlaylist(self.index3FromPlaylist, self.url3FromPlaylist, self.songTitle3FromPlaylist)])))
+        mock_downloadMp3.configure_mock(side_effect=[ResultOfDownload(YTManager.AudioData(self.downloadDir+'/'+self.songTitle1FromPlaylist+'.'+self.extMp3, self.songTitle1FromPlaylist, self.songArtist1FromPlaylist, self.songAlbum1FromPlaylist)),
+                                                     ResultOfDownload(YTManager.AudioData(self.downloadDir+'/'+self.songTitle2FromPlaylist+'.'+self.extMp3, self.songTitle2FromPlaylist, self.songArtist2FromPlaylist, self.songAlbum2FromPlaylist)),
+                                                     ResultOfDownload(YTManager.AudioData(self.downloadDir+'/'+self.songTitle3FromPlaylist+'.'+self.extMp3, self.songTitle3FromPlaylist, self.songArtist3FromPlaylist, self.songAlbum3FromPlaylist))])
+        mock_getRandomString.configure_mock(side_effect=[self.randomString1, self.randomString2, self.randomString3, self.randomString])
+
+        # --------------------------------------------------------------------------------------------
+        self.socketio_test_client.emit('downloadMedia', {"url":self.playlistUrl, "type":self.extMp3})
+        # --------------------------------------------------------------------------------------------
+
+        mock_getPlaylistInfo.assert_called_once_with(self.playlistUrl)
+        mock_downloadMp3.assert_has_calls([mock.call(self.url1FromPlaylist),
+                                           mock.call(self.url2FromPlaylist),
+                                           mock.call(self.url3FromPlaylist)])
+        self.assertEqual(mock_getRandomString.call_count, 4)
+        mock_zip.assert_called_once_with([self.downloadDir+'/'+self.songTitle1FromPlaylist+'.'+self.extMp3,
+                                          self.downloadDir+'/'+self.songTitle2FromPlaylist+'.'+self.extMp3,
+                                          self.downloadDir+'/'+self.songTitle3FromPlaylist+'.'+self.extMp3], self.playlistName)
 
         received = self.socketio_test_client.get_received()
-        self.assertEqual(len(received), 3)
-        self.assertEqual(received[0]["name"], "getPlaylistInfo_response")
-        self.assertEqual(received[1]["name"], "getPlaylistMediaInfo_response")
-        self.assertEqual(received[2]["name"], "downloadMedia_finish")
+        self.assertEqual(len(received), 5)
 
-        self.assertEqual(len(received[0]["args"]), 1)
+        # getPlaylistInfo_response
+        playlistInfoMessage = received[0]
+        self.assertEqual(playlistInfoMessage["name"], SocketMessages.PlaylistInfo_response().message)
+        expectedData = [SocketMessages.MediaFromPlaylist(self.index1FromPlaylist, self.url1FromPlaylist, self.songTitle1FromPlaylist),
+                        SocketMessages.MediaFromPlaylist(self.index2FromPlaylist, self.url2FromPlaylist, self.songTitle2FromPlaylist),
+                        SocketMessages.MediaFromPlaylist(self.index3FromPlaylist, self.url3FromPlaylist, self.songTitle3FromPlaylist)]
+        for x in range(3):
+            dataOfPlaylistInfoMessage = playlistInfoMessage["args"][0]["data"][x]
+            expected = expectedData[x]
+            self.assertEqual(dataOfPlaylistInfoMessage["playlist_index"], expected.playlistIndex)
+            self.assertEqual(dataOfPlaylistInfoMessage["title"], expected.title)
+            self.assertEqual(dataOfPlaylistInfoMessage["url"], expected.url)
 
-        mediaData = received[0]["args"][0][0]
-        self.assertEqual(mediaData["title"], "song1")
-        self.assertEqual(mediaData["playlist_index"], "1")
-        self.assertEqual(mediaData["playlist_name"], "playlistNameTest")
-        self.assertEqual(mediaData["url"], "https://youtube.com/song1")
+        # getPlaylistMediaInfo_response - three songs
+        expectedData = [SocketMessages.PlaylistMediaInfo(self.index1FromPlaylist, self.songTitle1FromPlaylist+"."+self.extMp3, self.randomString1),
+                        SocketMessages.PlaylistMediaInfo(self.index2FromPlaylist, self.songTitle2FromPlaylist+"."+self.extMp3, self.randomString2),
+                        SocketMessages.PlaylistMediaInfo(self.index3FromPlaylist, self.songTitle3FromPlaylist+"."+self.extMp3, self.randomString3)]
+        for x in range(3):
+            playlistMediaInfoMessage = received[x+1]
+            self.assertEqual(playlistMediaInfoMessage["name"], SocketMessages.PlaylistMediaInfo_response().message)
+            expected = expectedData[x]
+            dataOfPlaylistMediaInfoMessage = playlistMediaInfoMessage["args"][0]["data"]
+
+            self.assertEqual(dataOfPlaylistMediaInfoMessage["playlist_index"], expected.playlistIndex)
+            self.assertEqual(dataOfPlaylistMediaInfoMessage["filename"], expected.filename)
+            self.assertEqual(dataOfPlaylistMediaInfoMessage["hash"], expected.hash)
+
+        # DwonloadMedia_finish
+        downloadMediaFinishMessage = received[4]
+        self.assertEqual(downloadMediaFinishMessage["name"], SocketMessages.DownloadMedia_finish().message)
+        dataOfDownloadMediaFinish = downloadMediaFinishMessage["args"][0]["data"]
+        self.assertEqual(dataOfDownloadMediaFinish, self.randomString)
 
 
-        self.assertTrue("data" in received[1]["args"][0])
-        playlistData = received[1]["args"][0]["data"]
-        self.assertEqual(playlistData["playlist_index"], '1')
-        self.assertEqual(playlistData["filename"], 'song.mp3')
-        self.assertEqual(len(playlistData["hash"]), 8)
+    @mock.patch.object(YoutubeManager, 'download_720p')
+    @mock.patch.object(YoutubeManager, 'getMediaInfo')
+    @mock.patch('youtubedl.getRandomString')
+    def test_download720p(self, mock_randomString:MagicMock, mock_getMediaInfo:MagicMock, mock_download720p:MagicMock):
+        mock_download720p.configure_mock(return_value=ResultOfDownload(YTManager.VideoData(self.downloadDir+"/"+self.title+"."+self.extMp4, self.title)))
+        mock_getMediaInfo.configure_mock(return_value=ResultOfDownload(YTManager.MediaInfo(self.title, self.artist, self.album, self.url)))
+        mock_randomString.configure_mock(return_value=self.randomString)
 
+        # -----------------------------------------------------------------------------------------------------------
+        self.socketio_test_client.emit('downloadMedia', {"url":self.url, "type":"720p"})
+        # -----------------------------------------------------------------------------------------------------------
 
-        self.assertTrue("data" in received[2]["args"][0])
-        hashData = received[2]["args"][0]["data"]
-        self.assertEqual(type(hashData), str)
-
-        mock_downloadMp3.assert_called_once_with("https://youtube.com/song1")
-        mock_getPlaylistInfo.assert_called_once_with("https://youtube.com/playlist?list=testPlaylistLink")
-        mock_zip.assert_called_once_with(['/home/music/song.mp3'], 'playlistNameTest')
-
-
-    @mock.patch.object(YoutubeManager, 'download_720p', return_value=ResultOfDownload({"title": "videoTitle","path":"/home/music/wideo.mp4"}))
-    @mock.patch.object(YoutubeManager, 'getMediaInfo', return_value=ResultOfDownload({"title": "videoTitle", "ext":"mp4", "path":"/tmp/videoTitle.mp4"}))
-    def test_download720p(self, mock_download720p, mock_getMediaInfo):
-        self.socketio_test_client.emit('downloadMedia', {"url":'https://youtube.com/watch?v=testHash', "type":"720p"})
+        mock_download720p.assert_called_once_with(self.url)
+        mock_getMediaInfo.assert_called_once_with(self.url)
 
         received = self.socketio_test_client.get_received()
         self.assertEqual(len(received), 2)
-        self.assertEqual(received[0]["name"], "getMediaInfo_response")
-        self.assertTrue("data" in received[0]["args"][0])
 
+        # getMediaInfo_response
+        self.assertEqual(received[0]["name"], SocketMessages.MediaInfo_response().message)
         mediaData = received[0]["args"][0]["data"]
-        self.assertEqual(mediaData["title"], "videoTitle")
-        self.assertEqual(mediaData["ext"], "mp4")
-        self.assertEqual(mediaData["path"], "/tmp/videoTitle.mp4")
-        self.assertEqual(received[1]["name"], "downloadMedia_finish")
-        self.assertTrue("data" in received[1]["args"][0])
+        self.assertEqual(mediaData["title"], self.title)
+        self.assertEqual(mediaData["artist"], self.artist)
 
+        # DownloadMedia_finish
+        self.assertEqual(received[1]["name"], SocketMessages.DownloadMedia_finish().message)
         hashData = received[1]["args"][0]["data"]
-        self.assertEqual(type(hashData), str)
-        self.assertEqual(received[1]["name"], "downloadMedia_finish")
-
-        mock_download720p.assert_called_once_with("https://youtube.com/watch?v=testHash")
-        mock_getMediaInfo.assert_called_once_with("https://youtube.com/watch?v=testHash")
+        self.assertEqual(hashData, self.randomString)
 
 
 class FlaskClientMailTestCase(unittest.TestCase):
@@ -198,97 +287,18 @@ class FlaskClientMailTestCase(unittest.TestCase):
         rv = self.mail('jkk', '')
         assert b'You have to fill in the fields' in rv.data
 
-class FlaskClientYoutubeTestCase(unittest.TestCase):
+class FlaskClientConfigurePlaylists(unittest.TestCase):
+    checked="checked"
+    unchecked="unchecked"
+    empty=""
 
     def __init__(self, *args, **kwargs):
-        super(FlaskClientYoutubeTestCase, self).__init__(*args, **kwargs)
-        self.checked="checked"
-        self.unchecked="unchecked"
-        self.empty=""
+        super(FlaskClientConfigurePlaylists, self).__init__(*args, **kwargs)
 
     def setUp(self):
         youtubedl.app.config['TESTING'] = True
         self.app = youtubedl.app.test_client()
         self.ytConfig = youtubedl.youtubeConfig
-
-    def yt_dlp(self, url, type):
-        return self.app.post('/download', data=dict(
-        link=url,
-        quickdownload=type
-    ), follow_redirects=True)
-
-    @mock.patch.object(YoutubeManager, 'download_mp3', return_value={"title": "song","path":"/home/music/song.mp3"})
-    @mock.patch('youtubedl.isFile', return_value=False)
-    def test_failed_download_mp3(self, mock_isFile, mock_mp3):
-        ytLink = "https://youtu.be/q1MmYVcDyMs"
-        rv = self.yt_dlp(ytLink, 'mp3')
-        mock_mp3.assert_called_once_with(ytLink)
-        self.assertEqual(mock_isFile.call_count, 2)
-        self.assertEqual(rv.status_code, 200)
-        self.assertIn(b'Failed downloaded', rv.data)
-
-    @mock.patch.object(YoutubeManager, 'download_mp3', return_value={"title": "song example","path":"/home/music/song.mp3"})
-    @mock.patch('youtubedl.isFile', return_value=True)
-    def test_download_mp3(self, mock_isFile, mock_mp3):
-        ytLink = "https://youtu.be/q1MmYVcDyMs"
-        rv = self.yt_dlp(ytLink, 'mp3')
-        mock_mp3.assert_called_once_with(ytLink)
-        self.assertEqual(mock_isFile.call_count, 2)
-        self.assertEqual(rv.status_code, 200)
-        self.assertIn(b'<form action="/download_file"', rv.data)
-        self.assertIn(b'Type: MP3 audio', rv.data)
-        self.assertIn(b'title: song example', rv.data)
-
-    @mock.patch.object(YoutubeManager, 'download_360p', return_value={"title": "video example","path":"/home/music/wideo.mp4"})
-    @mock.patch('youtubedl.isFile', return_value=True)
-    def test_download_360p(self, mock_isFile, mock_download):
-        ytLink = "https://youtu.be/q1MmYVcDyMs"
-        rv = self.yt_dlp(ytLink, '360p')
-        mock_download.assert_called_once_with(ytLink)
-        self.assertEqual(mock_isFile.call_count, 2)
-        self.assertEqual(rv.status_code, 200)
-        self.assertIn(b'<form action="/download_file"', rv.data)
-        self.assertIn(b'Type: video', rv.data)
-        self.assertIn(b'title: video example', rv.data)
-
-    @mock.patch.object(YoutubeManager, 'download_720p', return_value={"title": "video example","path":"/home/music/wideo.mp4"})
-    @mock.patch('youtubedl.isFile', return_value=True)
-    def test_download_720p(self, mock_isFile, mock_download):
-        ytLink = "https://youtu.be/q1MmYVcDyMs"
-        rv = self.yt_dlp(ytLink, '720p')
-        mock_download.assert_called_once_with(ytLink)
-        self.assertEqual(mock_isFile.call_count, 2)
-        self.assertEqual(rv.status_code, 200)
-        self.assertIn(b'<form action="/download_file"', rv.data)
-        self.assertIn(b'Type: video', rv.data)
-        self.assertIn(b'title: video example', rv.data)
-
-    @mock.patch.object(YoutubeManager, 'download_4k', return_value={"title": "video example","path":"/home/music/wideo.mp4"})
-    @mock.patch('youtubedl.isFile', return_value=True)
-    def test_download_4k(self, mock_isFile, mock_download):
-        ytLink = "https://youtu.be/q1MmYVcDyMs"
-        rv = self.yt_dlp(ytLink, '4k')
-        mock_download.assert_called_once_with(ytLink)
-        self.assertEqual(mock_isFile.call_count, 2)
-        self.assertEqual(rv.status_code, 200)
-        self.assertIn(b'<form action="/download_file"', rv.data)
-        self.assertIn(b'Type: video', rv.data)
-        self.assertIn(b'title: video example', rv.data)
-
-    @mock.patch("flask.send_file")
-    def test_download_file(self, mock):
-        rv = self.app.post('/download_file', data=dict(path="/tmp/fileForDownload.mp4"))
-        mock.assert_called_once_with("/tmp/fileForDownload.mp4", as_attachment=True)
-        assert rv.status_code == 200
-
-    @mock.patch.object(YoutubeConfig, 'getPlaylistsName', return_value=["playlist1, playlist2"])
-    @mock.patch.object(YoutubeConfig, 'addPlaylist')
-    def test_add_playlist(self, mock_addPLaylist, mock_getPlaylistsName):
-        rv = self.app.post('/playlists', data=dict(add=True, playlist_name="yt_playlist", link="https://youtube.com/link"), follow_redirects=True)
-        mock_getPlaylistsName.assert_called_once()
-        mock_addPLaylist.assert_called_once_with({'name': 'yt_playlist', 'link': 'https://youtube.com/link'})
-        assert rv.status_code == 200
-        assert b'<title>Media Server</title>' in rv.data
 
     @mock.patch.object(YoutubeConfig, 'removePlaylist', return_value=True)
     def test_remove_playlist(self, mock_removePlaylist):

@@ -1,6 +1,6 @@
 import unittest
 import unittest.mock as mock
-from Common.YouTubeManager import YoutubeManager, YoutubeConfig, PlaylistInfo, MediaFromPlaylist, MediaInfo, Mp3Data, VideoData, ResultOfDownload
+from Common.YouTubeManager import YoutubeManager, YoutubeConfig, PlaylistInfo, MediaFromPlaylist, MediaInfo, AudioData, VideoData, ResultOfDownload
 from configparser import ConfigParser
 import yt_dlp
 from yt_dlp import utils
@@ -82,20 +82,20 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         self.assertEqual(mediaInfo.artist, ytResponse["artist"])
         self.assertEqual(mediaInfo.album, ytResponse["album"])
 
-    def checkMp3Data(self, mp3Data:Mp3Data, ytResponse):
-        self.assertEqual(mp3Data.title, ytResponse["title"])
+    def checkAudioData(self, audioData:AudioData, ytResponse):
+        self.assertEqual(audioData.title, ytResponse["title"])
         if(len(ytResponse["artist"])>0):
-            self.assertEqual(mp3Data.artist, ytResponse["artist"])
-            fileName = self.musicPath+mp3Data.artist + " - " + mp3Data.title + ".mp3"
+            self.assertEqual(audioData.artist, ytResponse["artist"])
+            fileName = self.musicPath+audioData.artist + " - " + audioData.title + ".mp3"
         else:
-            self.assertEqual(mp3Data.artist, self.empty)
+            self.assertEqual(audioData.artist, self.empty)
             self.assertEqual(ytResponse["artist"], "")
-            fileName = self.musicPath+mp3Data.title + ".mp3"
+            fileName = self.musicPath+audioData.title + ".mp3"
 
         if(len(ytResponse["album"])>0):
-            self.assertEqual(mp3Data.album, ytResponse["album"])
+            self.assertEqual(audioData.album, ytResponse["album"])
         else:
-            self.assertEqual(mp3Data.album, None)
+            self.assertEqual(audioData.album, None)
             self.assertEqual(ytResponse["album"], self.empty)
 
     def checkVideoData(self, data:VideoData, ytResponse, videoResolution):
@@ -185,7 +185,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         mock_extract_info.assert_called_once_with(self.ytLink)
         mock_metadata.assert_called_with(self.musicPath, self.album, self.artist, self.title)
         self.assertTrue(result.IsSuccess())
-        self.checkMp3Data(result.data(), self.ytMp3Data)
+        self.checkAudioData(result.data(), self.ytMp3Data)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "rename_and_add_metadata_to_song", return_value=None)
@@ -208,7 +208,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         mock_extract_info.assert_called_with(self.ytLink)
         mock_metadata.assert_called_with(self.musicPath, self.album, self.empty, self.title)
         self.assertTrue(result.IsSuccess())
-        self.checkMp3Data(result.data(), self.ytMp3DataWithoutArtist)
+        self.checkAudioData(result.data(), self.ytMp3DataWithoutArtist)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     def test_downloadMP3_emptyReturn(self, mock_extract_info):
@@ -239,7 +239,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         self.ytManager.lookingForFile.assert_called_with(self.musicPath, self.title, self.artist)
         self.assertTrue(result.IsSuccess())
         data = result.data()
-        self.checkMp3Data(data, self.ytMp3Data)
+        self.checkAudioData(data, self.ytMp3Data)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", side_effect=raiseYtError)
     def test_downloadMP3_onlyMetadata_exception(self, mock_extract_info):
