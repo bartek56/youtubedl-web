@@ -176,7 +176,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
-    @mock.patch.object(metadata_mp3.MetadataManager, "rename_and_add_metadata_to_song")
+    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToSong")
     def test_downloadMP3(self, mock_metadata, mock_extract_info):
         mock_extract_info.configure_mock(return_value=self.ytMp3Data)
 
@@ -188,7 +188,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         self.checkAudioData(result.data(), self.ytMp3Data)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
-    @mock.patch.object(metadata_mp3.MetadataManager, "rename_and_add_metadata_to_song", return_value=None)
+    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToSong", return_value=None)
     def test_downloadMP3_failedWithModyfiMetadata(self, mock_metadata, mock_extract_info):
         mock_extract_info.configure_mock(return_value=self.ytMp3Data)
 
@@ -199,7 +199,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
-    @mock.patch.object(metadata_mp3.MetadataManager, "rename_and_add_metadata_to_song")
+    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToSong")
     def test_downloadMP3_without_artist(self, mock_metadata, mock_extract_info):
         mock_extract_info.configure_mock(return_value=self.ytMp3DataWithoutArtist)
 
@@ -276,7 +276,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
-    @mock.patch.object(metadata_mp3.MetadataManager, "rename_and_add_metadata_to_playlist")
+    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToPlaylist")
     def test_downloadMP3Playlist(self, mock_metadata, mock_extract_info):
         mock_extract_info.configure_mock(return_value=self.ytDownloadMp3PlaylistResponse)
 

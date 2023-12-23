@@ -445,7 +445,7 @@ class YoutubeManager:
         if not os.path.isfile(os.path.join(path, fileName)):
             logger.warning("File %s doesn't exist. Sanitize is require", fileName)
             mp3Data.title = yt_dlp.utils.sanitize_filename(mp3Data.title)
-        full_path = self.metadataManager.rename_and_add_metadata_to_song(self.MUSIC_PATH, mp3Data.album, mp3Data.artist, mp3Data.title)
+        full_path = self.metadataManager.renameAndAddMetadataToSong(self.MUSIC_PATH, mp3Data.album, mp3Data.artist, mp3Data.title)
 
         if full_path is None:
             log = YoutubeManagerLogs.NOT_FOUND
@@ -559,7 +559,7 @@ class YoutubeManager:
             if not os.path.isfile(os.path.join(path,fileName)):
                 logger.warning("File doesn't exist. Sanitize is require")
                 songTitle = yt_dlp.utils.sanitize_filename(songTitle)
-            self.metadataManager.rename_and_add_metadata_to_playlist(playlistDir, playlistIndexList[x], playlistName, artistList[x], songTitle)
+            self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndexList[x], playlistName, artistList[x], songTitle)
             songCounter+=1
 
         return ResultOfDownload(songCounter)
