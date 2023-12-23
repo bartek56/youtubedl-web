@@ -3,6 +3,7 @@ import yt_dlp
 import metadata_mp3
 import configparser
 import logging
+import argparse
 from enum import Enum
 from abc import ABC, abstractmethod
 from typing import List
@@ -33,83 +34,6 @@ class ResultOfDownload:
         if type(self._data) is str:
             return self._data
 
-class YoutubeConfig:
-    def __init__(self):
-        pass
-
-    def initialize(self, configFile, parser = configparser.ConfigParser()):
-        self.CONFIG_FILE = configFile
-        self.config = parser
-
-    def getPath(self):
-        path = None
-        self.config.clear()
-        self.config.read(self.CONFIG_FILE)
-        if "GLOBAL" in self.config.sections():
-            path = self.config["GLOBAL"]['path']
-        return path
-
-    def getPlaylists(self):
-        self.config.clear()
-        self.config.read(self.CONFIG_FILE)
-        data = []
-
-        for section_name in self.config.sections():
-            if section_name != "GLOBAL":
-                data.append({'name':self.config[section_name]['name'], 'link':self.config[section_name]['link']})
-        return data
-
-    def getPlaylistsName(self):
-        self.config.clear()
-        self.config.read(self.CONFIG_FILE)
-        data = []
-
-        for section_name in self.config.sections():
-            if section_name != "GLOBAL":
-                data.append(self.config[section_name]['name'])
-        return data
-
-    def addPlaylist(self, playlist:dict):
-        keys = playlist.keys()
-        if not "name" in keys or not "link" in keys:
-            return False
-        self.config.read(self.CONFIG_FILE)
-        playlistName = playlist["name"]
-        playlistLink = playlist["link"]
-
-        self.config[playlistName]={}
-        self.config[playlistName]["name"]=playlistName
-        self.config[playlistName]["link"]=playlistLink
-        self.save()
-        return True
-
-    def removePlaylist(self, playlistName:str):
-        result = False
-        self.config.clear()
-        self.config.read(self.CONFIG_FILE)
-        for i in self.config.sections():
-               if i == playlistName:
-                   self.config.remove_section(i)
-                   self.save()
-                   result = True
-                   break
-        return result
-
-    def getUrlOfPlaylist(self, playlistName):
-        playlistUrl = None
-        self.config.clear()
-        self.config.read(self.CONFIG_FILE)
-        for section_name in self.config.sections():
-            if section_name != "GLOBAL":
-                if self.config[section_name]['name'] == playlistName:
-                    playlistUrl = self.config[section_name]["link"]
-
-        return playlistUrl
-
-    def save(self): # pragma: no cover
-        with open(self.CONFIG_FILE,'w') as fp:
-            self.config.write(fp)
-
 class MediaFromPlaylist:
     def __init__(self, index:str, url:str, title:str):
         self.playlistIndex = index
@@ -120,6 +44,11 @@ class PlaylistInfo:
     def __init__(self, name:str, listOfMedia:List[MediaFromPlaylist]):
         self.playlistName = name
         self.listOfMedia = listOfMedia
+
+class PlaylistConfig:
+    def __init__(self, name:str, link:str):
+        self.name = name
+        self.link = link
 
 class MediaInfo:
     def __init__(self, title:str=None, artist:str=None, album:str=None, url:str=None):
@@ -246,6 +175,83 @@ class Low360pFormatSettings(VideoSettings):
 
     def getSubname(self):
         return self.subname
+
+class YoutubeConfig:
+    def __init__(self):
+        pass
+
+    def initialize(self, configFile, parser = configparser.ConfigParser()):
+        self.CONFIG_FILE = configFile
+        self.config = parser
+
+    def getPath(self):
+        path = None
+        self.config.clear()
+        self.config.read(self.CONFIG_FILE)
+        if "GLOBAL" in self.config.sections():
+            path = self.config["GLOBAL"]['path']
+        return path
+
+    def getPlaylists(self) -> List[PlaylistConfig]:
+        self.config.clear()
+        self.config.read(self.CONFIG_FILE)
+        data = []
+
+        for section_name in self.config.sections():
+            if section_name != "GLOBAL":
+                data.append(PlaylistConfig(self.config[section_name]['name'], self.config[section_name]['link']))
+        return data
+
+    def getPlaylistsName(self):
+        self.config.clear()
+        self.config.read(self.CONFIG_FILE)
+        data = []
+
+        for section_name in self.config.sections():
+            if section_name != "GLOBAL":
+                data.append(self.config[section_name]['name'])
+        return data
+
+    def addPlaylist(self, playlist:dict):
+        keys = playlist.keys()
+        if not "name" in keys or not "link" in keys:
+            return False
+        self.config.read(self.CONFIG_FILE)
+        playlistName = playlist["name"]
+        playlistLink = playlist["link"]
+
+        self.config[playlistName]={}
+        self.config[playlistName]["name"]=playlistName
+        self.config[playlistName]["link"]=playlistLink
+        self.save()
+        return True
+
+    def removePlaylist(self, playlistName:str):
+        result = False
+        self.config.clear()
+        self.config.read(self.CONFIG_FILE)
+        for i in self.config.sections():
+               if i == playlistName:
+                   self.config.remove_section(i)
+                   self.save()
+                   result = True
+                   break
+        return result
+
+    def getUrlOfPlaylist(self, playlistName):
+        playlistUrl = None
+        self.config.clear()
+        self.config.read(self.CONFIG_FILE)
+        for section_name in self.config.sections():
+            if section_name != "GLOBAL":
+                if self.config[section_name]['name'] == playlistName:
+                    playlistUrl = self.config[section_name]["link"]
+
+        return playlistUrl
+
+    def save(self): # pragma: no cover
+        with open(self.CONFIG_FILE,'w') as fp:
+            self.config.write(fp)
 
 class YoutubeManager:
     def __init__(self, musicPath="/tmp/quick_download/", videoPath="/tmp/quick_download/", mp3ArchiveFilename="downloaded_songs.txt", logger=None):
@@ -561,6 +567,7 @@ class YoutubeManager:
                 songTitle = yt_dlp.utils.sanitize_filename(songTitle)
             self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndexList[x], playlistName, artistList[x], songTitle)
             songCounter+=1
+        logger.info("Downloaded %i songs", songCounter)
 
         return ResultOfDownload(songCounter)
 
@@ -609,6 +616,69 @@ class YoutubeManager:
                     content = file.read()
         return content
 
+class MediaServerDownloader(YoutubeManager):
+    CONFIG_FILE="/etc/mediaserver/youtubedl.ini"
+    def __init__(self):
+        super().__init__()
+        self.ytConfig = YoutubeConfig()
+        self.ytConfig.initialize(self.CONFIG_FILE)
+
+    def download_playlists(self):
+        songsCounter = 0
+        playlists = self.ytConfig.getPlaylists()
+        for playlist in playlists:
+            result = self.download_playlist_mp3(self.ytConfig.getPath(), playlist.name, playlist.link)
+            if result.IsFailed():
+                logger.error("Failed to download playlist %s", playlist.name)
+                continue
+            songsCounter += result.data()
+        logger.info("[SUMMARY] downloaded  %s songs"%(songsCounter))
+
 if __name__ == "__main__":
-    yt = YoutubeManager()
-    yt.download_mp3("https://www.youtube.com/watch?v=J9LgHNf2Qy0")
+    logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
+    logger = logging.getLogger(__name__)
+    my_parser = argparse.ArgumentParser()
+    my_parser.add_argument('-t','--type',
+                       action='store',
+                       choices=['360', '720', '4k', 'mp3'],
+                       dest='mode',
+                       help='what do you want download')
+    my_parser.add_argument('-l','--link',
+                       action='store',
+                       dest='link',
+                       help='link to youtube')
+
+    my_parser.add_argument('-u','--update',
+                       action='store',
+                       dest='playlistUpdate',
+                       help='name playlist which you want update')
+
+    my_parser.add_argument('-d','--daemon',
+                       action='store_true',
+                       dest='daemonMode',
+                       help='daemon mode - download all playlists from config file')
+
+
+    args = my_parser.parse_args()
+    if args.mode is None and args.playlistUpdate is None and args.daemonMode is None:
+        print("non arguments")
+    elif args.daemonMode is not None:
+        yt = MediaServerDownloader()
+        yt.download_playlists()
+    else:
+        yt = YoutubeManager()
+        if args.mode is not None and args.playlistUpdate is not None:
+            my_parser.error("choose only one purpose")
+        if args.mode is not None:
+            if args.link is None:
+                my_parser.error("-l (--link) is require")
+            if args.mode == '360':
+                yt.download_360p(args.link)
+            elif args.mode == "720":
+                yt.download_720p(args.link)
+            elif args.mode == "4k":
+                yt.download_4k(args.link)
+            elif args.mode == "mp3":
+                yt.download_mp3(args.link)
+        if args.playlistUpdate is not None:
+            yt.update_metadata_from_YTplaylist(args.playlistUpdate)
