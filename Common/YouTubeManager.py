@@ -140,7 +140,7 @@ class VideoData(YoutubeClipData):
             str += "path: %s"%(self.path)
         return str
 
-class VideoSettings(ABC):
+class VideoSettings(ABC): # pragma: no cover
     @abstractmethod
     def getFormat(self):
         pass
@@ -370,10 +370,8 @@ class YoutubeManager:
 
         return ResultOfDownload(MediaInfo(title,artist,album,result['original_url']))
 
-    def _isMusicClipArchived(self, path, url):
+    def _isMusicClipArchived(self, path, url): # pragma: no cover
         hash = self.getMediaHashFromLink(url)
-        logger.debug(path)
-        logger.debug(self.mp3DownloadedListFileName)
         contentOfFile = self.openFile(path, self.mp3DownloadedListFileName)
         if contentOfFile is not None and hash in contentOfFile:
             return True

@@ -86,6 +86,8 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         self.ytManager.createDirIfNotExist = mock.MagicMock()
         self.ytManager.openFile = mock.MagicMock()
         self.ytManager.lookingForFile = mock.MagicMock()
+        self.ytManager._isMusicClipArchived = mock.MagicMock()
+        self.ytManager._isMusicClipArchived.configure_mock(return_value=False)
 
     def checkPlaylist(self, playlist:PlaylistInfo, ytResponse):
         playlistName = ytResponse['title']
@@ -130,7 +132,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         self.assertEqual(data.title, ytResponse["title"])
         self.assertEqual(data.path, self.videoPath+"/"+ytResponse["title"]+"_"+videoResolution+"."+ytResponse["ext"])
 
-    def raiseYtError(param, **kwargs):
+    def raiseYtError(a ,b):
         #message = f'Video unavailable: {", ".join(playability_errors)}'
         message = "Video unavailable"
         raise utils.ExtractorError(message, expected=True)
@@ -383,6 +385,18 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
 
         self.assertTrue(result.IsSuccess())
         self.assertEqual(result.data(), self.numberOfSongs-1)
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
+    def test_downloadMP3Playlist_getInfoFailed(self, mock_extract_info:mock.MagicMock):
+        errorMessage = "Failed to download from Youtube"
+        mock_extract_info.configure_mock(side_effect=self.raiseYtError)
+
+        result = self.ytManager.downloadPlaylistMp3(self.musicPath, self.playlistName, self.ytLink)
+
+        self.ytManager.createDirIfNotExist.assert_called_once_with(self.musicPath+"/"+self.playlistName)
+        mock_extract_info.assert_called_once_with(self.ytLink, download=False)
+        self.assertTrue(result.IsFailed())
+        #self.assertEqual(result.error(), "error")
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToPlaylist")
