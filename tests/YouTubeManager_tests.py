@@ -333,6 +333,31 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToPlaylist")
+    def test_downloadMP3Playlist_OneNewSongFromPlaylist(self, mock_metadata:mock.MagicMock, mock_extract_info:mock.MagicMock):
+        errorMessage = "Failed to download from Youtube"
+
+        self.ytManager._isMusicClipArchived = mock.MagicMock()
+        self.ytManager._isMusicClipArchived.configure_mock(side_effect=[True, True, True, False])
+        mock_extract_info.configure_mock(side_effect=[self.ytPlaylistInfoResponse4, self.ytDownloadMp3Response4])
+
+        result = self.ytManager.downloadPlaylistMp3(self.musicPath, self.playlistName, self.ytLink)
+
+
+        self.assertEqual(self.ytManager.createDirIfNotExist.call_count, 2)
+        self.ytManager.createDirIfNotExist.assert_called_with(self.musicPath+"/"+self.playlistName)
+        self.assertEqual(mock_extract_info.call_count, 2)
+        mock_extract_info.assert_has_calls([mock.call(self.ytLink, download=False),
+                                            mock.call(self.fourthUrl)
+                                            ])
+
+        self.assertEqual(mock_metadata.call_count, 1)
+        mock_metadata.assert_called_once_with(self.musicPath, self.playlistIndex4, self.playlistName, self.fourthArtist, self.fourthTitle)
+
+        self.assertTrue(result.IsSuccess())
+        self.assertEqual(result.data(), 1)
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
+    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToPlaylist")
     def test_downloadMP3Playlist_oneSongFailed(self, mock_metadata:mock.MagicMock, mock_extract_info:mock.MagicMock):
         errorMessage = "Failed to download from Youtube"
         mock_extract_info.configure_mock(side_effect=[self.ytPlaylistInfoResponse4, self.ytDownloadMp3Response1,
