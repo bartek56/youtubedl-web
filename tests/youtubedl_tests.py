@@ -72,7 +72,7 @@ class FlaskSocketIO(unittest.TestCase):
         self.assertIn("data", message["args"][0])
         return message["args"][0]["data"]
 
-    @mock.patch.object(YoutubeManager, 'download_playlist_mp3')
+    @mock.patch.object(YoutubeManager, 'downloadPlaylistMp3Fast')
     @mock.patch.object(YoutubeConfig, 'getPlaylists')
     @mock.patch.object(YoutubeConfig, 'getPath')
     def test_downloadPlaylists(self, mock_getPath:MagicMock, mock_getPlaylists:MagicMock, mock_downloadPlaylistMp3:MagicMock):

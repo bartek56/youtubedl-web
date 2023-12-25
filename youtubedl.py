@@ -451,7 +451,7 @@ def handle_message(msg):
     path = youtubeConfig.getPath()
 
     for playlist in playlists:
-        response = youtubeManager.download_playlist_mp3(path, playlist["name"], playlist["link"])
+        response = youtubeManager.downloadPlaylistMp3Fast(path, playlist["name"], playlist["link"])
         if response.IsFailed():
             logger.error("Failed to download playlist %s from link %s - %s", playlist["name"], playlist["link"], response.error())
         numberOfDownloadedSongs:int = response.data()

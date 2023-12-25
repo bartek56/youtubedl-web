@@ -35,10 +35,13 @@ class ResultOfDownload:
             return self._data
 
 class MediaFromPlaylist:
-    def __init__(self, index:str, url:str, title:str):
+    def __init__(self, index:int, url:str, title:str):
         self.playlistIndex = index
         self.url = url
         self.title = title
+
+    def __str__(self):
+        return str(self.playlistIndex) + " " + self.url + " " + self.title
 
 class PlaylistInfo:
     def __init__(self, name:str, listOfMedia:List[MediaFromPlaylist]):
@@ -254,9 +257,16 @@ class YoutubeConfig:
             self.config.write(fp)
 
 class YoutubeManager:
+    MUSIC_PATH="/tmp/quick_download/"
+    VIDEO_PATH="/tmp/quick_download/"
+
     def __init__(self, musicPath="/tmp/quick_download/", videoPath="/tmp/quick_download/", mp3ArchiveFilename="downloaded_songs.txt", logger=None):
         self.metadataManager = metadata_mp3.MetadataManager()
         self.logger = logger
+        self.quietSetting = False
+        if self.logger is None:
+            self.quietSetting = True
+
         self.MUSIC_PATH=musicPath
         self.VIDEO_PATH=videoPath
         self.mp3DownloadedListFileName=mp3ArchiveFilename
@@ -271,6 +281,12 @@ class YoutubeManager:
         self.high4kSettings =     Hight4kFormatSettings()
         self.medium720pSettings = Medium720pFormatSettings()
         self.low360pSettings =    Low360pFormatSettings()
+
+    def setMusicPath(self, path:str):
+        if not os.path.isdir(path):
+            logger.error("wrong path for set music")
+            return
+        self.MUSIC_PATH = path
 
     def _validateYTResult(self, results):
         if results is None:
@@ -295,7 +311,7 @@ class YoutubeManager:
               'extract_flat': 'in_playlist',
               'addmetadata': True,
               'ignoreerrors': False,
-              'quiet':False
+              'quiet':self.quietSetting
               }
         results = None
         try:
@@ -354,19 +370,27 @@ class YoutubeManager:
 
         return ResultOfDownload(MediaInfo(title,artist,album,result['original_url']))
 
+    def _isMusicClipArchived(self, path, url):
+        hash = self.getMediaHashFromLink(url)
+        logger.debug(path)
+        logger.debug(self.mp3DownloadedListFileName)
+        contentOfFile = self.openFile(path, self.mp3DownloadedListFileName)
+        if contentOfFile is not None and hash in contentOfFile:
+            return True
+        return False
+
     def download_mp3(self, url) -> ResultOfDownload:
-        path=self.MUSIC_PATH
         info = "[INFO] start download MP3 from link %s "%(url)
         logger.info(info)
         hash = self.getMediaHashFromLink(url)
-        contentOfFile = self.openFile(path, self.mp3DownloadedListFileName)
+        contentOfFile = self.openFile(self.MUSIC_PATH, self.mp3DownloadedListFileName)
         if contentOfFile is not None and hash in contentOfFile:
             # only get information about media, file exists
             logger.debug("clip exists, only get information about MP3")
             result = self._getMetadataFromYTForMp3(url)
         else:
             logger.debug("Download MP3")
-            result = self._download_mp3(url)
+            result = self._downloadMp3AndAddMetadata(url)
 
         return result
 
@@ -410,8 +434,7 @@ class YoutubeManager:
 
         return ResultOfDownload(mp3Data)
 
-    def _download_mp3(self, url) -> ResultOfDownload:
-        path=self.MUSIC_PATH
+    def _download_mp3(self, url, path=MUSIC_PATH) -> ResultOfDownload:
         self.createDirIfNotExist(path)
 
         ydl_opts = {
@@ -428,7 +451,8 @@ class YoutubeManager:
               'ignoreerrors': False,
               'continue': True,
               'no-overwrites': True,
-              'noplaylist': True
+              'noplaylist': True,
+              'quiet': self.quietSetting
               }
 
         try:
@@ -446,9 +470,15 @@ class YoutubeManager:
 
         mp3Data = self._get_metadataForMP3(result)
         logger.debug(mp3Data)
+        return ResultOfDownload(mp3Data)
 
+    def _downloadMp3AndAddMetadata(self, url) -> ResultOfDownload:
+        result = self._download_mp3(url)
+        if result.IsFailed():
+            return result
+        mp3Data = result.data()
         fileName = "%s.mp3"%(mp3Data.title)
-        if not os.path.isfile(os.path.join(path, fileName)):
+        if not os.path.isfile(os.path.join(self.MUSIC_PATH, fileName)):
             logger.warning("File %s doesn't exist. Sanitize is require", fileName)
             mp3Data.title = yt_dlp.utils.sanitize_filename(mp3Data.title)
         full_path = self.metadataManager.renameAndAddMetadataToSong(self.MUSIC_PATH, mp3Data.album, mp3Data.artist, mp3Data.title)
@@ -511,7 +541,7 @@ class YoutubeManager:
         full_path = "%s/%s%s.%s"%(path, title, config.getSubname(), ext)
         return ResultOfDownload(VideoData(full_path,title,ext))
 
-    def download_playlist_mp3(self, playlistDir, playlistName, url) -> ResultOfDownload:
+    def downloadPlaylistMp3Fast(self, playlistDir, playlistName, url) -> ResultOfDownload:
         path=os.path.join(playlistDir, playlistName)
         self.createDirIfNotExist(path)
 
@@ -527,7 +557,7 @@ class YoutubeManager:
                     'preferredquality': '192',
                     }],
               'ignoreerrors': True,
-              'quiet': True
+              'quiet': self.quietSetting
               }
         results = None
 
@@ -570,6 +600,41 @@ class YoutubeManager:
         logger.info("Downloaded %i songs", songCounter)
 
         return ResultOfDownload(songCounter)
+
+    def downloadPlaylistMp3(self, playlistDir, playlistName, url) -> ResultOfDownload:
+        path=os.path.join(playlistDir, playlistName)
+        self.createDirIfNotExist(path)
+
+        result = self.getPlaylistInfo(url)
+        if result.IsFailed():
+            return result
+        playlistInfo:PlaylistInfo
+        playlistInfo = result.data()
+        songCounter = 0
+
+        for songData in playlistInfo.listOfMedia:
+            logger.debug(str(songData))
+            if self._isMusicClipArchived(path, songData.url):
+                logger.info("clip \"%s\" from link %s is archived", songData.title, songData.url)
+                continue
+            logger.debug("start download clip from")
+            result = self._download_mp3(songData.url, path)
+            if result.IsFailed():
+                logger.error("Failed to download song from url")
+                continue
+            songMetadata:AudioData
+            songMetadata = result.data()
+            self._addMetadataToPlaylist(playlistDir, songData.playlistIndex, playlistName, songMetadata.artist, songMetadata.title)
+            songCounter+=1
+        return ResultOfDownload(songCounter)
+
+    def _addMetadataToPlaylist(self, playlistDir, playlistIndex, playlistName, artist, title):
+        fileName="%s%s"%(title, ".mp3")
+        path=os.path.join(playlistDir, playlistName)
+        if not os.path.isfile(os.path.join(path, fileName)):
+            logger.warning("File doesn't exist. Sanitize is require")
+            title = yt_dlp.utils.sanitize_filename(title)
+        newFileName = self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndex, playlistName, artist, title)
 
     def createDirIfNotExist(self, path):
         if not os.path.exists(path): # pragma: no cover
@@ -617,17 +682,65 @@ class YoutubeManager:
         return content
 
 class MediaServerDownloader(YoutubeManager):
-    CONFIG_FILE="/etc/mediaserver/youtubedl.ini"
-    def __init__(self):
+    def __init__(self, configFile):
         super().__init__()
         self.ytConfig = YoutubeConfig()
-        self.ytConfig.initialize(self.CONFIG_FILE)
+        self.ytConfig.initialize(configFile)
+        self.setMusicPath(self.ytConfig.getPath())
+
+    def updateMetadataFromYTplaylist(self, playlistName):
+        path=os.path.join(self.PLAYLISTS_PATH, playlistName)
+
+        url = None
+        config = ConfigParser()
+        config.read(self.CONFIG_FILE)
+        for section_name in config.sections():
+            if section_name == playlistName:
+                url = config[section_name]['link']
+                break
+
+        if url is None:
+            print("[ERROR] playlist", playlistName,"not exist in configuration")
+            return
+
+        ydl_opts = {
+                'addmetadata': True,
+                }
+        results = yt_dlp.YoutubeDL(ydl_opts).extract_info(url,download=False)
+        if not results:
+            warningInfo="ERROR: not extract_info in results"
+            print (bcolors.FAIL + warningInfo + bcolors.ENDC)
+            return
+
+        artistList = []
+        playlistIndexList = []
+        songsTitleList = []
+        for i in results['entries']:
+            playlistIndexList.append(i['playlist_index'])
+            songsTitleList.append(i['title'])
+
+            if "artist" in i:
+                artistList.append(i['artist'])
+            else:
+                artistList.append("")
+
+        for x in range(len(songsTitleList)):
+            songTitle = songsTitleList[x]
+            songName = self.metadataManager.lookingForFileAccordWithYTFilename(path, songTitle, artistList[x])
+            if songName == None:
+                songTitle = yt_dlp.utils.sanitize_filename(songTitle)
+                songName = self.metadataManager.lookingForFileAccordWithYTFilename(path, songTitle, artistList[x])
+            if songName != None:
+                self.metadataManager.renameAndAddMetadataToPlaylist(self.PLAYLISTS_PATH, playlistIndexList[x], playlistName, artistList[x], songName)
+            else:
+                warningInfo="ERROR: song not found: path %s, artist: %s, title: %s, id: %s"%(path, artistList[x], songsTitleList[x], playlistIndexList[x])
+                print (bcolors.FAIL + warningInfo + bcolors.ENDC)
 
     def download_playlists(self):
         songsCounter = 0
         playlists = self.ytConfig.getPlaylists()
         for playlist in playlists:
-            result = self.download_playlist_mp3(self.ytConfig.getPath(), playlist.name, playlist.link)
+            result = self.downloadPlaylistMp3(self.ytConfig.getPath(), playlist.name, playlist.link)
             if result.IsFailed():
                 logger.error("Failed to download playlist %s", playlist.name)
                 continue
@@ -635,6 +748,7 @@ class MediaServerDownloader(YoutubeManager):
         logger.info("[SUMMARY] downloaded  %s songs"%(songsCounter))
 
 if __name__ == "__main__":
+    #logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.DEBUG)
     logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
     logger = logging.getLogger(__name__)
     my_parser = argparse.ArgumentParser()
@@ -653,17 +767,19 @@ if __name__ == "__main__":
                        dest='playlistUpdate',
                        help='name playlist which you want update')
 
-    my_parser.add_argument('-d','--daemon',
-                       action='store_true',
-                       dest='daemonMode',
-                       help='daemon mode - download all playlists from config file')
-
+    my_parser.add_argument('-c','--config',
+                       action='store',
+                       dest='configFile',
+                       help='download all playlists from config file')
 
     args = my_parser.parse_args()
-    if args.mode is None and args.playlistUpdate is None and args.daemonMode is None:
+    if args.mode is None and args.playlistUpdate is None and args.configFile is None:
         print("non arguments")
-    elif args.daemonMode is not None:
-        yt = MediaServerDownloader()
+    elif args.configFile is not None:
+        if not os.path.isfile(args.configFile):
+            logger.error("configuration file %s doesn't exists", args.configFile)
+            exit()
+        yt = MediaServerDownloader(args.configFile)
         yt.download_playlists()
     else:
         yt = YoutubeManager()
@@ -680,5 +796,5 @@ if __name__ == "__main__":
                 yt.download_4k(args.link)
             elif args.mode == "mp3":
                 yt.download_mp3(args.link)
-        if args.playlistUpdate is not None:
-            yt.update_metadata_from_YTplaylist(args.playlistUpdate)
+        #if args.playlistUpdate is not None:
+        #    yt.updat (args.playlistUpdate)

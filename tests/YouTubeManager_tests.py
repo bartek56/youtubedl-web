@@ -280,7 +280,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
     def test_downloadMP3Playlist(self, mock_metadata, mock_extract_info):
         mock_extract_info.configure_mock(return_value=self.ytDownloadMp3PlaylistResponse)
 
-        result = self.ytManager.download_playlist_mp3(self.musicPath, self.playlistName, self.ytLink)
+        result = self.ytManager.downloadPlaylistMp3Fast(self.musicPath, self.playlistName, self.ytLink)
 
         self.ytManager.createDirIfNotExist.assert_called_once_with(self.musicPath+"/"+self.playlistName)
         mock_extract_info.assert_called_once_with(self.ytLink)
@@ -293,7 +293,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
     def test_downloadMP3PlaylistEmptyResult(self, mock_extract_info):
         mock_extract_info.configure_mock(return_value=None)
 
-        result = self.ytManager.download_playlist_mp3(self.musicPath, self.playlistName, self.ytLink)
+        result = self.ytManager.downloadPlaylistMp3Fast(self.musicPath, self.playlistName, self.ytLink)
 
         mock_extract_info.assert_called_once_with(self.ytLink)
         self.ytManager.createDirIfNotExist.assert_called_once_with(self.musicPath+"/"+self.playlistName)
@@ -303,7 +303,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
     def test_downloadMP3PlaylistWrongResult(self, mock_extract_info):
         mock_extract_info.configure_mock(return_value={"fakeData":[]})
 
-        result = self.ytManager.download_playlist_mp3(self.musicPath, self.playlistName, self.ytLink)
+        result = self.ytManager.downloadPlaylistMp3Fast(self.musicPath, self.playlistName, self.ytLink)
 
         mock_extract_info.assert_called_once_with(self.ytLink)
         self.ytManager.createDirIfNotExist.assert_called_once_with(self.musicPath+"/"+self.playlistName)
@@ -313,7 +313,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
     def test_downloadMP3PlaylistEmptyEntries(self, mock_extract_info):
         mock_extract_info.configure_mock(return_value={"entries":[{},None]})
 
-        result = self.ytManager.download_playlist_mp3(self.musicPath, self.playlistName, self.ytLink)
+        result = self.ytManager.downloadPlaylistMp3Fast(self.musicPath, self.playlistName, self.ytLink)
 
         mock_extract_info.assert_called_once_with(self.ytLink)
         self.ytManager.createDirIfNotExist.assert_called_once_with(self.musicPath+"/"+self.playlistName)
@@ -322,7 +322,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info", side_effect=raiseYtError)
     def test_downloadMP3PlaylistException(self, mock_extract_info):
 
-        result = self.ytManager.download_playlist_mp3(self.musicPath, self.playlistName, self.ytLink)
+        result = self.ytManager.downloadPlaylistMp3Fast(self.musicPath, self.playlistName, self.ytLink)
 
         mock_extract_info.assert_called_once_with(self.ytLink)
         self.ytManager.createDirIfNotExist.assert_called_once_with(self.musicPath+"/"+self.playlistName)
