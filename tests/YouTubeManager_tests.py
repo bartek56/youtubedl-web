@@ -333,6 +333,34 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToPlaylist")
+    def test_downloadMP3Playlist_oneSongFailed(self, mock_metadata:mock.MagicMock, mock_extract_info:mock.MagicMock):
+        errorMessage = "Failed to download from Youtube"
+        mock_extract_info.configure_mock(side_effect=[self.ytPlaylistInfoResponse4, self.ytDownloadMp3Response1,
+                                                      self.ytDownloadMp3Response2, utils.ExtractorError(errorMessage, expected=True), self.ytDownloadMp3Response4])
+
+        result = self.ytManager.downloadPlaylistMp3(self.musicPath, self.playlistName, self.ytLink)
+
+
+        self.assertEqual(self.ytManager.createDirIfNotExist.call_count, 5)
+        self.ytManager.createDirIfNotExist.assert_called_with(self.musicPath+"/"+self.playlistName)
+        self.assertEqual(mock_extract_info.call_count, 5)
+        mock_extract_info.assert_has_calls([mock.call(self.ytLink, download=False),
+                                            mock.call(self.firstUrl),
+                                            mock.call(self.secondUrl),
+                                            mock.call(self.thirdUrl),
+                                            mock.call(self.fourthUrl),
+                                            ])
+
+        self.assertEqual(mock_metadata.call_count, self.numberOfSongs-1)
+        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistIndex1, self.playlistName, self.firstArtist, self.firstTitle),
+                                        mock.call(self.musicPath, self.playlistIndex2, self.playlistName, self.secondArtist, self.secondTitle),
+                                        mock.call(self.musicPath, self.playlistIndex4, self.playlistName, self.fourthArtist, self.fourthTitle)])
+
+        self.assertTrue(result.IsSuccess())
+        self.assertEqual(result.data(), self.numberOfSongs-1)
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
+    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToPlaylist")
     def test_downloadMP3PlaylistFast(self, mock_metadata:mock.MagicMock, mock_extract_info:mock.MagicMock):
         mock_extract_info.configure_mock(return_value=self.ytDownloadMp3PlaylistResponse)
 
