@@ -287,6 +287,7 @@ class YoutubeManager:
             logger.error("wrong path for set music")
             return
         self.MUSIC_PATH = path
+        return path
 
     def _validateYTResult(self, results):
         if results is None:
@@ -684,7 +685,6 @@ class MediaServerDownloader(YoutubeManager):
         super().__init__()
         self.ytConfig = YoutubeConfig()
         self.ytConfig.initialize(configFile)
-        self.setMusicPath(self.ytConfig.getPath())
 
     def updateMetadataFromYTplaylist(self, playlistName):
         path=os.path.join(self.PLAYLISTS_PATH, playlistName)
@@ -735,6 +735,9 @@ class MediaServerDownloader(YoutubeManager):
                 print (bcolors.FAIL + warningInfo + bcolors.ENDC)
 
     def download_playlists(self):
+        if self.setMusicPath(self.ytConfig.getPath()) is None:
+            logger.error("wrong path for playlists")
+            return
         songsCounter = 0
         playlists = self.ytConfig.getPlaylists()
         for playlist in playlists:
