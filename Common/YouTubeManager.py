@@ -738,12 +738,14 @@ class MediaServerDownloader(YoutubeManager):
         songsCounter = 0
         playlists = self.ytConfig.getPlaylists()
         for playlist in playlists:
+            logger.info("--------------- %s ------------------", playlist.name)
             result = self.downloadPlaylistMp3(self.ytConfig.getPath(), playlist.name, playlist.link)
             if result.IsFailed():
                 logger.error("Failed to download playlist %s", playlist.name)
                 continue
+            logger.info("--------------- downloaded %s songs from \"%s\" playlist ------------------", result.data(), playlist.name)
             songsCounter += result.data()
-        logger.info("[SUMMARY] downloaded  %s songs"%(songsCounter))
+        logger.info("[SUMMARY] downloaded %s songs"%(songsCounter))
 
 if __name__ == "__main__":
     #logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.DEBUG)
