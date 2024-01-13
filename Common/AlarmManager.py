@@ -1,0 +1,125 @@
+from Common.AlarmEnums import AlarmConfigFlask, AlarmConfigLinux, SystemdCommand
+
+import logging
+logger = logging.getLogger(__name__)
+
+class AlarmManager:
+    def __init__(self, subprocess, alarmTimer:str, alarmScript:str):
+        self.ALARM_TIMER = alarmTimer
+        self.ALARM_SCRIPT = alarmScript
+        self.subprocess = subprocess
+
+    def loadAlarmConfig(self):
+        mondayChecked = ""
+        tuesdayChecked = ""
+        wednesdayChecked = ""
+        thursdayChecked = ""
+        fridayChecked = ""
+        saturdayChecked = ""
+        sundayChecked = ""
+
+        content = self.loadConfig(self.ALARM_TIMER)
+
+        for x in content:
+            if "OnCalendar" in x:
+                parameter = x.split("=")
+                parameter2 = parameter[1].split(" ")
+                weekDays = parameter2[0]
+                time = parameter2[1].rstrip()
+
+                if "Mon" in weekDays:
+                    mondayChecked = "checked"
+                if "Tue" in weekDays:
+                    tuesdayChecked = "checked"
+                if "Wed" in weekDays:
+                    wednesdayChecked = "checked"
+                if "Thu" in weekDays:
+                    thursdayChecked = "checked"
+                if "Fri" in weekDays:
+                    fridayChecked = "checked"
+                if "Sat" in weekDays:
+                    saturdayChecked = "checked"
+                if "Sun" in weekDays:
+                    sundayChecked = "checked"
+
+        content = self.loadConfig(self.ALARM_SCRIPT)
+
+        for x in content:
+            if len(x)>1:
+                if AlarmConfigLinux.MIN_VOLUME in x:
+                    parameter = x.split("=")
+                    minVolume = parameter[1].rstrip()
+                elif AlarmConfigLinux.MAX_VOLUME in x:
+                    parameter = x.split("=")
+                    maxVolume = parameter[1].rstrip()
+                elif AlarmConfigLinux.DEFAULT_VOLUME in x:
+                    parameter = x.split("=")
+                    defaultVolume = parameter[1].rstrip()
+                elif AlarmConfigLinux.GROWING_VOLUME in x:
+                    parameter = x.split("=")
+                    growingVolume = int(parameter[1].rstrip())
+                elif AlarmConfigLinux.GROWING_SPEED in x:
+                    parameter = x.split("=")
+                    growingSpeed = int(parameter[1].rstrip())
+                elif AlarmConfigLinux.PLAYLIST in x:
+                    parameter = x.split("=")
+                    alarmPlaylistName = parameter[1].rstrip()
+                    alarmPlaylistName=alarmPlaylistName.replace('"','')
+                elif AlarmConfigLinux.THE_NEWEST_SONG in x:
+                    parameter = x.split("=")
+                    if "true" in parameter[1]:
+                        theNewestSongCheckBox = "checked"
+                        playlistCheckbox = ""
+                    else:
+                        theNewestSongCheckBox = ""
+                        playlistCheckbox = "checked"
+            else:
+                break
+
+        out = self.subprocess.check_output("mpc lsplaylists | grep -v m3u", shell=True, text=True)
+        playlists = []
+        musicPlaylistName=""
+        for x in out:
+            if x != '\n':
+                musicPlaylistName += x
+            else:
+                playlists.append(musicPlaylistName)
+                musicPlaylistName=""
+
+        alarmIsOn = "unchecked"
+        try:
+            output = self.subprocess.check_output(SystemdCommand.IS_ACTIVE_ALARM_TIMER, shell=True, text=True)
+            #exception is called when alarm is disabled
+            if "in" in output:
+                alarmIsOn = "unchecked"
+            else:
+                alarmIsOn = "checked"
+        except self.subprocess.CalledProcessError as grepexc:
+            logger.info("Exception - alarm is disabled")
+            alarmIsOn = "unchecked"
+
+        return {AlarmConfigFlask.ALARM_TIME: time,
+                AlarmConfigFlask.THE_NEWEST_SONG:theNewestSongCheckBox,
+                AlarmConfigFlask.PLAYLIST_CHECKED:playlistCheckbox,
+                AlarmConfigFlask.ALARM_PLAYLISTS:playlists,
+                AlarmConfigFlask.ALARM_PLATLIST_NAME:alarmPlaylistName,
+                AlarmConfigFlask.ALARM_ACTIVE:alarmIsOn,
+                AlarmConfigFlask.MONDAY:mondayChecked,
+                AlarmConfigFlask.TUESDAY:tuesdayChecked,
+                AlarmConfigFlask.WEDNESDEY:wednesdayChecked,
+                AlarmConfigFlask.THURSDAY:thursdayChecked,
+                AlarmConfigFlask.FRIDAY:fridayChecked,
+                AlarmConfigFlask.SATURDAY:saturdayChecked,
+                AlarmConfigFlask.SUNDAY:sundayChecked,
+                AlarmConfigFlask.MIN_VOLUME:minVolume,
+                AlarmConfigFlask.MAX_VOLUME:maxVolume,
+                AlarmConfigFlask.DEFAULT_VOLUME:defaultVolume,
+                AlarmConfigFlask.GROWING_VOLUME:growingVolume,
+                AlarmConfigFlask.GROWING_SPEED:growingSpeed}
+
+    def loadConfig(self, configFile):
+        f = open(configFile, "r")
+        content = f.readlines()
+        f.close()
+        return content
+

@@ -21,6 +21,28 @@ def getRandomString():
 def alert_info(info):
     return render_template('alert.html', alert=info)
 
+def isFile(file):
+    return os.path.isfile(file)
+
+def downloadMediaOfType(url, type):
+    if type == "mp3":
+        return youtubeManager.download_mp3(url)
+    elif type == "360p":
+        return youtubeManager.download_360p(url)
+    elif type == "720p":
+        return youtubeManager.download_720p(url)
+    elif type =="4k":
+        return youtubeManager.download_4k(url)
+
+def compressToZip(files, playlistName):
+    # TODO zip fileName
+    zipFileName = "%s.zip"%playlistName
+    zipFileWithPath = os.path.join("/tmp/quick_download", zipFileName)
+    with zipfile.ZipFile(zipFileWithPath, 'w') as zipf:
+        for file_path in files:
+            arcname = file_path.split("/")[-1]
+            zipf.write(file_path, arcname)
+
 @app.route('/playlists.html')
 def playlists():
     remoteAddress = request.remote_addr
@@ -72,9 +94,6 @@ def playlist():
        app.logger.debug("error")
        return redirect('playlists.html')
 
-def isFile(file):
-    return os.path.isfile(file)
-
 @socketio.on('downloadPlaylists')
 def handle_message(msg):
     playlists = youtubeConfig.getPlaylists()
@@ -88,16 +107,6 @@ def handle_message(msg):
         DownloadPlaylist_response().sendMessage(numberOfDownloadedSongs)
 
     DownloadPlaylist_finish().sendMessage(numberOfDownloadedSongs)
-
-def downloadMediaOfType(url, type):
-    if type == "mp3":
-        return youtubeManager.download_mp3(url)
-    elif type == "360p":
-        return youtubeManager.download_360p(url)
-    elif type == "720p":
-        return youtubeManager.download_720p(url)
-    elif type =="4k":
-        return youtubeManager.download_4k(url)
 
 @socketio.on('downloadMedia')
 def downloadMedia(msg):
@@ -164,15 +173,6 @@ def downloadMedia(msg):
         randomHash = getRandomString()
         session[randomHash] = filename
         DownloadMedia_finish().sendMessage(randomHash)
-
-def compressToZip(files, playlistName):
-    # TODO zip fileName
-    zipFileName = "%s.zip"%playlistName
-    zipFileWithPath = os.path.join("/tmp/quick_download", zipFileName)
-    with zipfile.ZipFile(zipFileWithPath, 'w') as zipf:
-        for file_path in files:
-            arcname = file_path.split("/")[-1]
-            zipf.write(file_path, arcname)
 
 @app.route('/download/<name>')
 def download_file(name):

@@ -6,16 +6,22 @@ from Common.YouTubeManager import YoutubeManager, YoutubeConfig
 from Common.SocketLogger import SocketLogger, LogLevel
 from flask_session import Session
 
+## server configuration
 app = Flask(__name__)
-
 app.secret_key = "super_extra_key"
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_PERMANENT"] = True
 
 Session(app)
-
 socketio = SocketIO(app, manage_session=False)
+if app.debug == True: # pragma: no cover
+    import sys
+    sys.path.append("./tests")
+    import subprocessDebug as subprocess
+else:
+    import subprocess
 
+## logger configuration
 socketLogger = SocketLogger()
 socketLogger.settings(saveToFile=False, print=True, fileNameWihPath="/var/log/youtubedlweb_mylogger.log",
                       logLevel=LogLevel.ERROR, showFilename=True, showLogLevel=False, showDate=False,
@@ -31,16 +37,23 @@ logger = logging.getLogger(__name__)
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-mailManager = Mail()
-youtubeManager = YoutubeManager(logger=socketLogger)
-youtubeConfig = YoutubeConfig()
 
+## Initialize component
 CONFIG_FILE="/etc/mediaserver/youtubedl.ini"
 
+mailManager = Mail()
+
+youtubeManager = YoutubeManager(logger=socketLogger)
+
+youtubeConfig = YoutubeConfig()
 youtubeConfig.initialize(CONFIG_FILE)
 
+
+## import subsides
 import alarm
 import youtubeDownloader
+
+## --------------------------------------
 
 @app.route('/')
 @app.route('/index.html')
