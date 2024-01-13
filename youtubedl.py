@@ -1,6 +1,6 @@
 import logging
-from flask import Flask, render_template, redirect, url_for, request, jsonify, send_from_directory, flash, session
-from flask_socketio import SocketIO, emit
+from flask import Flask, render_template
+from flask_socketio import SocketIO
 from Common.mailManager import Mail
 from Common.YouTubeManager import YoutubeManager, YoutubeConfig
 from Common.SocketLogger import SocketLogger, LogLevel

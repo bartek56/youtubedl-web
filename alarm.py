@@ -1,5 +1,6 @@
-from Common.AlarmEnums import SystemdCommand, AlarmConfigFlask, AlarmConfigLinux
+from Common.AlarmEnums import SystemdCommand, AlarmConfigFlask
 from youtubedl import app, logger, alarmManager
+import webUtils
 
 from flask import render_template, request, flash
 
@@ -9,10 +10,6 @@ if app.debug == True: # pragma: no cover
     import subprocessDebug as subprocess
 else:
     import subprocess
-
-
-def alert_info2(info):
-    return render_template('alert.html', alert=info)
 
 @app.route('/alarm_test_start')
 def alarmTestStart():
@@ -47,14 +44,13 @@ def alarm():
     remoteAddress = request.remote_addr
 
     if ("192.168" in remoteAddress) or ("127.0.0.1" in remoteAddress):
+        #if os.path.isfile("/etc/mediaserver/alarm.timer") == False:
+        #    return alert_info2("Alarm timer doesn't exist")
+        #elif os.path.isfile("/etc/mediaserver/alarm.sh") == False:
+        #    return alert_info2("Alarm script doesn't exist")
         return render_template("alarm.html", **alarmManager.loadAlarmConfig())
-
-    #elif os.path.isfile("/etc/mediaserver/alarm.timer") == False:
-    #    return alert_info2("Alarm timer doesn't exist")
-    #elif os.path.isfile("/etc/mediaserver/alarm.sh") == False:
-    #    return alert_info2("Alarm script doesn't exist")
     else:
-        return render_template('alert.html', "You do not have access to alarm settings")
+        return webUtils.alert_info("You do not have access to alarm settings")
 
 @app.route('/save_alarm', methods = ['POST', 'GET'])
 def save_alarm_html():
