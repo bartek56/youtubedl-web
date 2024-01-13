@@ -1,0 +1,319 @@
+from youtubedl import app, logger
+from flask import render_template, request, flash
+
+if app.debug == True: # pragma: no cover
+    import sys
+    sys.path.append("./tests")
+    import subprocessDebug as subprocess
+else:
+    import subprocess
+
+ALARM_TIMER="/etc/mediaserver/alarm.timer"
+ALARM_SCRIPT="/etc/mediaserver/alarm.sh"
+
+class AlarmConfigFlask():
+    ALARM_TIME =          "alarm_time"
+    ALARM_MODE =          "alarm_mode"
+    ALARM_MODE_NEWEST =   "newest_song"
+    ALARM_MODE_PLAYLIST = "playlist"
+    THE_NEWEST_SONG =     "theNewestSongChecked"
+    PLAYLIST_CHECKED =    "playlistChecked"
+    ALARM_PLAYLISTS =     "alarm_playlists"
+    ALARM_PLATLIST_NAME = "alarm_playlist_name"
+    ALARM_ACTIVE =        "alarm_active"
+    MONDAY =    "monday_checked"
+    TUESDAY =   "tuesday_checked"
+    WEDNESDEY = "wednesday_checked"
+    THURSDAY =  "thursday_checked"
+    FRIDAY =    "friday_checked"
+    SATURDAY =  "saturday_checked"
+    SUNDAY =    "sunday_checked"
+    MIN_VOLUME = "min_volume"
+    MAX_VOLUME = "max_volume"
+    DEFAULT_VOLUME = "default_volume"
+    GROWING_VOLUME = "growing_volume"
+    GROWING_SPEED =  "growing_speed"
+
+class AlarmConfigLinux():
+    THE_NEWEST_SONG =     "theNewestSongs"
+    PLAYLIST =            "playlist"
+    MIN_VOLUME =   "minVolume"
+    MAX_VOLUME =   "maxVolume"
+    DEFAULT_VOLUME = "defaultVolume"
+    GROWING_VOLUME = "growingVolume"
+    GROWING_SPEED =  "growingSpeed"
+
+class SystemdCommand():
+    START_ALARM_TIMER =     "sudo /bin/systemctl start alarm.timer"
+    START_ALARM_SERVICE =   "sudo /bin/systemctl start alarm.service"
+    STOP_ALARM_TIMER =      "sudo /bin/systemctl stop alarm.timer"
+    STOP_ALARM_SERVICE =    "sudo /bin/systemctl stop alarm.service"
+    ENABLE_ALARM_TIMER =    "sudo /bin/systemctl enable alarm.timer"
+    DISABLE_ALARM_TIMER =   "sudo /bin/systemctl disable alarm.timer"
+    DAEMON_RELOAD =         "sudo /bin/systemctl daemon-reload"
+    IS_ACTIVE_ALARM_TIMER = "systemctl is-active alarm.timer"
+
+def saveConfig(configFile:str, content:list):
+    f = open(configFile,"w")
+    for x in content:
+        f.write(x)
+    f.close()
+
+def loadConfig(configFile):
+    f = open(configFile, "r")
+    content = f.readlines()
+    f.close()
+    return content
+
+def loadAlarmConfig():
+    mondayChecked = ""
+    tuesdayChecked = ""
+    wednesdayChecked = ""
+    thursdayChecked = ""
+    fridayChecked = ""
+    saturdayChecked = ""
+    sundayChecked = ""
+
+    content = loadConfig(ALARM_TIMER)
+
+    for x in content:
+        if "OnCalendar" in x:
+            parameter = x.split("=")
+            parameter2 = parameter[1].split(" ")
+            weekDays = parameter2[0]
+            time = parameter2[1].rstrip()
+
+            if "Mon" in weekDays:
+                mondayChecked = "checked"
+            if "Tue" in weekDays:
+                tuesdayChecked = "checked"
+            if "Wed" in weekDays:
+                wednesdayChecked = "checked"
+            if "Thu" in weekDays:
+                thursdayChecked = "checked"
+            if "Fri" in weekDays:
+                fridayChecked = "checked"
+            if "Sat" in weekDays:
+                saturdayChecked = "checked"
+            if "Sun" in weekDays:
+                sundayChecked = "checked"
+
+    content = loadConfig(ALARM_SCRIPT)
+
+    for x in content:
+        if len(x)>1:
+            if AlarmConfigLinux.MIN_VOLUME in x:
+                parameter = x.split("=")
+                minVolume = parameter[1].rstrip()
+            elif AlarmConfigLinux.MAX_VOLUME in x:
+                parameter = x.split("=")
+                maxVolume = parameter[1].rstrip()
+            elif AlarmConfigLinux.DEFAULT_VOLUME in x:
+                parameter = x.split("=")
+                defaultVolume = parameter[1].rstrip()
+            elif AlarmConfigLinux.GROWING_VOLUME in x:
+                parameter = x.split("=")
+                growingVolume = int(parameter[1].rstrip())
+            elif AlarmConfigLinux.GROWING_SPEED in x:
+                parameter = x.split("=")
+                growingSpeed = int(parameter[1].rstrip())
+            elif AlarmConfigLinux.PLAYLIST in x:
+                parameter = x.split("=")
+                alarmPlaylistName = parameter[1].rstrip()
+                alarmPlaylistName=alarmPlaylistName.replace('"','')
+            elif AlarmConfigLinux.THE_NEWEST_SONG in x:
+                parameter = x.split("=")
+                if "true" in parameter[1]:
+                    theNewestSongCheckBox = "checked"
+                    playlistCheckbox = ""
+                else:
+                    theNewestSongCheckBox = ""
+                    playlistCheckbox = "checked"
+        else:
+            break
+
+    out = subprocess.check_output("mpc lsplaylists | grep -v m3u", shell=True, text=True)
+    playlists = []
+    musicPlaylistName=""
+    for x in out:
+        if x != '\n':
+            musicPlaylistName += x
+        else:
+            playlists.append(musicPlaylistName)
+            musicPlaylistName=""
+
+    alarmIsOn = "unchecked"
+    try:
+        output = subprocess.check_output(SystemdCommand.IS_ACTIVE_ALARM_TIMER, shell=True, text=True)
+        #exception is called when alarm is disabled
+        if "in" in output:
+            alarmIsOn = "unchecked"
+        else:
+            alarmIsOn = "checked"
+    except subprocess.CalledProcessError as grepexc:
+        logger.info("Exception - alarm is disabled")
+        alarmIsOn = "unchecked"
+
+    return {AlarmConfigFlask.ALARM_TIME: time,
+            AlarmConfigFlask.THE_NEWEST_SONG:theNewestSongCheckBox,
+            AlarmConfigFlask.PLAYLIST_CHECKED:playlistCheckbox,
+            AlarmConfigFlask.ALARM_PLAYLISTS:playlists,
+            AlarmConfigFlask.ALARM_PLATLIST_NAME:alarmPlaylistName,
+            AlarmConfigFlask.ALARM_ACTIVE:alarmIsOn,
+            AlarmConfigFlask.MONDAY:mondayChecked,
+            AlarmConfigFlask.TUESDAY:tuesdayChecked,
+            AlarmConfigFlask.WEDNESDEY:wednesdayChecked,
+            AlarmConfigFlask.THURSDAY:thursdayChecked,
+            AlarmConfigFlask.FRIDAY:fridayChecked,
+            AlarmConfigFlask.SATURDAY:saturdayChecked,
+            AlarmConfigFlask.SUNDAY:sundayChecked,
+            AlarmConfigFlask.MIN_VOLUME:minVolume,
+            AlarmConfigFlask.MAX_VOLUME:maxVolume,
+            AlarmConfigFlask.DEFAULT_VOLUME:defaultVolume,
+            AlarmConfigFlask.GROWING_VOLUME:growingVolume,
+            AlarmConfigFlask.GROWING_SPEED:growingSpeed}
+
+def alert_info2(info):
+    return render_template('alert.html', alert=info)
+
+@app.route('/alarm_test_start')
+def alarmTestStart():
+    logger.debug('alarm test start')
+    subprocess.run(SystemdCommand.START_ALARM_SERVICE, shell=True)
+    return "Nothing"
+
+@app.route('/alarm_test_stop')
+def alarmTestStop():
+    logger.debug('alarm test stop')
+    subprocess.run(SystemdCommand.STOP_ALARM_SERVICE, shell=True)
+    subprocess.run('/usr/bin/mpc stop', shell=True)
+    return render_template("alarm.html", **loadAlarmConfig())
+
+@app.route('/alarm_on')
+def alarmOn():
+    logger.debug("alarm on")
+    subprocess.run(SystemdCommand.ENABLE_ALARM_TIMER, shell=True)
+    subprocess.run(SystemdCommand.START_ALARM_TIMER, shell=True)
+    return render_template("alarm.html", **loadAlarmConfig())
+
+@app.route('/alarm_off')
+def alarmOff():
+    logger.debug('alarm off')
+    subprocess.run(SystemdCommand.STOP_ALARM_TIMER, shell=True)
+    subprocess.run(SystemdCommand.DISABLE_ALARM_TIMER, shell=True)
+
+    return "Nothing"
+
+@app.route('/alarm.html')
+def alarm():
+    remoteAddress = request.remote_addr
+
+    if ("192.168" in remoteAddress) or ("127.0.0.1" in remoteAddress):
+        return render_template("alarm.html", **loadAlarmConfig())
+
+    #elif os.path.isfile("/etc/mediaserver/alarm.timer") == False:
+    #    return alert_info2("Alarm timer doesn't exist")
+    #elif os.path.isfile("/etc/mediaserver/alarm.sh") == False:
+    #    return alert_info2("Alarm script doesn't exist")
+    else:
+        return render_template('alert.html', "You do not have access to alarm settings")
+
+@app.route('/save_alarm', methods = ['POST', 'GET'])
+def save_alarm_html():
+    if request.method == 'POST':
+        time = request.form[AlarmConfigFlask.ALARM_TIME]
+        alarmMode = request.form[AlarmConfigFlask.ALARM_MODE]
+        alarmPlaylist = ""
+        if AlarmConfigFlask.ALARM_MODE_PLAYLIST in alarmMode:
+            alarmPlaylist = request.form['playlists']
+        alarmDays = ""
+        if len(request.form.getlist('monday')) > 0:
+            alarmDays += "Mon,"
+        if len(request.form.getlist('tueday')) > 0:
+            alarmDays += "Tue,"
+        if len(request.form.getlist('wedday')) > 0:
+            alarmDays += "Wed,"
+        if len(request.form.getlist('thuday')) > 0:
+            alarmDays += "Thu,"
+        if len(request.form.getlist('friday')) > 0:
+            alarmDays += "Fri,"
+        if len(request.form.getlist('satday')) > 0:
+            alarmDays += "Sat,"
+        if len(request.form.getlist('sunday')) > 0:
+            alarmDays += "Sun,"
+
+        if len(alarmDays) > 0:
+            alarmDays = alarmDays[:-1]
+
+        minVolume=request.form[AlarmConfigFlask.MIN_VOLUME]
+        maxVolume=request.form[AlarmConfigFlask.MAX_VOLUME]
+        defaultVolume=request.form[AlarmConfigFlask.DEFAULT_VOLUME]
+
+        growingVolume = request.form[AlarmConfigFlask.GROWING_VOLUME]
+        growingSpeed = request.form[AlarmConfigFlask.GROWING_SPEED]
+        alarmIsEnable = False
+        if "alarm_active" in request.form:
+            alarmIsEnable = True
+
+        updateAlarmConfig(alarmDays,time,minVolume,maxVolume,defaultVolume,growingVolume,growingSpeed,
+                        alarmPlaylist,alarmMode)
+
+        if alarmIsEnable:
+            p = subprocess.run(SystemdCommand.STOP_ALARM_TIMER, shell=True)
+            if p.returncode != 0:
+                flash("Failed to restart alarm timer", 'danger')
+                return render_template("alarm.html", **loadAlarmConfig())
+
+        p = subprocess.run(SystemdCommand.DAEMON_RELOAD, shell=True)
+        if p.returncode != 0:
+                flash("Failed to daemon-reload", 'danger')
+                return render_template("alarm.html", **loadAlarmConfig())
+
+        if alarmIsEnable:
+            p = subprocess.run(SystemdCommand.START_ALARM_TIMER, shell=True)
+            if p.returncode != 0:
+                flash("Failed to start alarm timer", 'danger')
+                return render_template("alarm.html", **loadAlarmConfig())
+
+        logger.info("alarm saved, systemctl daemon-reload")
+
+        flash("Successfull saved alarm", 'success')
+
+    return render_template("alarm.html", **loadAlarmConfig())
+
+def updateAlarmConfig(alarmDays, time, minVolume, maxVolume, defaultVolume,
+              growingVolume, growingSpeed, alarmPlaylist, alarmMode):
+
+        content = loadConfig(ALARM_TIMER)
+        for i in range(len(content)):
+            if "OnCalendar" in content[i]:
+                content[i] = "OnCalendar=%s %s \n"%(alarmDays, time)
+
+        saveConfig(ALARM_TIMER, content)
+
+        content = loadConfig(ALARM_SCRIPT)
+        for i in range(len(content)):
+            if i>0 and i<8:
+                if AlarmConfigLinux.MIN_VOLUME in content[i]:
+                    content[i] = "%s=%s\n"%(AlarmConfigLinux.MIN_VOLUME, minVolume)
+                elif AlarmConfigLinux.MAX_VOLUME in content[i]:
+                    content[i] = "%s=%s\n"%(AlarmConfigLinux.MAX_VOLUME, maxVolume)
+                elif AlarmConfigLinux.DEFAULT_VOLUME in content[i]:
+                    content[i] = "%s=%s\n"%(AlarmConfigLinux.DEFAULT_VOLUME, defaultVolume)
+                elif AlarmConfigLinux.GROWING_VOLUME in content[i]:
+                    content[i] = "%s=%s\n"%(AlarmConfigLinux.GROWING_VOLUME, growingVolume)
+                elif AlarmConfigLinux.GROWING_SPEED in content[i]:
+                    content[i] = "%s=%s\n"%(AlarmConfigLinux.GROWING_SPEED, growingSpeed)
+                elif AlarmConfigLinux.PLAYLIST in content[i]:
+                    content[i] = "%s=\"%s\"\n"%(AlarmConfigLinux.PLAYLIST, alarmPlaylist)
+                elif AlarmConfigLinux.THE_NEWEST_SONG in content[i]:
+                    alarmNewestModeIsEnable = ""
+                    if AlarmConfigFlask.ALARM_MODE_PLAYLIST in alarmMode:
+                        alarmNewestModeIsEnable = "false"
+                    else:
+                        alarmNewestModeIsEnable = "true"
+                    content[i] = "%s=%s\n"%(AlarmConfigLinux.THE_NEWEST_SONG, alarmNewestModeIsEnable)
+            elif i >=8:
+                break
+
+        saveConfig(ALARM_SCRIPT, content)
