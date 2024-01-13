@@ -4,6 +4,7 @@ from flask_socketio import SocketIO, emit
 from Common.mailManager import Mail
 from Common.YouTubeManager import YoutubeManager, YoutubeConfig
 from Common.SocketLogger import SocketLogger, LogLevel
+from Common.AlarmManager import AlarmManager
 from flask_session import Session
 
 ## server configuration
@@ -40,6 +41,8 @@ log.setLevel(logging.ERROR)
 
 ## Initialize component
 CONFIG_FILE="/etc/mediaserver/youtubedl.ini"
+ALARM_TIMER="/etc/mediaserver/alarm.timer"
+ALARM_SCRIPT="/etc/mediaserver/alarm.sh"
 
 mailManager = Mail()
 
@@ -48,10 +51,12 @@ youtubeManager = YoutubeManager(logger=socketLogger)
 youtubeConfig = YoutubeConfig()
 youtubeConfig.initialize(CONFIG_FILE)
 
+alarmManager = AlarmManager(subprocess, ALARM_TIMER, ALARM_SCRIPT)
 
 ## import subsides
 import alarm
 import youtubeDownloader
+import mail
 
 ## --------------------------------------
 
@@ -59,27 +64,6 @@ import youtubeDownloader
 @app.route('/index.html')
 def index():
     return render_template('index.html')
-
-@app.route('/contact.html')
-def contactHTML():
-    if mailManager.initialize():
-        return render_template('contact.html')
-    else:
-        return render_template('alert.html', alert="Mail is not supported")
-
-@app.route('/mail', methods = ['POST', 'GET'])
-def mail():
-    if request.method == 'POST':
-        sender = request.form['sender']
-        message = request.form['message']
-        if(len(sender)>2 and len(message)>2):
-            fullMessage = "You received message from " + sender + ": " + message
-            mailManager.sendMail("bartosz.brzozowski23@gmail.com", "MediaServer", fullMessage)
-            flash("Successfull send mail",'success')
-        else:
-            flash("You have to fill in the fields", 'danger')
-
-    return render_template('contact.html')
 
 @socketio.event
 def connect():

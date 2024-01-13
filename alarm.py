@@ -1,6 +1,5 @@
 from Common.AlarmEnums import SystemdCommand, AlarmConfigFlask, AlarmConfigLinux
-from Common.AlarmManager import AlarmManager
-from youtubedl import app, logger
+from youtubedl import app, logger, alarmManager
 
 from flask import render_template, request, flash
 
@@ -11,17 +10,6 @@ if app.debug == True: # pragma: no cover
 else:
     import subprocess
 
-ALARM_TIMER="/etc/mediaserver/alarm.timer"
-ALARM_SCRIPT="/etc/mediaserver/alarm.sh"
-
-alarmManager = AlarmManager(subprocess, ALARM_TIMER, ALARM_SCRIPT)
-
-
-def saveConfig(configFile:str, content:list):
-    f = open(configFile,"w")
-    for x in content:
-        f.write(x)
-    f.close()
 
 def alert_info2(info):
     return render_template('alert.html', alert=info)
@@ -105,7 +93,7 @@ def save_alarm_html():
         if "alarm_active" in request.form:
             alarmIsEnable = True
 
-        updateAlarmConfig(alarmDays,time,minVolume,maxVolume,defaultVolume,growingVolume,growingSpeed,
+        alarmManager.updateAlarmConfig(alarmDays,time,minVolume,maxVolume,defaultVolume,growingVolume,growingSpeed,
                         alarmPlaylist,alarmMode)
 
         if alarmIsEnable:
@@ -130,40 +118,3 @@ def save_alarm_html():
         flash("Successfull saved alarm", 'success')
 
     return render_template("alarm.html", **alarmManager.loadAlarmConfig())
-
-def updateAlarmConfig(alarmDays, time, minVolume, maxVolume, defaultVolume,
-              growingVolume, growingSpeed, alarmPlaylist, alarmMode):
-
-        content = alarmManager.loadConfig(ALARM_TIMER)
-        for i in range(len(content)):
-            if "OnCalendar" in content[i]:
-                content[i] = "OnCalendar=%s %s \n"%(alarmDays, time)
-
-        saveConfig(ALARM_TIMER, content)
-
-        content = alarmManager.loadConfig(ALARM_SCRIPT)
-        for i in range(len(content)):
-            if i>0 and i<8:
-                if AlarmConfigLinux.MIN_VOLUME in content[i]:
-                    content[i] = "%s=%s\n"%(AlarmConfigLinux.MIN_VOLUME, minVolume)
-                elif AlarmConfigLinux.MAX_VOLUME in content[i]:
-                    content[i] = "%s=%s\n"%(AlarmConfigLinux.MAX_VOLUME, maxVolume)
-                elif AlarmConfigLinux.DEFAULT_VOLUME in content[i]:
-                    content[i] = "%s=%s\n"%(AlarmConfigLinux.DEFAULT_VOLUME, defaultVolume)
-                elif AlarmConfigLinux.GROWING_VOLUME in content[i]:
-                    content[i] = "%s=%s\n"%(AlarmConfigLinux.GROWING_VOLUME, growingVolume)
-                elif AlarmConfigLinux.GROWING_SPEED in content[i]:
-                    content[i] = "%s=%s\n"%(AlarmConfigLinux.GROWING_SPEED, growingSpeed)
-                elif AlarmConfigLinux.PLAYLIST in content[i]:
-                    content[i] = "%s=\"%s\"\n"%(AlarmConfigLinux.PLAYLIST, alarmPlaylist)
-                elif AlarmConfigLinux.THE_NEWEST_SONG in content[i]:
-                    alarmNewestModeIsEnable = ""
-                    if AlarmConfigFlask.ALARM_MODE_PLAYLIST in alarmMode:
-                        alarmNewestModeIsEnable = "false"
-                    else:
-                        alarmNewestModeIsEnable = "true"
-                    content[i] = "%s=%s\n"%(AlarmConfigLinux.THE_NEWEST_SONG, alarmNewestModeIsEnable)
-            elif i >=8:
-                break
-
-        saveConfig(ALARM_SCRIPT, content)

@@ -123,3 +123,45 @@ class AlarmManager:
         f.close()
         return content
 
+    def updateAlarmConfig(self, alarmDays, time, minVolume, maxVolume, defaultVolume,
+              growingVolume, growingSpeed, alarmPlaylist, alarmMode):
+
+        content = self.loadConfig(self.ALARM_TIMER)
+        for i in range(len(content)):
+            if "OnCalendar" in content[i]:
+                content[i] = "OnCalendar=%s %s \n"%(alarmDays, time)
+
+        self.saveConfig(self.ALARM_TIMER, content)
+
+        content = self.loadConfig(self.ALARM_SCRIPT)
+        for i in range(len(content)):
+            if i>0 and i<8:
+                if AlarmConfigLinux.MIN_VOLUME in content[i]:
+                    content[i] = "%s=%s\n"%(AlarmConfigLinux.MIN_VOLUME, minVolume)
+                elif AlarmConfigLinux.MAX_VOLUME in content[i]:
+                    content[i] = "%s=%s\n"%(AlarmConfigLinux.MAX_VOLUME, maxVolume)
+                elif AlarmConfigLinux.DEFAULT_VOLUME in content[i]:
+                    content[i] = "%s=%s\n"%(AlarmConfigLinux.DEFAULT_VOLUME, defaultVolume)
+                elif AlarmConfigLinux.GROWING_VOLUME in content[i]:
+                    content[i] = "%s=%s\n"%(AlarmConfigLinux.GROWING_VOLUME, growingVolume)
+                elif AlarmConfigLinux.GROWING_SPEED in content[i]:
+                    content[i] = "%s=%s\n"%(AlarmConfigLinux.GROWING_SPEED, growingSpeed)
+                elif AlarmConfigLinux.PLAYLIST in content[i]:
+                    content[i] = "%s=\"%s\"\n"%(AlarmConfigLinux.PLAYLIST, alarmPlaylist)
+                elif AlarmConfigLinux.THE_NEWEST_SONG in content[i]:
+                    alarmNewestModeIsEnable = ""
+                    if AlarmConfigFlask.ALARM_MODE_PLAYLIST in alarmMode:
+                        alarmNewestModeIsEnable = "false"
+                    else:
+                        alarmNewestModeIsEnable = "true"
+                    content[i] = "%s=%s\n"%(AlarmConfigLinux.THE_NEWEST_SONG, alarmNewestModeIsEnable)
+            elif i >=8:
+                break
+
+        self.saveConfig(self.ALARM_SCRIPT, content)
+
+    def saveConfig(self, configFile:str, content:list):
+        f = open(configFile,"w")
+        for x in content:
+            f.write(x)
+        f.close()
