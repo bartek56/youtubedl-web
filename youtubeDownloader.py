@@ -117,6 +117,7 @@ def downloadMedia(msg):
 
         PlaylistInfo_response().sendMessage(SocketMessages.PlaylistInfo(ytData.playlistName, ytData.listOfMedia))
         index = 0
+        numberOfDownloadedSongs = 0
         for x in ytData.listOfMedia:
             index += 1
             resultOfMedia = downloadMediaOfType(x.url, downloadType)
@@ -126,12 +127,16 @@ def downloadMedia(msg):
                 #PlaylistMediaInfo_response().sendError(error)
                 logger.error(error)
                 continue
+            numberOfDownloadedSongs+=1
             data:YTManager.YoutubeClipData = resultOfMedia.data()
             downloadedFiles.append(data.path)
             filename = data.path.split("/")[-1]
             randomHash = getRandomString()
             session[randomHash] = filename
             PlaylistMediaInfo_response().sendMessage(SocketMessages.PlaylistMediaInfo(x.playlistIndex, filename, randomHash))
+        if numberOfDownloadedSongs == 0:
+            DownloadMedia_finish().sendError("Failed to download playlist")
+            return
         playlistName = ytData.playlistName
         compressToZip(downloadedFiles, playlistName)
         randomHash = getRandomString()
