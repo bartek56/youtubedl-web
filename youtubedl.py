@@ -54,9 +54,9 @@ youtubeConfig.initialize(CONFIG_FILE)
 alarmManager = AlarmManager(subprocess, ALARM_TIMER, ALARM_SCRIPT)
 
 ## import subsides
-import alarm
-import youtubeDownloader
-import mail
+import WebAPI.alarm
+import WebAPI.youtubeDownloader
+import WebAPI.mail
 
 ## --------------------------------------
 

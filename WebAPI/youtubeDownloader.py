@@ -11,7 +11,7 @@ from Common.SocketMessages import DownloadMedia_finish, DownloadPlaylist_finish
 
 import Common.YouTubeManager as YTManager
 import Common.SocketMessages as SocketMessages
-import webUtils
+import WebAPI.webUtils as utils
 
 
 def downloadMediaOfType(url, type):
@@ -46,7 +46,7 @@ def playlists():
 
         return render_template('playlists.html', playlists_data=data)
     else:
-        return webUtils.alert_info("You do not have access to Youtube playlists")
+        return utils.alert_info("You do not have access to Youtube playlists")
 
 @app.route('/download_file',methods = ['POST', 'GET'])
 def downloadFile():
@@ -76,7 +76,7 @@ def playlist():
                 flash(info, 'success')
            else:
                info = "Failed to remove Youtube playlist: %s"%(playlistToRemove)
-               return webUtils.alert_info(info)
+               return utils.alert_info(info)
 
        return redirect('playlists.html')
 
@@ -130,7 +130,7 @@ def downloadMedia(msg):
             data:YTManager.YoutubeClipData = resultOfMedia.data()
             downloadedFiles.append(data.path)
             filename = data.path.split("/")[-1]
-            randomHash = webUtils.getRandomString()
+            randomHash = utils.getRandomString()
             session[randomHash] = filename
             PlaylistMediaInfo_response().sendMessage(SocketMessages.PlaylistMediaInfo(x.playlistIndex, filename, randomHash))
         if numberOfDownloadedSongs == 0:
@@ -138,7 +138,7 @@ def downloadMedia(msg):
             return
         playlistName = ytData.playlistName
         compressToZip(downloadedFiles, playlistName)
-        randomHash = webUtils.getRandomString()
+        randomHash = utils.getRandomString()
         session[randomHash] = "%s.zip"%playlistName
 
         DownloadMedia_finish().sendMessage(randomHash)
@@ -160,7 +160,7 @@ def downloadMedia(msg):
 
         data:YTManager.YoutubeClipData = result2.data()
         filename = data.path.split("/")[-1]
-        randomHash = webUtils.getRandomString()
+        randomHash = utils.getRandomString()
         session[randomHash] = filename
         DownloadMedia_finish().sendMessage(randomHash)
 

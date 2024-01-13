@@ -1,6 +1,6 @@
 from Common.AlarmEnums import AlarmConfigFlask, AlarmConfigLinux, SystemdCommand
-from alarm import alarmManager
-import alarm
+from WebAPI.alarm import alarmManager
+import WebAPI.alarm as alarm
 from youtubedl import socketio
 import youtubedl
 import unittest
@@ -104,7 +104,7 @@ class FlaskSocketIO(unittest.TestCase):
 
     @mock.patch.object(YoutubeManager, 'download_mp3')
     @mock.patch.object(YoutubeManager, 'getMediaInfo')
-    @mock.patch('webUtils.getRandomString')
+    @mock.patch('WebAPI.webUtils.getRandomString')
     def test_downloadMp3(self, mock_getRandomString:MagicMock, mock_getMediaInfo:MagicMock, mock_downloadMp3:MagicMock):
         mock_getMediaInfo.configure_mock(return_value=ResultOfDownload(YTManager.MediaInfo(self.title,self.artist,self.album,self.url)))
         mock_downloadMp3.configure_mock(return_value=ResultOfDownload(YTManager.AudioData(self.path, self.title, self.artist, self.album)))
@@ -135,8 +135,8 @@ class FlaskSocketIO(unittest.TestCase):
 
     @mock.patch.object(YoutubeManager, 'download_mp3')
     @mock.patch.object(YoutubeManager, 'getPlaylistInfo')
-    @mock.patch('webUtils.getRandomString')
-    @mock.patch('youtubeDownloader.compressToZip')
+    @mock.patch('WebAPI.webUtils.getRandomString')
+    @mock.patch('WebAPI.youtubeDownloader.compressToZip')
     def test_downloadMp3Playlist(self, mock_zip:MagicMock, mock_getRandomString:MagicMock, mock_getPlaylistInfo:MagicMock, mock_downloadMp3:MagicMock):
         mock_getPlaylistInfo.configure_mock(return_value = ResultOfDownload(
             YTManager.PlaylistInfo(self.playlistName,
@@ -200,7 +200,7 @@ class FlaskSocketIO(unittest.TestCase):
 
     @mock.patch.object(YoutubeManager, 'download_720p')
     @mock.patch.object(YoutubeManager, 'getMediaInfo')
-    @mock.patch('webUtils.getRandomString')
+    @mock.patch('WebAPI.webUtils.getRandomString')
     def test_download720p(self, mock_randomString:MagicMock, mock_getMediaInfo:MagicMock, mock_download720p:MagicMock):
         mock_download720p.configure_mock(return_value=ResultOfDownload(YTManager.VideoData(self.downloadDir+"/"+self.title+"."+self.extMp4, self.title)))
         mock_getMediaInfo.configure_mock(return_value=ResultOfDownload(YTManager.MediaInfo(self.title, self.artist, self.album, self.url)))
