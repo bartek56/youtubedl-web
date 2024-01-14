@@ -28,13 +28,12 @@ class MediaInfo:
         self.artist = artist
 
 class Message:
-    message = ""
-    _messageContent={}
     _errorKey = "error"
     _dataKey =  "data"
-    data=None
 
     def __init__(self, message:str):
+        self._messageContent={}
+        self.data=None
         self.message = message
 
     @abstractmethod

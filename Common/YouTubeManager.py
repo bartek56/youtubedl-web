@@ -305,6 +305,7 @@ class YoutubeManager:
         return True
 
     def getPlaylistInfo(self, url) -> ResultOfDownload:
+        logger.info("Get playlist infor from url: %s", url)
 
         ydl_opts = {
               'format': 'best/best',
@@ -331,9 +332,10 @@ class YoutubeManager:
         playlistTitle = results['title']
         playlistIndex = 1
         for i in results['entries']:
-            data.append(MediaFromPlaylist(playlistIndex, i['url'], i['title']))
+            mediaFromPlaylist = MediaFromPlaylist(playlistIndex, i['url'], i['title'])
+            logger.debug(str(mediaFromPlaylist))
+            data.append(mediaFromPlaylist)
             playlistIndex+=1
-
 
         return ResultOfDownload(PlaylistInfo(playlistTitle, data))
 
@@ -457,7 +459,8 @@ class YoutubeManager:
         try:
             result = yt_dlp.YoutubeDL(ydl_opts).extract_info(url)
         except Exception as e:
-            log = YoutubeManagerLogs.DOWNLOAD_FAILED+": "+str(e)
+            strE = str(e).replace('\r', '')
+            log = YoutubeManagerLogs.DOWNLOAD_FAILED+": "+strE
             logger.error(log)
             return ResultOfDownload(log)
 

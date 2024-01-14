@@ -1,9 +1,7 @@
 from youtubedl import app, logger, youtubeConfig, youtubeManager, socketio
 from flask import render_template, request, flash, redirect, session, send_file
 
-import string
 import os
-import random
 import zipfile
 
 from Common.SocketMessages import PlaylistInfo_response, MediaInfo_response, DownloadPlaylist_response, PlaylistMediaInfo_response
@@ -104,16 +102,14 @@ def downloadMedia(msg):
     downloadType = str(msg['type'])
     if "playlist?list" in url and "watch?v" not in url:
         downloadedFiles = []
-        resultOfPLaylist = youtubeManager.getPlaylistInfo(url)
+        resultOfPlaylist = youtubeManager.getPlaylistInfo(url)
 
-        if resultOfPLaylist.IsFailed():
+        if resultOfPlaylist.IsFailed():
             DownloadMedia_finish().sendError("Failed to get info playlist")
-
-            logger.info("Error to download media: %s", resultOfPLaylist.error())
+            logger.error("Error to download media: %s", resultOfPlaylist.error())
             return
 
-        ytData:YTManager.PlaylistInfo = resultOfPLaylist.data()
-
+        ytData:YTManager.PlaylistInfo = resultOfPlaylist.data()
         PlaylistInfo_response().sendMessage(SocketMessages.PlaylistInfo(ytData.playlistName, ytData.listOfMedia))
         index = 0
         numberOfDownloadedSongs = 0

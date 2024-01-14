@@ -32,7 +32,7 @@ socketLogger.settings(saveToFile=False, print=True, fileNameWihPath="/var/log/yo
 if app.debug == True: # pragma: no cover
     logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.DEBUG)
 else:
-    logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.FATAL)
+    logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 log = logging.getLogger('werkzeug')
