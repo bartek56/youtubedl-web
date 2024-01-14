@@ -54,7 +54,7 @@ class PlaylistConfig:
         self.link = link
 
 class MediaInfo:
-    def __init__(self, title:str=None, artist:str=None, album:str=None, url:str=None):
+    def __init__(self, title=None, artist=None, album=None, url=None):
         self.title = title
         self.artist = artist
         self.album = album
@@ -371,7 +371,7 @@ class YoutubeManager:
         if "album" in result:
             album = result['album']
 
-        return ResultOfDownload(MediaInfo(title,artist,album,result['original_url']))
+        return ResultOfDownload(MediaInfo(title,artist,album,album_artist,result['original_url']))
 
     def _isMusicClipArchived(self, path, url): # pragma: no cover
         hash = self.getMediaHashFromLink(url)
@@ -626,17 +626,17 @@ class YoutubeManager:
                 continue
             songMetadata:AudioData
             songMetadata = result.data()
-            self._addMetadataToPlaylist(playlistDir, songData.playlistIndex, playlistName, songMetadata.artist, songMetadata.title)
+            self._addMetadataToPlaylist(playlistDir, songData.playlistIndex, playlistName, songMetadata.artist,  songMetadata.album, songMetadata.title)
             songCounter+=1
         return ResultOfDownload(songCounter)
 
-    def _addMetadataToPlaylist(self, playlistDir, playlistIndex, playlistName, artist, title):
+    def _addMetadataToPlaylist(self, playlistDir, playlistIndex, playlistName, artist, album, title):
         fileName="%s%s"%(title, ".mp3")
         path=os.path.join(playlistDir, playlistName)
         if not os.path.isfile(os.path.join(path, fileName)):
             logger.warning("File doesn't exist. Sanitize is require")
             title = yt_dlp.utils.sanitize_filename(title)
-        newFileName = self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndex, playlistName, artist, title)
+        newFileName = self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndex, playlistName, artist, album, title)
 
     def createDirIfNotExist(self, path):
         if not os.path.exists(path): # pragma: no cover
@@ -714,6 +714,7 @@ class MediaServerDownloader(YoutubeManager):
             return
 
         artistList = []
+        albumList = []
         playlistIndexList = []
         songsTitleList = []
         for i in results['entries']:
@@ -725,6 +726,11 @@ class MediaServerDownloader(YoutubeManager):
             else:
                 artistList.append("")
 
+            if "album" in i:
+                albumList.append(i['album'])
+            else:
+                albumList.append("")
+
         for x in range(len(songsTitleList)):
             songTitle = songsTitleList[x]
             songName = self.metadataManager.lookingForFileAccordWithYTFilename(path, songTitle, artistList[x])
@@ -732,7 +738,7 @@ class MediaServerDownloader(YoutubeManager):
                 songTitle = yt_dlp.utils.sanitize_filename(songTitle)
                 songName = self.metadataManager.lookingForFileAccordWithYTFilename(path, songTitle, artistList[x])
             if songName != None:
-                self.metadataManager.renameAndAddMetadataToPlaylist(self.PLAYLISTS_PATH, playlistIndexList[x], playlistName, artistList[x], songName)
+                self.metadataManager.renameAndAddMetadataToPlaylist(self.PLAYLISTS_PATH, playlistIndexList[x], playlistName, artistList[x], albumList[x], songName)
             else:
                 warningInfo="ERROR: song not found: path %s, artist: %s, title: %s, id: %s"%(path, artistList[x], songsTitleList[x], playlistIndexList[x])
                 print (bcolors.FAIL + warningInfo + bcolors.ENDC)
