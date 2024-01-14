@@ -327,10 +327,10 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
                                             ])
 
         self.assertEqual(mock_metadata.call_count, self.numberOfSongs)
-        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistIndex1, self.playlistName, self.firstArtist, self.firstTitle),
-                                        mock.call(self.musicPath, self.playlistIndex2, self.playlistName, self.secondArtist, self.secondTitle),
-                                        mock.call(self.musicPath, self.playlistIndex3, self.playlistName, self.thirdArtist, self.thirdTitle),
-                                        mock.call(self.musicPath, self.playlistIndex4, self.playlistName, self.fourthArtist, self.fourthTitle)])
+        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistIndex1, self.playlistName, self.firstArtist, self.firstAlbum, self.firstTitle),
+                                        mock.call(self.musicPath, self.playlistIndex2, self.playlistName, self.secondArtist, self.secondAlbum, self.secondTitle),
+                                        mock.call(self.musicPath, self.playlistIndex3, self.playlistName, self.thirdArtist, self.thirdAlbum, self.thirdTitle),
+                                        mock.call(self.musicPath, self.playlistIndex4, self.playlistName, self.fourthArtist, self.fourthAlbum, self.fourthTitle)])
 
         self.assertTrue(result.IsSuccess())
         self.assertEqual(result.data(), self.numberOfSongs)
@@ -338,7 +338,6 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToPlaylist")
     def test_downloadMP3Playlist_OneNewSongFromPlaylist(self, mock_metadata:mock.MagicMock, mock_extract_info:mock.MagicMock):
-        errorMessage = "Failed to download from Youtube"
 
         self.ytManager._isMusicClipArchived = mock.MagicMock()
         self.ytManager._isMusicClipArchived.configure_mock(side_effect=[True, True, True, False])
@@ -355,7 +354,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
                                             ])
 
         self.assertEqual(mock_metadata.call_count, 1)
-        mock_metadata.assert_called_once_with(self.musicPath, self.playlistIndex4, self.playlistName, self.fourthArtist, self.fourthTitle)
+        mock_metadata.assert_called_once_with(self.musicPath, self.playlistIndex4, self.playlistName, self.fourthArtist, self.fourthAlbum, self.fourthTitle)
 
         self.assertTrue(result.IsSuccess())
         self.assertEqual(result.data(), 1)
@@ -381,9 +380,9 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
                                             ])
 
         self.assertEqual(mock_metadata.call_count, self.numberOfSongs-1)
-        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistIndex1, self.playlistName, self.firstArtist, self.firstTitle),
-                                        mock.call(self.musicPath, self.playlistIndex2, self.playlistName, self.secondArtist, self.secondTitle),
-                                        mock.call(self.musicPath, self.playlistIndex4, self.playlistName, self.fourthArtist, self.fourthTitle)])
+        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistIndex1, self.playlistName, self.firstArtist, self.firstAlbum, self.firstTitle),
+                                        mock.call(self.musicPath, self.playlistIndex2, self.playlistName, self.secondArtist, self.secondAlbum, self.secondTitle),
+                                        mock.call(self.musicPath, self.playlistIndex4, self.playlistName, self.fourthArtist,  self.fourthAlbum, self.fourthTitle)])
 
         self.assertTrue(result.IsSuccess())
         self.assertEqual(result.data(), self.numberOfSongs-1)

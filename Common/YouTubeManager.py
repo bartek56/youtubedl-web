@@ -371,7 +371,7 @@ class YoutubeManager:
         if "album" in result:
             album = result['album']
 
-        return ResultOfDownload(MediaInfo(title,artist,album,album_artist,result['original_url']))
+        return ResultOfDownload(MediaInfo(title,artist,album,result['original_url']))
 
     def _isMusicClipArchived(self, path, url): # pragma: no cover
         hash = self.getMediaHashFromLink(url)

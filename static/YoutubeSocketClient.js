@@ -14,6 +14,8 @@ $(document).ready(function () {
         event.preventDefault();
         var table = document.getElementById("media_info");
         table.innerHTML = ' ';
+        var downloadLink = document.getElementById("downloadLink");
+        downloadLink.innerHTML = ' '
         downloadResult = [];
         var downloadType = ""
         var rbDownloadType = document.getElementsByName("quickdownload");
@@ -41,10 +43,8 @@ $(document).ready(function () {
 
         var table = document.getElementById("media_info");
         if (msgManager.isError(msg)) {
-            var msgHtml = msgManager.getError(msg);
-            var row = table.insertRow();
-            var cell1 = row.insertCell();
-            cell1.innerHTML = msgHtml;
+            var downloadLink = document.getElementById("downloadLink");
+            downloadLink.innerHTML = msgManager.getError(msg);
             return;
         }
         var data = msgManager.getData(msg)
@@ -53,7 +53,6 @@ $(document).ready(function () {
         var mediaInfoHtml = mediaInfo.artist + " - " + mediaInfo.title + "\n";
         var row = table.insertRow();
         var cell1 = row.insertCell();
-        cell1.style.textAlign = 'left'
         cell1.innerHTML = mediaInfoHtml;
         var cell2 = row.insertCell();
         cell2.innerHTML = " ";
@@ -64,9 +63,8 @@ $(document).ready(function () {
         var table = document.getElementById("media_info");
         if (msgManager.isError(msg))
         {
-            var row = table.insertRow();
-            var cell1 = row.insertCell();
-            cell1.innerHTML = msg;
+            var downloadLink = document.getElementById("downloadLink");
+            downloadLink.innerHTML = msgManager.getError(msg);
         }
         else
         {
@@ -107,10 +105,8 @@ $(document).ready(function () {
         var loader = document.getElementById("spinner");
         loader.style.display = 'none';
         if (msgManager.isError(msg)){
-            var table = document.getElementById("media_info");
-            var row = table.insertRow();
-            var cell1 = row.insertCell();
-            cell1.innerHTML = msgManager.getError(msg);
+            var downloadLink = document.getElementById("downloadLink");
+            downloadLink.innerHTML = msgManager.getError(msg);
             var button = document.getElementById("btnFetch")
             button.disabled = false;
             return
