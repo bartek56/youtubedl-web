@@ -5,28 +5,6 @@ from flask_socketio import emit
 
 logger = logging.getLogger(__name__)
 
-class PlaylistMediaInfo:
-    def __init__(self, playlistIndex:str, filename:str, hash:str):
-        self.playlistIndex = playlistIndex
-        self.filename = filename
-        self.hash = hash
-
-class MediaFromPlaylist:
-    def __init__(self, index:str, url:str, title:str):
-        self.playlistIndex = index
-        self.url = url
-        self.title = title
-
-class PlaylistInfo:
-    def __init__(self, name:str, listOfMedia:List[MediaFromPlaylist]):
-        self.playlistName = name
-        self.listOfMedia = listOfMedia
-
-class MediaInfo:
-    def __init__(self, title:str=None, artist:str=None):
-        self.title = title
-        self.artist = artist
-
 class Message:
     _errorKey = "error"
     _dataKey =  "data"
@@ -55,47 +33,14 @@ class Message:
     def _emitMessage(self):
         emit(self.message, self._messageContent)
 
-# data: hash
-class DownloadMedia_finish(Message):
-    message="downloadMedia_finish"
 
-    def __init__(self):
-        super().__init__(self.message)
+# ------------------ MediaInfo_response -----------------------------------
+class MediaInfo:
+    def __init__(self, title:str=None, artist:str=None):
+        self.title = title
+        self.artist = artist
 
-    def _setMessage(self, hash:str):
-        self.data = hash
-
-# data: [{"url" "playlist_index" "title"}, ..]
-class PlaylistInfo_response(Message):
-    message="getPlaylistInfo_response"
-
-    def __init__(self):
-        super().__init__(self.message)
-
-    def _setMessage(self, playlistInfo:PlaylistInfo):
-        self.data = []
-        listOfMedia = playlistInfo.listOfMedia
-        for media in listOfMedia:
-            mediaInfo = {}
-            mediaInfo["url"] = media.url
-            mediaInfo["playlist_index"] = media.playlistIndex
-            mediaInfo["title"] = media.title
-            self.data.append(mediaInfo)
-
-#data: {playlist_index, filename, hash}
-class PlaylistMediaInfo_response(Message):
-    message = "getPlaylistMediaInfo_response"
-
-    def __init__(self):
-        super().__init__(self.message)
-
-    def _setMessage(self, playlistInfo:PlaylistMediaInfo):
-        self.data = {}
-        self.data["playlist_index"] = playlistInfo.playlistIndex
-        self.data["filename"]       = playlistInfo.filename
-        self.data["hash"]           = playlistInfo.hash
-
-#data: {"artist", "title"}
+# data: {"artist", "title"}
 class MediaInfo_response(Message):
     message = "getMediaInfo_response"
 
@@ -110,7 +55,75 @@ class MediaInfo_response(Message):
             self.data["artist"] = " "
         self.data["title"] = mediaInfo.title
 
-#data: index of downloaded playlist
+
+# ------------------- downloadMedia_finish -------------------------------
+# data: hash
+class DownloadMedia_finish(Message):
+    message="downloadMedia_finish"
+
+    def __init__(self):
+        super().__init__(self.message)
+
+    def _setMessage(self, hash:str):
+        self.data = hash
+
+
+# -------------------- getPlaylistInfo_response ----------------------------
+class MediaFromPlaylist:
+    def __init__(self, index:str, url:str, title:str):
+        self.playlistIndex = index
+        self.url = url
+        self.title = title
+
+class PlaylistInfo:
+    def __init__(self, name:str, listOfMedia:List[MediaFromPlaylist]):
+        self.playlistName = name
+        self.listOfMedia = listOfMedia
+
+# data: playlistName, [{"playlist_index" "url" "title"}, ..]
+class PlaylistInfo_response(Message):
+    message="getPlaylistInfo_response"
+
+    def __init__(self):
+        super().__init__(self.message)
+
+    def _setMessage(self, playlistInfo:PlaylistInfo):
+        self.data = []
+        listOfMedia = playlistInfo.listOfMedia
+        playlist = []
+        for media in listOfMedia:
+            mediaInfo = {}
+            mediaInfo["playlist_index"] = media.playlistIndex
+            mediaInfo["url"] = media.url
+            mediaInfo["title"] = media.title
+            playlist.append(mediaInfo)
+        self.data.append(playlistInfo.playlistName)
+        self.data.append(playlist)
+
+
+# ------------------ getPlaylistMediaInfo_response -------------------------
+class PlaylistMediaInfo:
+    def __init__(self, playlistIndex:str, filename:str, hash:str):
+        self.playlistIndex = playlistIndex
+        self.filename = filename
+        self.hash = hash
+
+# data: {playlist_index, filename, hash}
+class PlaylistMediaInfo_response(Message):
+    message = "getPlaylistMediaInfo_response"
+
+    def __init__(self):
+        super().__init__(self.message)
+
+    def _setMessage(self, playlistInfo:PlaylistMediaInfo):
+        self.data = {}
+        self.data["playlist_index"] = playlistInfo.playlistIndex
+        self.data["filename"]       = playlistInfo.filename
+        self.data["hash"]           = playlistInfo.hash
+
+
+# ------------------- downloadPlaylist_response ---------------------------
+# data: index
 class DownloadPlaylist_response(Message):
     message = "downloadPlaylist_response"
 
@@ -120,7 +133,9 @@ class DownloadPlaylist_response(Message):
     def _setMessage(self, indexOfDownloadedPlaylist:int):
         self.data = indexOfDownloadedPlaylist
 
-#data: number of downloaded songs
+
+# ------------------- downloadPlaylist_finish -----------------------------
+# data: numberOfDownloadedPlaylists
 class DownloadPlaylist_finish(Message):
     message = "downloadPlaylist_finish"
 

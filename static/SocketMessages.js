@@ -1,4 +1,6 @@
-class MessageManager{
+
+class MessageManager
+{
     isSuccess(msg)
     {
         if ("data" in msg)
@@ -32,6 +34,7 @@ class MessageManager{
 }
 
 
+// ----------------- MediaInfo_response --------------------
 class MediaInfo
 {
     constructor(title, artist){
@@ -49,6 +52,25 @@ class MediaInfo_response{
     }
 }
 
+
+// -------------- downloadMedia_finish ------------------------
+class DownloadMedia{
+    constructor(hash)
+    {
+        this.hash = hash
+    }
+}
+// data: hash
+class DownloadMedia_finish{
+    static Message = "downloadMedia_finish"
+    constructor(data)
+    {
+        this.downloadMedia = new DownloadMedia(data)
+    }
+}
+
+
+// --------------- getPlaylistInfo_response -----------------
 class MediaFromPlaylist
 {
     constructor(playlistIndex, url, title)
@@ -61,25 +83,29 @@ class MediaFromPlaylist
 
 class PlaylistInfo
 {
-    constructor(listOfMedia)
+    constructor(playlistName, listOfMedia)
     {
+        this.playlistName = playlistName
         this.listofMedia = listOfMedia
     }
 }
 
-// data: [{"url" "playlist_index" "title"}, ..]
+// data: playlistName, [{"playlist_index" "url" "title"}, ..]
 class PlaylistInfo_response{
     static Message = "getPlaylistInfo_response"
     constructor(data)
     {
+        var playlistName = data[0]
+        var playlist = data[1]
         var list = []
-        for (const element of data) {
+        for (const element of playlist) {
             list.push(new MediaFromPlaylist(element["playlist_index"], element["url"], element["title"]))
         }
-        this.playlistInfo = new PlaylistInfo(list)
+        this.playlistInfo = new PlaylistInfo(playlistName, list)
     }
 }
 
+// ------------  getPlaylistMediaInfo_response ----------------
 class PlaylistMediaInfo{
     constructor(playlistIndex, filename, hash)
     {
@@ -89,27 +115,11 @@ class PlaylistMediaInfo{
     }
 }
 
-// data: [{"url" "playlist_index" "title"}, ..]
+// data: {"playlist_index" "filename" "hash"}
 class PlaylistMediaInfo_response{
     static Message = "getPlaylistMediaInfo_response"
     constructor(data)
     {
-        this.playlistMediaInfo = new PlaylistMediaInfo(data["playlist_index"], data["url"], data["hash"])
-    }
-}
-
-class DownloadMedia{
-    constructor(hash)
-    {
-        this.hash = hash
-    }
-}
-
-class DownloadMedia_finish{
-    static Message = "downloadMedia_finish"
-    constructor(data)
-    {
-        this.downloadMedia = new DownloadMedia(data)
-
+        this.playlistMediaInfo = new PlaylistMediaInfo(data["playlist_index"], data["filename"], data["hash"])
     }
 }

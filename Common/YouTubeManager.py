@@ -478,7 +478,7 @@ class YoutubeManager:
         result = self._download_mp3(url)
         if result.IsFailed():
             return result
-        mp3Data = result.data()
+        mp3Data:AudioData = result.data()
         fileName = "%s.mp3"%(mp3Data.title)
         if not os.path.isfile(os.path.join(self.MUSIC_PATH, fileName)):
             logger.warning("File %s doesn't exist. Sanitize is require", fileName)

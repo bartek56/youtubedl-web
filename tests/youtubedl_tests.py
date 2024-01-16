@@ -170,8 +170,12 @@ class FlaskSocketIO(unittest.TestCase):
         expectedData = [SocketMessages.MediaFromPlaylist(self.index1FromPlaylist, self.url1FromPlaylist, self.songTitle1FromPlaylist),
                         SocketMessages.MediaFromPlaylist(self.index2FromPlaylist, self.url2FromPlaylist, self.songTitle2FromPlaylist),
                         SocketMessages.MediaFromPlaylist(self.index3FromPlaylist, self.url3FromPlaylist, self.songTitle3FromPlaylist)]
+
+        playlistInfo = self.getDataFromMessage(playlistInfoMessage)
+        playlistName = playlistInfo[0]
+        playlistData = playlistInfo[1]
         for x in range(3):
-            dataOfPlaylistInfoMessage = self.getDataFromMessage(playlistInfoMessage)[x]
+            dataOfPlaylistInfoMessage = playlistData[x]
             expected = expectedData[x]
             self.assertEqual(dataOfPlaylistInfoMessage["playlist_index"], expected.playlistIndex)
             self.assertEqual(dataOfPlaylistInfoMessage["title"], expected.title)
