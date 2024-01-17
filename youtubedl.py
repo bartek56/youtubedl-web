@@ -3,7 +3,6 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO
 from Common.mailManager import Mail
 from Common.YouTubeManager import YoutubeManager, YoutubeConfig
-from Common.SocketLogger import SocketLogger, LogLevel
 from Common.AlarmManager import AlarmManager
 from flask_session import Session
 
@@ -22,12 +21,6 @@ if app.debug == True: # pragma: no cover
 else:
     import subprocess
 
-## logger configuration
-socketLogger = SocketLogger()
-socketLogger.settings(saveToFile=False, print=True, fileNameWihPath="/var/log/youtubedlweb_mylogger.log",
-                      logLevel=LogLevel.ERROR, showFilename=True, showLogLevel=False, showDate=False,
-                      skippingLogWith=["[youtube:tab]", "B/s ETA", "[ExtractAudio]", "B in 00:00:00", "100% of",
-                                       "[info]", "Downloading item", "[dashsegments]", "Deleting original file", "Downloading android player", "Downloading webpage"])
 #logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s",filename='/var/log/youtubedlweb.log', level=logging.INFO)
 if app.debug == True: # pragma: no cover
     logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.DEBUG)
@@ -46,7 +39,7 @@ ALARM_SCRIPT="/etc/mediaserver/alarm.sh"
 
 mailManager = Mail()
 
-youtubeManager = YoutubeManager(logger=socketLogger)
+youtubeManager = YoutubeManager()
 
 youtubeConfig = YoutubeConfig()
 youtubeConfig.initialize(CONFIG_FILE)

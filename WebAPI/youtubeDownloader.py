@@ -85,60 +85,91 @@ def playlist():
 @socketio.on('downloadPlaylists')
 def handle_message(msg):
     playlists = youtubeConfig.getPlaylists()
-    path = youtubeConfig.getPath()
+    playlistsDir = youtubeConfig.getPath()
+    numberOfDownloadedSongs = 0
+    if len(playlists) == 0:
+        DownloadPlaylist_finish().sendError("Your music collection is empty")
+        return
 
     for playlist in playlists:
-        response = youtubeManager.downloadPlaylistMp3(path,playlist.name, playlist.link)
-        if response.IsFailed():
-            logger.error("Failed to download playlist %s from link %s - %s", playlist.name, playlist.link, response.error())
-        numberOfDownloadedSongs:int = response.data()
-        DownloadPlaylist_response().sendMessage(numberOfDownloadedSongs)
-
+        resultOfPlaylist = youtubeManager.getPlaylistInfo(playlist.link)
+        if resultOfPlaylist.IsFailed():
+            DownloadPlaylist_finish().sendError("Failed to get info playlist")
+            logger.error("Error to download media: %s", resultOfPlaylist.error())
+            return
+        ytData:YTManager.PlaylistInfo = resultOfPlaylist.data()
+        playlistName = ytData.playlistName
+        PlaylistInfo_response().sendMessage(SocketMessages.PlaylistInfo(playlistName, ytData.listOfMedia))
+        numberOfDownloadedSongs += downloadSongsFromPlaylist(playlistsDir, playlistName, ytData.listOfMedia)
     DownloadPlaylist_finish().sendMessage(numberOfDownloadedSongs)
 
-@socketio.on('downloadMedia')
-def downloadMedia(msg):
-    url = msg['url']
-    downloadType = str(msg['type'])
-    if "playlist?list" in url and "watch?v" not in url:
-        downloadedFiles = []
-        resultOfPlaylist = youtubeManager.getPlaylistInfo(url)
+def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia):
+    path=os.path.join(playlistsDir, playlistName)
+    youtubeManager.createDirIfNotExist(path)
+    songIndex = 0
+    songCounter = 0
+    for songData in listOfMedia:
+        songIndex+=1
+        logger.debug(str(songData))
+        if youtubeManager._isMusicClipArchived(path, songData.url):
+            logger.info("clip \"%s\" from link %s is archived", songData.title, songData.url)
+            continue
+        logger.debug("start download clip from")
+        result = youtubeManager._download_mp3(songData.url, path)
+        if result.IsFailed():
+            logger.error("Failed to download song from url")
+            continue
+        songCounter+=1
+        songMetadata:YTManager.AudioData
+        songMetadata = result.data()
+        filenameFullPath = youtubeManager._addMetadataToPlaylist(playlistsDir, songData.playlistIndex, playlistName, songMetadata.artist,  songMetadata.album, songMetadata.title)
+        filename = filenameFullPath.split("/")[-1]
+        randomHash = utils.getRandomString()
+        session[randomHash] = filename
+        PlaylistMediaInfo_response().sendMessage(SocketMessages.PlaylistMediaInfo(songIndex, filename, randomHash))
+    return songCounter
 
+def downloadSongsFromList(listOfMedia, downloadType):
+    downloadedFiles = []
+    index = 0
+    numberOfDownloadedSongs = 0
+    for x in listOfMedia:
+        index += 1
+        resultOfMedia = downloadMediaOfType(x.url, downloadType)
+        if resultOfMedia.IsFailed():
+            error = "Failed to download song with index " + str(index)
+            #TODO
+            #PlaylistMediaInfo_response().sendError(error)
+            logger.error(error)
+            continue
+        numberOfDownloadedSongs+=1
+        data:YTManager.YoutubeClipData = resultOfMedia.data()
+        downloadedFiles.append(data.path)
+        filename = data.path.split("/")[-1]
+        randomHash = utils.getRandomString()
+        session[randomHash] = filename
+        PlaylistMediaInfo_response().sendMessage(SocketMessages.PlaylistMediaInfo(x.playlistIndex, filename, randomHash))
+    if numberOfDownloadedSongs == 0:
+        DownloadMedia_finish().sendError("Failed to download playlist")
+        return
+    return downloadedFiles
+
+def downloadPlaylist(url, downloadType):
+        resultOfPlaylist = youtubeManager.getPlaylistInfo(url)
         if resultOfPlaylist.IsFailed():
             DownloadMedia_finish().sendError("Failed to get info playlist")
             logger.error("Error to download media: %s", resultOfPlaylist.error())
             return
-
         ytData:YTManager.PlaylistInfo = resultOfPlaylist.data()
-        PlaylistInfo_response().sendMessage(SocketMessages.PlaylistInfo(ytData.playlistName, ytData.listOfMedia))
-        index = 0
-        numberOfDownloadedSongs = 0
-        for x in ytData.listOfMedia:
-            index += 1
-            resultOfMedia = downloadMediaOfType(x.url, downloadType)
-            if resultOfMedia.IsFailed():
-                error = "Failed to download song with index " + str(index)
-                #TODO
-                #PlaylistMediaInfo_response().sendError(error)
-                logger.error(error)
-                continue
-            numberOfDownloadedSongs+=1
-            data:YTManager.YoutubeClipData = resultOfMedia.data()
-            downloadedFiles.append(data.path)
-            filename = data.path.split("/")[-1]
-            randomHash = utils.getRandomString()
-            session[randomHash] = filename
-            PlaylistMediaInfo_response().sendMessage(SocketMessages.PlaylistMediaInfo(x.playlistIndex, filename, randomHash))
-        if numberOfDownloadedSongs == 0:
-            DownloadMedia_finish().sendError("Failed to download playlist")
-            return
         playlistName = ytData.playlistName
+        PlaylistInfo_response().sendMessage(SocketMessages.PlaylistInfo(playlistName, ytData.listOfMedia))
+        downloadedFiles = downloadSongsFromList(ytData.listOfMedia, downloadType)
         compressToZip(downloadedFiles, playlistName)
         randomHash = utils.getRandomString()
         session[randomHash] = "%s.zip"%playlistName
-
         DownloadMedia_finish().sendMessage(randomHash)
-    else:
+
+def downloadSingle(url, downloadType):
         result = youtubeManager.getMediaInfo(url)
         if result.IsFailed():
             DownloadMedia_finish().sendError(result.error())
@@ -159,6 +190,15 @@ def downloadMedia(msg):
         randomHash = utils.getRandomString()
         session[randomHash] = filename
         DownloadMedia_finish().sendMessage(randomHash)
+
+@socketio.on('downloadMedia')
+def downloadMedia(msg):
+    url = msg['url']
+    downloadType = str(msg['type'])
+    if "playlist?list" in url and "watch?v" not in url:
+        downloadPlaylist(url, downloadType)
+    else:
+        downloadSingle(url, downloadType)
 
 @app.route('/download/<name>')
 def download_file(name):

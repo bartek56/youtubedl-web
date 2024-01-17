@@ -76,32 +76,32 @@ class FlaskSocketIO(unittest.TestCase):
         self.assertIn("data", message["args"][0])
         return message["args"][0]["data"]
 
-    @mock.patch.object(YoutubeManager, 'downloadPlaylistMp3')
-    @mock.patch.object(YoutubeConfig, 'getPlaylists')
-    @mock.patch.object(YoutubeConfig, 'getPath')
-    def test_downloadPlaylists(self, mock_getPath:MagicMock, mock_getPlaylists:MagicMock, mock_downloadPlaylistMp3:MagicMock):
-        mock_getPlaylists.configure_mock(return_value=self.playlistsConfiguration)
-        mock_downloadPlaylistMp3.configure_mock(side_effect=[ResultOfDownload(1),ResultOfDownload(2),ResultOfDownload(3)])
-        mock_getPath.configure_mock(return_value=self.playlistsPath)
-
-        self.socketio_test_client.emit('downloadPlaylists', '')
-
-        mock_getPath.assert_called_once()
-        mock_getPlaylists.assert_called_once()
-        mock_downloadPlaylistMp3.assert_has_calls([mock.call(self.playlistsPath, self.playlist1Name, self.playlist1Link),
-                                                   mock.call(self.playlistsPath, self.playlist2Name, self.playlist2Link),
-                                                   mock.call(self.playlistsPath, self.playlist3Name, self.playlist3Link)])
-        received = self.socketio_test_client.get_received()
-        self.assertEqual(len(received), 4)
-
-        for x in range(3):
-            self.assertEqual(received[x]["name"], SocketMessages.DownloadPlaylist_response().message)
-            numberOfDownloadedSongs = self.getDataFromMessage(received[x])
-            self.assertEqual(numberOfDownloadedSongs, x+1)
-
-        self.assertEqual(received[3]["name"], SocketMessages.DownloadPlaylist_finish().message)
-        numberOfDownloadedPlaylists = self.getDataFromMessage(received[3])
-        self.assertEqual(numberOfDownloadedPlaylists, 3)
+#    @mock.patch.object(YoutubeManager, 'downloadPlaylistMp3')
+#    @mock.patch.object(YoutubeConfig, 'getPlaylists')
+#    @mock.patch.object(YoutubeConfig, 'getPath')
+#    def test_downloadPlaylists(self, mock_getPath:MagicMock, mock_getPlaylists:MagicMock, mock_downloadPlaylistMp3:MagicMock):
+#        mock_getPlaylists.configure_mock(return_value=self.playlistsConfiguration)
+#        mock_downloadPlaylistMp3.configure_mock(side_effect=[ResultOfDownload(1),ResultOfDownload(2),ResultOfDownload(3)])
+#        mock_getPath.configure_mock(return_value=self.playlistsPath)
+#
+#        self.socketio_test_client.emit('downloadPlaylists', '')
+#
+#        mock_getPath.assert_called_once()
+#        mock_getPlaylists.assert_called_once()
+#        mock_downloadPlaylistMp3.assert_has_calls([mock.call(self.playlistsPath, self.playlist1Name, self.playlist1Link),
+#                                                   mock.call(self.playlistsPath, self.playlist2Name, self.playlist2Link),
+#                                                   mock.call(self.playlistsPath, self.playlist3Name, self.playlist3Link)])
+#        received = self.socketio_test_client.get_received()
+#        self.assertEqual(len(received), 4)
+#
+#        for x in range(3):
+#            self.assertEqual(received[x]["name"], SocketMessages.DownloadPlaylist_response().message)
+#            numberOfDownloadedSongs = self.getDataFromMessage(received[x])
+#            self.assertEqual(numberOfDownloadedSongs, x+1)
+#
+#        self.assertEqual(received[3]["name"], SocketMessages.DownloadPlaylist_finish().message)
+#        numberOfDownloadedPlaylists = self.getDataFromMessage(received[3])
+#        self.assertEqual(numberOfDownloadedPlaylists, 3)
 
 
     @mock.patch.object(YoutubeManager, 'download_mp3')

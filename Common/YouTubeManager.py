@@ -636,7 +636,7 @@ class YoutubeManager:
         if not os.path.isfile(os.path.join(path, fileName)):
             logger.warning("File doesn't exist. Sanitize is require")
             title = yt_dlp.utils.sanitize_filename(title)
-        newFileName = self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndex, playlistName, artist, album, title)
+        return self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndex, playlistName, artist, album, title)
 
     def createDirIfNotExist(self, path):
         if not os.path.exists(path): # pragma: no cover
