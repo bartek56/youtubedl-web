@@ -8,7 +8,7 @@ import unittest.mock as mock
 from unittest.mock import MagicMock
 from configparser import ConfigParser
 from Common.mailManager import Mail
-from Common.YouTubeManager import YoutubeManager, YoutubeConfig, ResultOfDownload
+from Common.YouTubeManager import YoutubeManager, YoutubeConfig, ResultOfDownload, PlaylistConfig
 import Common.YouTubeManager as YTManager
 import Common.SocketMessages as SocketMessages
 
@@ -37,7 +37,9 @@ class FlaskSocketIO(unittest.TestCase):
     playlist1Link = "https://www.youtube.com/playlist?list=PL111111111"
     playlist2Link = "https://www.youtube.com/playlist?list=PL222222222"
     playlist3Link = "https://www.youtube.com/playlist?list=PL333333333"
-    playlistsConfiguration = [{"name":playlist1Name, "link":playlist1Link},{"name":playlist2Name, "link":playlist2Link},{"name":playlist3Name, "link":playlist3Link}]
+    playlistsConfiguration = [PlaylistConfig(playlist1Name,playlist1Link),
+                              PlaylistConfig(playlist2Name,playlist2Link),
+                              PlaylistConfig(playlist3Name,playlist3Link)]
 
     songTitle1FromPlaylist = "song1"
     songTitle2FromPlaylist = "song2"
@@ -74,7 +76,7 @@ class FlaskSocketIO(unittest.TestCase):
         self.assertIn("data", message["args"][0])
         return message["args"][0]["data"]
 
-    @mock.patch.object(YoutubeManager, 'downloadPlaylistMp3Fast')
+    @mock.patch.object(YoutubeManager, 'downloadPlaylistMp3')
     @mock.patch.object(YoutubeConfig, 'getPlaylists')
     @mock.patch.object(YoutubeConfig, 'getPath')
     def test_downloadPlaylists(self, mock_getPath:MagicMock, mock_getPlaylists:MagicMock, mock_downloadPlaylistMp3:MagicMock):

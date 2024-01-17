@@ -13,73 +13,8 @@
 </head>
 
 <body>
-    <script>
-        $(document).ready(function () {
-            var downloadResult = [];
-            var loader = document.getElementById("spinner");
-            loader.style.display = 'none';
-
-            var socket = io.connect();
-            socket.on('connect', function() {
-            });
-
-            $('form#downloadPlaylists').submit(function(msg) {
-                // disable button
-                var button = document.getElementById("submitButton");
-                button.disabled = true;
-
-                var loader = document.getElementById("spinner");
-                loader.style.display = 'block';
-
-                var table = document.getElementById("playlists_info");
-                table.innerHTML = '';
-
-
-                socket.emit('downloadPlaylists', '');
-                return false;
-            });
-
-            socket.on('downloadPlaylist_response', function (msg) {
-                if ("error" in msg) {
-                    var table = document.getElementById("playlists_info");
-                    var row = table.insertRow();
-                    var cell = row.insertCell();
-                    cell.innerHTML = msg["error"];
-                    return;
-                }
-                var table = document.getElementById("playlists_info");
-                var row = table.insertRow();
-                var cell = row.insertCell();
-                cell.innerHTML = "-------------------------------------------------"
-           })
-
-            socket.on('downloadPlaylist_finish', function(msg) {
-                // enable button
-                document.getElementById("submitButton").disabled = false;
-                // stop spinner
-                var loader = document.getElementById("spinner");
-                loader.style.display = 'none';
-
-                if ("error" in msg)
-                {
-                    var table = document.getElementById("playlists_info");
-                    var row = table.insertRow();
-                    var cell1 = row.insertCell();
-                    cell1.innerHTML = msg["error"];
-                    return;
-                }
-
-            })
-
-            socket.on('yt', function (msg) {
-                var table = document.getElementById("playlists_info");
-                var row = table.insertRow();
-                var cell1 = row.insertCell();
-                cell1.style.textAlign = 'left'
-                cell1.innerHTML = msg;
-            });
-        });
-    </script>
+    <script type="text/javascript" src="../static/SocketMessages.js"></script>
+    <script type="text/javascript" src="../static/PlaylistsSocket.js"></script>
 
     {% include 'header.html' %}
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -100,7 +35,7 @@
         </div>
 
         <!-- <form action="/playlists" method="POST"> -->
-        <form action="/youtubedl/playlists" method="POST">
+        <form action="/playlists" method="POST">
             <p>Download playlists:</p>
             <table class="ms-auto me-auto">
                 <tr>

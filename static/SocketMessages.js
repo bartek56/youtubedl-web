@@ -60,6 +60,7 @@ class DownloadMedia{
         this.hash = hash
     }
 }
+
 // data: hash
 class DownloadMedia_finish{
     static Message = "downloadMedia_finish"
@@ -105,6 +106,7 @@ class PlaylistInfo_response{
     }
 }
 
+
 // ------------  getPlaylistMediaInfo_response ----------------
 class PlaylistMediaInfo{
     constructor(playlistIndex, filename, hash)
@@ -121,5 +123,27 @@ class PlaylistMediaInfo_response{
     constructor(data)
     {
         this.playlistMediaInfo = new PlaylistMediaInfo(data["playlist_index"], data["filename"], data["hash"])
+    }
+}
+
+
+// --------------  downloadPlaylist_response ------------------
+// data: index
+class DownloadPlaylist_response{
+    static Message = "downloadPlaylist_response"
+    constructor(data)
+    {
+        this.index = data
+    }
+}
+
+
+// ----------------  downloadPlaylist_finish ------------------
+// data: numberOfDownloadedPlaylists
+class DownloadPlaylist_finish{
+    static Message = "downloadPlaylist_finish"
+    constructor(data)
+    {
+        this.numberOfDownloadedPlaylists = data
     }
 }
