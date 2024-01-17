@@ -127,20 +127,31 @@ class PlaylistMediaInfo_response{
 }
 
 
-// --------------  downloadPlaylist_response ------------------
-// data: index
-class DownloadPlaylist_response{
-    static Message = "downloadPlaylist_response"
+// --------------  downloadMediaFromPlaylist_start ------------------
+// data: {playlist_index, filename}
+class DownloadMediaFromPlaylist_start{
+    static Message = "downloadMediaFromPlaylist_start"
     constructor(data)
     {
-        this.index = data
+        this.playlistMediaInfo = new PlaylistMediaInfo(data["playlist_index"], data["filename"])
+    }
+}
+
+
+// --------------  downloadMediaFromPlaylist_finish ------------------
+// data: {playlist_index, filename}
+class DownloadMediaFromPlaylist_finish{
+    static Message = "downloadMediaFromPlaylist_finish"
+    constructor(data)
+    {
+        this.playlistMediaInfo = new PlaylistMediaInfo(data["playlist_index"], data["filename"])
     }
 }
 
 
 // ----------------  downloadPlaylist_finish ------------------
 // data: numberOfDownloadedPlaylists
-class DownloadPlaylist_finish{
+class DownloadPlaylists_finish{
     static Message = "downloadPlaylist_finish"
     constructor(data)
     {

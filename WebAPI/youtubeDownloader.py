@@ -3,9 +3,11 @@ from flask import render_template, request, flash, redirect, session, send_file
 
 import os
 import zipfile
+from typing import List
 
-from Common.SocketMessages import PlaylistInfo_response, MediaInfo_response, DownloadPlaylist_response, PlaylistMediaInfo_response
-from Common.SocketMessages import DownloadMedia_finish, DownloadPlaylist_finish
+from Common.SocketMessages import PlaylistInfo_response, PlaylistMediaInfo_response
+from Common.SocketMessages import MediaInfo_response, DownloadMedia_finish
+from Common .SocketMessages import DownloadMediaFromPlaylist_start, DownloadMediaFromPlaylist_finish, DownloadPlaylists_finish
 
 import Common.YouTubeManager as YTManager
 import Common.SocketMessages as SocketMessages
@@ -88,36 +90,37 @@ def handle_message(msg):
     playlistsDir = youtubeConfig.getPath()
     numberOfDownloadedSongs = 0
     if len(playlists) == 0:
-        DownloadPlaylist_finish().sendError("Your music collection is empty")
+        DownloadPlaylists_finish().sendError("Your music collection is empty")
         return
 
     for playlist in playlists:
         resultOfPlaylist = youtubeManager.getPlaylistInfo(playlist.link)
         if resultOfPlaylist.IsFailed():
-            DownloadPlaylist_finish().sendError("Failed to get info playlist")
+            DownloadPlaylists_finish().sendError("Failed to get info playlist")
             logger.error("Error to download media: %s", resultOfPlaylist.error())
             return
         ytData:YTManager.PlaylistInfo = resultOfPlaylist.data()
         playlistName = ytData.playlistName
         PlaylistInfo_response().sendMessage(SocketMessages.PlaylistInfo(playlistName, ytData.listOfMedia))
         numberOfDownloadedSongs += downloadSongsFromPlaylist(playlistsDir, playlistName, ytData.listOfMedia)
-    DownloadPlaylist_finish().sendMessage(numberOfDownloadedSongs)
+    DownloadPlaylists_finish().sendMessage(numberOfDownloadedSongs)
 
-def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia):
+def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia:List[YTManager.MediaFromPlaylist]):
     path=os.path.join(playlistsDir, playlistName)
     youtubeManager.createDirIfNotExist(path)
-    songIndex = 0
     songCounter = 0
     for songData in listOfMedia:
-        songIndex+=1
         logger.debug(str(songData))
         if youtubeManager._isMusicClipArchived(path, songData.url):
             logger.info("clip \"%s\" from link %s is archived", songData.title, songData.url)
             continue
         logger.debug("start download clip from")
+        DownloadMediaFromPlaylist_start().sendMessage(SocketMessages.PlaylistMediaInfo(songData.playlistIndex, songData.title, ""))
+
         result = youtubeManager._download_mp3(songData.url, path)
         if result.IsFailed():
             logger.error("Failed to download song from url")
+            DownloadMediaFromPlaylist_finish().sendError(str(songData.playlistIndex))
             continue
         songCounter+=1
         songMetadata:YTManager.AudioData
@@ -126,7 +129,7 @@ def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia):
         filename = filenameFullPath.split("/")[-1]
         randomHash = utils.getRandomString()
         session[randomHash] = filename
-        PlaylistMediaInfo_response().sendMessage(SocketMessages.PlaylistMediaInfo(songIndex, filename, randomHash))
+        DownloadMediaFromPlaylist_finish().sendMessage(SocketMessages.PlaylistMediaInfo(songData.playlistIndex, songData.title, ""))
     return songCounter
 
 def downloadSongsFromList(listOfMedia, downloadType):

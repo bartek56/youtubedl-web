@@ -122,21 +122,37 @@ class PlaylistMediaInfo_response(Message):
         self.data["hash"]           = playlistInfo.hash
 
 
-# ------------------- downloadPlaylist_response ---------------------------
-# data: index
-class DownloadPlaylist_response(Message):
-    message = "downloadPlaylist_response"
+# ------------------- downloadMediaFromPlaylist_start ---------------------------
+# data: {playlist_index, filename}
+class DownloadMediaFromPlaylist_start(Message):
+    message = "downloadMediaFromPlaylist_start"
 
     def __init__(self):
         super().__init__(self.message)
 
-    def _setMessage(self, indexOfDownloadedPlaylist:int):
-        self.data = indexOfDownloadedPlaylist
+    def _setMessage(self, playlistInfo:PlaylistMediaInfo):
+        self.data = {}
+        self.data["playlist_index"] = playlistInfo.playlistIndex
+        self.data["filename"]       = playlistInfo.filename
+
+
+# ------------------- downloadMediaFromPlaylist_finish ---------------------------
+# data: {playlist_index, filename}
+class DownloadMediaFromPlaylist_finish(Message):
+    message = "downloadMediaFromPlaylist_finish"
+
+    def __init__(self):
+        super().__init__(self.message)
+
+    def _setMessage(self, playlistInfo:PlaylistMediaInfo):
+        self.data = {}
+        self.data["playlist_index"] = playlistInfo.playlistIndex
+        self.data["filename"]       = playlistInfo.filename
 
 
 # ------------------- downloadPlaylist_finish -----------------------------
 # data: numberOfDownloadedPlaylists
-class DownloadPlaylist_finish(Message):
+class DownloadPlaylists_finish(Message):
     message = "downloadPlaylist_finish"
 
     def __init__(self):

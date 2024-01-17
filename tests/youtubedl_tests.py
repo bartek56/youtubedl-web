@@ -99,7 +99,7 @@ class FlaskSocketIO(unittest.TestCase):
 #            numberOfDownloadedSongs = self.getDataFromMessage(received[x])
 #            self.assertEqual(numberOfDownloadedSongs, x+1)
 #
-#        self.assertEqual(received[3]["name"], SocketMessages.DownloadPlaylist_finish().message)
+#        self.assertEqual(received[3]["name"], SocketMessages.DownloadPlaylists_finish().message)
 #        numberOfDownloadedPlaylists = self.getDataFromMessage(received[3])
 #        self.assertEqual(numberOfDownloadedPlaylists, 3)
 
