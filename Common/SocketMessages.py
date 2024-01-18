@@ -12,26 +12,34 @@ class Message:
     def __init__(self, message:str):
         self._messageContent={}
         self.data=None
+        self.error=None
         self.message = message
+
+    def _emitMessage(self):
+        emit(self.message, self._messageContent)
 
     @abstractmethod
     def _setMessage(self, data):
         pass
+
+    def _addMessageToContent(self):
+        self._messageContent[self._dataKey] = self.data
 
     def sendMessage(self, data):
         self._setMessage(data)
         self._addMessageToContent()
         self._emitMessage()
 
-    def sendError(self, error:str):
-        self._messageContent[self._errorKey] = error
+    def _setError(self, error):
+        self.error = error
+
+    def _addErrorToContent(self):
+        self._messageContent[self._errorKey] = self.error
+
+    def sendError(self, error):
+        self._setError(error)
+        self._addErrorToContent()
         self._emitMessage()
-
-    def _addMessageToContent(self):
-        self._messageContent[self._dataKey] = self.data
-
-    def _emitMessage(self):
-        emit(self.message, self._messageContent)
 
 
 # ------------------ MediaInfo_response -----------------------------------
@@ -137,6 +145,13 @@ class DownloadMediaFromPlaylist_start(Message):
 
 
 # ------------------- downloadMediaFromPlaylist_finish ---------------------------
+class DownloadMediaFromPlaylistError:
+    def __init__(self, index:str, ytHash:str, title:str):
+        self.index = index
+        self.ytHash = ytHash
+        self.title = title
+
+
 # data: {playlist_index, filename}
 class DownloadMediaFromPlaylist_finish(Message):
     message = "downloadMediaFromPlaylist_finish"
@@ -149,6 +164,9 @@ class DownloadMediaFromPlaylist_finish(Message):
         self.data["playlist_index"] = playlistInfo.playlistIndex
         self.data["filename"]       = playlistInfo.filename
 
+    def _setError(self, data:DownloadMediaFromPlaylistError):
+        self.error = {"index":data.index, "ytHash": data.ytHash, "title":data.title}
+
 
 # ------------------- downloadPlaylist_finish -----------------------------
 # data: numberOfDownloadedPlaylists
@@ -160,3 +178,4 @@ class DownloadPlaylists_finish(Message):
 
     def _setMessage(self, numberOfDownloadedPlaylists:int):
         self.data = numberOfDownloadedPlaylists
+

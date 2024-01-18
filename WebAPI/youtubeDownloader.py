@@ -7,7 +7,7 @@ from typing import List
 
 from Common.SocketMessages import PlaylistInfo_response, PlaylistMediaInfo_response
 from Common.SocketMessages import MediaInfo_response, DownloadMedia_finish
-from Common .SocketMessages import DownloadMediaFromPlaylist_start, DownloadMediaFromPlaylist_finish, DownloadPlaylists_finish
+from Common.SocketMessages import DownloadMediaFromPlaylist_start, DownloadMediaFromPlaylist_finish, DownloadMediaFromPlaylistError, DownloadPlaylists_finish
 
 import Common.YouTubeManager as YTManager
 import Common.SocketMessages as SocketMessages
@@ -120,7 +120,7 @@ def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia:List[YTMan
         result = youtubeManager._download_mp3(songData.url, path)
         if result.IsFailed():
             logger.error("Failed to download song from url")
-            DownloadMediaFromPlaylist_finish().sendError(str(songData.playlistIndex))
+            DownloadMediaFromPlaylist_finish().sendError(DownloadMediaFromPlaylistError(str(songData.playlistIndex), songData.url, songData.title))
             continue
         songCounter+=1
         songMetadata:YTManager.AudioData
@@ -202,6 +202,22 @@ def downloadMedia(msg):
         downloadPlaylist(url, downloadType)
     else:
         downloadSingle(url, downloadType)
+
+@socketio.on('archiveSong')
+def archiveSong(msg):
+    ytHash = msg['ytHash']
+    hash = youtubeManager.getMediaHashFromLink(ytHash)
+    if hash is None:
+        logger.error("failed to get hash")
+        return
+    playlistsDir = youtubeConfig.getPath()
+    archiveFilename = youtubeManager.mp3DownloadedListFileName
+    playlistName = msg['playlistName']
+    archiveFilenameWithPath = "%s/%s/%s"%(playlistsDir,playlistName,archiveFilename)
+    newSongForArchive = "youtube %s\n"%(hash)
+    logger.debug("archive song: " + playlistName + "  "+ hash + " in file " + archiveFilenameWithPath)
+    with open(archiveFilenameWithPath, 'a') as file:
+        file.write(newSongForArchive)
 
 @app.route('/download/<name>')
 def download_file(name):

@@ -4,6 +4,7 @@ $(document).ready(function () {
     var loader = document.getElementById("spinner");
     var line = "--------------------------------------------------------------------------"
     loader.style.display = 'none';
+    var playlistName = ""
 
     var socket = io.connect();
         socket.on('connect', function() {
@@ -19,6 +20,8 @@ $(document).ready(function () {
 
         var table = document.getElementById("playlists_info");
         table.innerHTML = '';
+        var result = document.getElementById("result");
+        result.innerHTML = '';
 
         socket.emit('downloadPlaylists', '');
         return false;
@@ -45,9 +48,8 @@ $(document).ready(function () {
         var cell1 = row.insertCell();
 
         cell1.style.textAlign = 'center'
-        var response = new PlaylistMediaInfo_response(msgManager.getData(msg));
-        info = response.playlistMediaInfo
-        cell1.innerHTML = "<h4>"+playlistInfo.playlistInfo.playlistName+"<h4>"
+        playlistName = playlistInfo.playlistInfo.playlistName
+        cell1.innerHTML = "<h4>"+playlistName+"<h4>"
     });
 
     socket.on(DownloadMediaFromPlaylist_start.Message, function (msg) {
@@ -72,7 +74,27 @@ $(document).ready(function () {
         {
             var row = table.rows[rowForSong];
             var cell = row.insertCell(1);
-            cell.innerHTML = 'X';
+            var button = document.createElement('button');
+            button.innerHTML = 'X';
+
+            cell.appendChild(button);
+            m_playlistName = playlistName
+
+            button.addEventListener('click', function() {
+                data = msgManager.getError(msg)
+                index = data["index"]
+                ytHash = data["ytHash"]
+                title = data["title"]
+                for (var i = 0; i < table.rows.length; i++) {
+                    var komorka = table.rows[i].cells[0]
+
+                    if (komorka.innerHTML.indexOf(title) !== -1) {
+                      table.deleteRow(i);
+                      break;
+                    }
+                  }
+                socket.emit('archiveSong', {'ytHash': ytHash, "index":index, "playlistName":m_playlistName});
+            });
             return
         }
         var row = table.rows[rowForSong];
@@ -98,9 +120,9 @@ $(document).ready(function () {
         var row = table.insertRow();
         var cell1 = row.insertCell();
         cell1.innerHTML = line
-        var result = document.getElementById("result");
         var response = new DownloadPlaylists_finish(msgManager.getData(msg))
+        var result = document.getElementById("result");
         result.innerHTML = "Successfull updated Your music collection<br>"
-        result.innerHTML += "Number of new songs: " +response.numberOfDownloadedPlaylists
+        result.innerHTML += "Number of new songs: " + response.numberOfDownloadedPlaylists
     })
 });
