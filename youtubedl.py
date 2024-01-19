@@ -49,6 +49,7 @@ alarmManager = AlarmManager(subprocess, ALARM_TIMER, ALARM_SCRIPT)
 ## import subsides
 import WebAPI.alarm
 import WebAPI.youtubeDownloader
+import WebAPI.youtubePlaylists
 import WebAPI.mail
 
 ## --------------------------------------

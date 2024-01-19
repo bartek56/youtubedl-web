@@ -1,6 +1,7 @@
 import random
 import string
 import os
+import zipfile
 from flask import render_template
 
 def alert_info(info):
@@ -13,3 +14,12 @@ def getRandomString():
 
 def isFile(file):
     return os.path.isfile(file)
+
+def compressToZip(files, playlistName):
+    # TODO zip fileName
+    zipFileName = "%s.zip"%playlistName
+    zipFileWithPath = os.path.join("/tmp/quick_download", zipFileName)
+    with zipfile.ZipFile(zipFileWithPath, 'w') as zipf:
+        for file_path in files:
+            arcname = file_path.split("/")[-1]
+            zipf.write(file_path, arcname)
