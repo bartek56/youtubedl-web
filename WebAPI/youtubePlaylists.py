@@ -60,6 +60,9 @@ def handle_message(msg):
     if len(playlists) == 0:
         DownloadPlaylists_finish().sendError("Your music collection is empty")
         return
+    if playlistsDir == None:
+        DownloadPlaylists_finish().sendError("Playlist dir doesn't exist")
+        return
 
     for playlist in playlists:
         resultOfPlaylist = youtubeManager.getPlaylistInfo(playlist.link)

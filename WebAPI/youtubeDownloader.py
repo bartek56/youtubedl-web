@@ -85,8 +85,8 @@ def downloadSingle(url, downloadType):
 @socketio.on('downloadMedia')
 def downloadMedia(msg):
     print(msg)
-    url = msg['data']['link']
-    downloadType = str(msg['data']['type'])
+    url = msg['link']
+    downloadType = str(msg['type'])
     if "playlist?list" in url and "watch?v" not in url:
         downloadPlaylist(url, downloadType)
     else:

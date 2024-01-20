@@ -1,7 +1,8 @@
 class Message
 {
-    constructor()
+    constructor(messageKey)
     {
+        this.messageKey = messageKey
         this.message = {}
         this._messageContent = {}
     }
@@ -11,21 +12,15 @@ class Message
         throw new Error("set Message has to be called from message type");
     }
 
-    addMessageToContent()
-    {
-
-    }
-
     setMessage(data)
     {
         this._setMessage(data)
-        this._messageContent["data"] = this.message
+        this._messageContent = this.message
     }
 
     get messageContent() {
         return this._messageContent;
     }
-
 }
 
 class DownloadMediaData
@@ -49,18 +44,20 @@ class DownloadMediaData
 
 class DownloadMediaRequest extends Message
 {
-    static MESSAGE = "downloadMedia";
     constructor()
     {
-        super();
+        super("downloadMedia");
     }
 
     _setMessage(data)
     {
-        var messageContent2 = {}
-        messageContent2["link"] = data.link
-        messageContent2["type"] = data.type
-        this.message = messageContent2
+        if (!(data instanceof DownloadMediaData))
+        {
+            console.error("wrong data for message")
+            return
+        }
+        this.message["link"] = data.link
+        this.message["type"] = data.type
     }
 }
 
@@ -69,11 +66,12 @@ class SocketManager
     constructor(socket)
     {
         this.socket = socket;
+        socket.on('connect', function() {});
     }
 
-    sendInfo(msg)
+    sendMessage(msg)
     {
-        this.socket.emit(msg.MESSAGE, msg._messageContent)
+        this.socket.emit(msg.messageKey, msg._messageContent)
     }
 }
 

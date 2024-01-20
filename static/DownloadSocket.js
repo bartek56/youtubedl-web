@@ -7,7 +7,7 @@ $(document).ready(function () {
     loader.style.display = 'none';
 
     var socket = io.connect();
-    socket.on('connect', function() {});
+    var socketManager = new SocketManager(socket)
 
     var form = document.getElementById("downloadForm");
     form.addEventListener("submit", function (event) {
@@ -38,7 +38,7 @@ $(document).ready(function () {
         var downloadRequestData = new DownloadMediaData(url, downloadType)
         var request = new DownloadMediaRequest()
         request.setMessage(downloadRequestData)
-        socket.emit(DownloadMediaRequest.MESSAGE, request._messageContent);
+        socketManager.sendMessage(request)
 
         return false;
     });
