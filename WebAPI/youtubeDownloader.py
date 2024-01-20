@@ -1,5 +1,5 @@
-from youtubedl import app, logger, youtubeConfig, youtubeManager, socketio
-from flask import render_template, request, flash, redirect, session, send_file
+from youtubedl import app, logger, youtubeManager, socketio
+from flask import render_template, flash, redirect, session, send_file
 
 
 from Common.SocketMessages import PlaylistInfo_response, PlaylistMediaInfo_response
@@ -84,8 +84,9 @@ def downloadSingle(url, downloadType):
 
 @socketio.on('downloadMedia')
 def downloadMedia(msg):
-    url = msg['url']
-    downloadType = str(msg['type'])
+    print(msg)
+    url = msg['data']['link']
+    downloadType = str(msg['data']['type'])
     if "playlist?list" in url and "watch?v" not in url:
         downloadPlaylist(url, downloadType)
     else:

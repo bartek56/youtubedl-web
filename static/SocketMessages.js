@@ -1,3 +1,81 @@
+class Message
+{
+    constructor()
+    {
+        this.message = {}
+        this._messageContent = {}
+    }
+
+    _setMessage(data)
+    {
+        throw new Error("set Message has to be called from message type");
+    }
+
+    addMessageToContent()
+    {
+
+    }
+
+    setMessage(data)
+    {
+        this._setMessage(data)
+        this._messageContent["data"] = this.message
+    }
+
+    get messageContent() {
+        return this._messageContent;
+    }
+
+}
+
+class DownloadMediaData
+{
+    constructor(link, type)
+    {
+        this._link = link;
+        this._type = type;
+    }
+
+    get link()
+    {
+        return this._link;
+    }
+
+    get type()
+    {
+        return this._type;
+    }
+}
+
+class DownloadMediaRequest extends Message
+{
+    static MESSAGE = "downloadMedia";
+    constructor()
+    {
+        super();
+    }
+
+    _setMessage(data)
+    {
+        var messageContent2 = {}
+        messageContent2["link"] = data.link
+        messageContent2["type"] = data.type
+        this.message = messageContent2
+    }
+}
+
+class SocketManager
+{
+    constructor(socket)
+    {
+        this.socket = socket;
+    }
+
+    sendInfo(msg)
+    {
+        this.socket.emit(msg.MESSAGE, msg._messageContent)
+    }
+}
 
 class MessageManager
 {

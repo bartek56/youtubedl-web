@@ -7,7 +7,8 @@ $(document).ready(function () {
     var playlistName = ""
 
     var socket = io.connect();
-        socket.on('connect', function() {
+
+    socket.on('connect', function() {
     });
 
     $('form#downloadPlaylists').submit(function(msg) {

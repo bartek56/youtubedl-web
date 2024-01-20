@@ -138,7 +138,7 @@ class FlaskSocketIO(unittest.TestCase):
     @mock.patch.object(YoutubeManager, 'download_mp3')
     @mock.patch.object(YoutubeManager, 'getPlaylistInfo')
     @mock.patch('WebAPI.webUtils.getRandomString')
-    @mock.patch('WebAPI.youtubeDownloader.compressToZip')
+    @mock.patch('WebAPI.webUtils.compressToZip')
     def test_downloadMp3Playlist(self, mock_zip:MagicMock, mock_getRandomString:MagicMock, mock_getPlaylistInfo:MagicMock, mock_downloadMp3:MagicMock):
         mock_getPlaylistInfo.configure_mock(return_value = ResultOfDownload(
             YTManager.PlaylistInfo(self.playlistName,

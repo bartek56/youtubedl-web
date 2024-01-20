@@ -27,7 +27,7 @@ def playlists():
         return webUtils.alert_info("You do not have access to Youtube playlists")
 
 @app.route('/playlists',methods = ['POST', 'GET'])
-def playlist():
+def playlists_request():
    if request.method == 'POST':
        if 'add' in request.form:
            playlist_name = request.form['playlist_name']

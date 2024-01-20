@@ -33,7 +33,12 @@ $(document).ready(function () {
 
         var playlists = document.getElementById("linkInput");
         var url = playlists.value;
-        socket.emit('downloadMedia', { url: url, type: downloadType});
+
+
+        var downloadRequestData = new DownloadMediaData(url, downloadType)
+        var request = new DownloadMediaRequest()
+        request.setMessage(downloadRequestData)
+        socket.emit(DownloadMediaRequest.MESSAGE, request._messageContent);
 
         return false;
     });
