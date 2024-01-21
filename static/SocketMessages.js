@@ -23,11 +23,13 @@ class MessageBase
     constructor(msg)
     {
         this.message = msg
+        this.errorStr = "error"
+        this.dataStr = "data"
     }
 
     isSuccess()
     {
-        if ("data" in this.message)
+        if (this.dataStr in this.message)
         {
             return true;
         }
@@ -36,7 +38,7 @@ class MessageBase
 
     isError()
     {
-        if("error" in this.message)
+        if(this.errorStr in this.message)
         {
             return true;
         }
@@ -45,26 +47,26 @@ class MessageBase
 
     _getData(data)
     {
-        return this.message["data"]
+        return this.message[this.dataStr]
     }
 
     getData(){
-        if ("data" in this.message){
-            this.data = this.message["data"]
+        if (this.dataStr in this.message){
+            this.data = this.message[this.dataStr]
             return this._getData();
         }
     }
 
     _getError()
     {
-        return this.message["error"]
+        return this.message[this.errorStr]
     }
 
     getError()
     {
-        if ("error" in this.message)
+        if (this.errorStr in this.message)
         {
-            this.error = this.message["error"]
+            this.error = this.message[this.errorStr]
             return this._getError()
         }
     }

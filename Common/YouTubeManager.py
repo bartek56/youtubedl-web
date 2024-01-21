@@ -469,7 +469,7 @@ class YoutubeManager:
             return ResultOfDownload(log)
         logger.debug("succesfull download")
 
-        mp3Data = self._get_metadataForMP3(result)
+        mp3Data:AudioData = self._get_metadataForMP3(result)
         logger.debug(mp3Data)
         return ResultOfDownload(mp3Data)
 

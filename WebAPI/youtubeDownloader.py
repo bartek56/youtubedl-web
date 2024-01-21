@@ -1,5 +1,5 @@
 from youtubedl import app, logger, youtubeManager, socketio
-from flask import render_template, flash, redirect, session, send_file
+from flask import render_template, session, send_file
 
 
 from Common.SocketMessages import PlaylistInfo_response, PlaylistMediaInfo_response

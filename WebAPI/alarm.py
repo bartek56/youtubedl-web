@@ -1,6 +1,5 @@
 from Common.AlarmEnums import SystemdCommand, AlarmConfigFlask
 from youtubedl import app, logger, alarmManager
-import WebAPI.webUtils
 
 from flask import render_template, request, flash
 

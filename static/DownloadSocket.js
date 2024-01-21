@@ -101,7 +101,7 @@ $(document).ready(function () {
         var row = table.rows[index-1];
         row.deleteCell(1);
         var cell = row.insertCell(1);
-        cell.innerHTML = '<a href="/download/' + data.hash + '">V</a>';
+        cell.innerHTML = '<a href="/youtubedl/download/' + data.hash + '">V</a>';
         //cell.innerHTML = '<a href="/download/' + data.hash + '">V</a?>';
     });
 
@@ -120,7 +120,7 @@ $(document).ready(function () {
         }
         var hash = downloadMedia_Finish.getData()
         var downloadLink = document.getElementById('downloadLink');
-        downloadLink.innerHTML = '<a href="/download/' + hash + '">Download file</a>';
+        downloadLink.innerHTML = '<a href="/youtubedl/download/' + hash + '">Download file</a>';
         //downloadLink.innerHTML = '<a href="/download/' + hash + '">Download file</a>';
     });
 
