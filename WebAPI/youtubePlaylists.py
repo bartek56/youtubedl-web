@@ -72,7 +72,9 @@ def handle_message(msg):
             logger.error("Error to download media: %s", resultOfPlaylist.error())
             return
         ytData:YTManager.PlaylistInfo = resultOfPlaylist.data()
-        playlistName = ytData.playlistName
+        #TODO validate difference between names of playlist the same as MediaServerDownloader
+        #playlistName = ytData.playlistName
+        playlistName = playlist.name
         PlaylistInfo_response().sendMessage(SocketMessages.PlaylistInfo(playlistName, ytData.listOfMedia))
         numberOfDownloadedSongs += downloadSongsFromPlaylist(playlistsDir, playlistName, ytData.listOfMedia)
     DownloadPlaylists_finish().sendMessage(numberOfDownloadedSongs)
