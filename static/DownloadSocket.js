@@ -1,7 +1,6 @@
 
 $(document).ready(function () {
 
-    var msgManager = new MessageManager()
     var downloadResult = [];
     var loader = document.getElementById("spinner");
     loader.style.display = 'none';
@@ -35,9 +34,8 @@ $(document).ready(function () {
         var url = playlists.value;
 
 
-        var downloadRequestData = new DownloadMediaData(url, downloadType)
         var request = new DownloadMediaRequest()
-        request.setMessage(downloadRequestData)
+        request.setMessage(new DownloadMediaData(url, downloadType))
         socketManager.sendMessage(request)
 
         return false;
@@ -47,13 +45,13 @@ $(document).ready(function () {
     socket.on(MediaInfo_response.Message, function (msg) {
 
         var table = document.getElementById("media_info");
-        if (msgManager.isError(msg)) {
+        var mediaInfo_response = new MediaInfo_response(msg)
+        if (mediaInfo_response.isError()) {
             var downloadLink = document.getElementById("downloadLink");
-            downloadLink.innerHTML = msgManager.getError(msg);
+            downloadLink.innerHTML = mediaInfo_response.getError();
             return;
         }
-        var data = msgManager.getData(msg)
-        var mediaInfo = new MediaInfo_response(msgManager.getData(msg)).mediaInfo;
+        var mediaInfo = mediaInfo_response.getData()
 
         var mediaInfoHtml = mediaInfo.artist + " - " + mediaInfo.title + "\n";
         var row = table.insertRow();
@@ -65,16 +63,17 @@ $(document).ready(function () {
 
     // playlist
     socket.on(PlaylistInfo_response.Message, function (msg) {
+        var playlistInfo_response = new PlaylistInfo_response(msg)
         var table = document.getElementById("media_info");
-        if (msgManager.isError(msg))
+        if (playlistInfo_response.isError())
         {
             var downloadLink = document.getElementById("downloadLink");
-            downloadLink.innerHTML = msgManager.getError(msg);
+            downloadLink.innerHTML = playlistInfo_response.getError();
         }
         else
         {
             var playlistInfo = ""
-            var playlistInfoData = new PlaylistInfo_response(msgManager.getData(msg)).playlistInfo
+            var playlistInfoData = playlistInfo_response.getData()
             var listOfMedia = playlistInfoData.listofMedia
             for (const element of listOfMedia) {
                 playlistInfo = " <a href=\"" + element.url + "\">" + element.playlistIndex + "</a>" + ": " + element.title + "&nbsp;&nbsp;&nbsp;" + "\n";
@@ -90,36 +89,38 @@ $(document).ready(function () {
 
     socket.on(PlaylistMediaInfo_response.Message, function (msg) {
         var table = document.getElementById("media_info");
-        if (msgManager.isError(msg))
+        var playlistMediaInfo_response = new PlaylistMediaInfo_response(msg)
+        if (playlistMediaInfo_response.isError())
         {
             return
         }
-        var data = new PlaylistMediaInfo_response(msgManager.getData(msg)).playlistMediaInfo
+
+        var data = playlistMediaInfo_response.getData()
         var index = data.playlistIndex
         downloadResult.push(data.filename);
         var row = table.rows[index-1];
         row.deleteCell(1);
         var cell = row.insertCell(1);
-        cell.innerHTML = '<a href="/youtubedl/download/' + data.hash + '">V</a>';
+        cell.innerHTML = '<a href="/download/' + data.hash + '">V</a>';
         //cell.innerHTML = '<a href="/download/' + data.hash + '">V</a?>';
     });
 
     // a both
-    socket.on('downloadMedia_finish', function (msg) {
+    socket.on(DownloadMedia_finish.Message, function (msg) {
         // stop spinner
         var loader = document.getElementById("spinner");
         loader.style.display = 'none';
-        if (msgManager.isError(msg)){
+        var downloadMedia_Finish = new DownloadMedia_finish(msg)
+        if (downloadMedia_Finish.isError()){
             var downloadLink = document.getElementById("downloadLink");
-            downloadLink.innerHTML = msgManager.getError(msg);
+            downloadLink.innerHTML = downloadMedia_Finish.getError();
             var button = document.getElementById("btnFetch")
             button.disabled = false;
             return
         }
-        var downloadMedia = new DownloadMedia_finish(msgManager.getData(msg)).downloadMedia
-        var hash = downloadMedia.hash
+        var hash = downloadMedia_Finish.getData()
         var downloadLink = document.getElementById('downloadLink');
-        downloadLink.innerHTML = '<a href="/youtubedl/download/' + hash + '">Download file</a>';
+        downloadLink.innerHTML = '<a href="/download/' + hash + '">Download file</a>';
         //downloadLink.innerHTML = '<a href="/download/' + hash + '">Download file</a>';
     });
 

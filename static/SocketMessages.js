@@ -1,65 +1,3 @@
-class Message
-{
-    constructor(messageKey)
-    {
-        this.messageKey = messageKey
-        this.message = {}
-        this._messageContent = {}
-    }
-
-    _setMessage(data)
-    {
-        throw new Error("set Message has to be called from message type");
-    }
-
-    setMessage(data)
-    {
-        this._setMessage(data)
-        this._messageContent = this.message
-    }
-
-    get messageContent() {
-        return this._messageContent;
-    }
-}
-
-class DownloadMediaData
-{
-    constructor(link, type)
-    {
-        this._link = link;
-        this._type = type;
-    }
-
-    get link()
-    {
-        return this._link;
-    }
-
-    get type()
-    {
-        return this._type;
-    }
-}
-
-class DownloadMediaRequest extends Message
-{
-    constructor()
-    {
-        super("downloadMedia");
-    }
-
-    _setMessage(data)
-    {
-        if (!(data instanceof DownloadMediaData))
-        {
-            console.error("wrong data for message")
-            return
-        }
-        this.message["link"] = data.link
-        this.message["type"] = data.type
-    }
-}
 
 class SocketManager
 {
@@ -71,40 +9,63 @@ class SocketManager
 
     sendMessage(msg)
     {
+        if (!(msg instanceof Message))
+        {
+            console.error("wrong data for send message")
+            return
+        }
         this.socket.emit(msg.messageKey, msg._messageContent)
     }
 }
 
-class MessageManager
+class MessageBase
 {
-    isSuccess(msg)
+    constructor(msg)
     {
-        if ("data" in msg)
+        this.message = msg
+    }
+
+    isSuccess()
+    {
+        if ("data" in this.message)
         {
             return true;
         }
         return false;
     }
 
-    isError(msg)
+    isError()
     {
-        if("error" in msg)
+        if("error" in this.message)
         {
             return true;
         }
         return false;
     }
 
-    getData(msg){
-        if ("data" in msg){
-            return msg["data"];
+    _getData(data)
+    {
+        return this.message["data"]
+    }
+
+    getData(){
+        if ("data" in this.message){
+            this.data = this.message["data"]
+            return this._getData();
         }
     }
 
-    getError(msg)
+    _getError()
     {
-        if ("error" in msg){
-            return msg["error"];
+        return this.message["error"]
+    }
+
+    getError()
+    {
+        if ("error" in this.message)
+        {
+            this.error = this.message["error"]
+            return this._getError()
         }
     }
 }
@@ -120,29 +81,28 @@ class MediaInfo
 }
 
 // data: {"artist", "title"}
-class MediaInfo_response{
+class MediaInfo_response extends MessageBase{
     static Message = "getMediaInfo_response"
-    constructor(data)
+    constructor(msg)
     {
-        this.mediaInfo = new MediaInfo(data["title"], data["artist"])
+        super(msg)
+    }
+
+    _getData()
+    {
+        this.mediaInfo = new MediaInfo(this.data["title"], this.data["artist"])
+        return this.mediaInfo
     }
 }
 
 
 // -------------- downloadMedia_finish ------------------------
-class DownloadMedia{
-    constructor(hash)
-    {
-        this.hash = hash
-    }
-}
-
 // data: hash
-class DownloadMedia_finish{
+class DownloadMedia_finish extends MessageBase{
     static Message = "downloadMedia_finish"
-    constructor(data)
+    constructor(msg)
     {
-        this.downloadMedia = new DownloadMedia(data)
+        super(msg)
     }
 }
 
@@ -168,17 +128,23 @@ class PlaylistInfo
 }
 
 // data: playlistName, [{"playlist_index" "url" "title"}, ..]
-class PlaylistInfo_response{
+class PlaylistInfo_response extends MessageBase{
     static Message = "getPlaylistInfo_response"
-    constructor(data)
+    constructor(msg)
     {
-        var playlistName = data[0]
-        var playlist = data[1]
+        super(msg)
+    }
+
+    _getData()
+    {
+        var playlistName = this.data[0]
+        var playlist = this.data[1]
         var list = []
         for (const element of playlist) {
             list.push(new MediaFromPlaylist(element["playlist_index"], element["url"], element["title"]))
         }
-        this.playlistInfo = new PlaylistInfo(playlistName, list)
+        var playlistInfo = new PlaylistInfo(playlistName, list)
+        return playlistInfo
     }
 }
 
@@ -194,43 +160,70 @@ class PlaylistMediaInfo{
 }
 
 // data: {"playlist_index" "filename" "hash"}
-class PlaylistMediaInfo_response{
+class PlaylistMediaInfo_response extends MessageBase{
     static Message = "getPlaylistMediaInfo_response"
-    constructor(data)
+    constructor(msg)
     {
-        this.playlistMediaInfo = new PlaylistMediaInfo(data["playlist_index"], data["filename"], data["hash"])
+        super(msg)
+    }
+
+    _getData()
+    {
+        return new PlaylistMediaInfo(this.data["playlist_index"], this.data["filename"], this.data["hash"])
     }
 }
 
 
 // --------------  downloadMediaFromPlaylist_start ------------------
 // data: {playlist_index, filename}
-class DownloadMediaFromPlaylist_start{
+class DownloadMediaFromPlaylist_start extends MessageBase{
     static Message = "downloadMediaFromPlaylist_start"
-    constructor(data)
+    constructor(msg)
     {
-        this.playlistMediaInfo = new PlaylistMediaInfo(data["playlist_index"], data["filename"])
+        super(msg)
+    }
+
+    _getData()
+    {
+        return new PlaylistMediaInfo(this.data["playlist_index"], this.data["filename"])
     }
 }
 
 
 // --------------  downloadMediaFromPlaylist_finish ------------------
-// data: {playlist_index, filename}
-class DownloadMediaFromPlaylist_finish{
-    static Message = "downloadMediaFromPlaylist_finish"
-    constructor(data)
+class DownloadMediaFromPlaylistError
+{
+    constructor(index, ytHash, title)
     {
-        this.playlistMediaInfo = new PlaylistMediaInfo(data["playlist_index"], data["filename"])
+        this.index = index
+        this.ytHash = ytHash
+        this.title = title
+    }
+}
+
+// data: {playlist_index, filename}
+class DownloadMediaFromPlaylist_finish extends MessageBase {
+    static Message = "downloadMediaFromPlaylist_finish"
+    constructor(msg) {
+        super(msg)
+    }
+
+    _getData() {
+        return new PlaylistMediaInfo(this.data["playlist_index"], this.data["filename"])
+    }
+
+    _getError() {
+        return new DownloadMediaFromPlaylistError(this.error["index"], this.error["ytHash"], this.error["title"])
     }
 }
 
 
 // ----------------  downloadPlaylist_finish ------------------
 // data: numberOfDownloadedPlaylists
-class DownloadPlaylists_finish{
+class DownloadPlaylists_finish extends MessageBase{
     static Message = "downloadPlaylist_finish"
-    constructor(data)
+    constructor(msg)
     {
-        this.numberOfDownloadedPlaylists = data
+        super(msg)
     }
 }

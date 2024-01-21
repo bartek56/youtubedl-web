@@ -18,9 +18,8 @@ class Message:
     def _emitMessage(self):
         emit(self.message, self._messageContent)
 
-    @abstractmethod
     def _setMessage(self, data):
-        pass
+        self.data = data
 
     def _addMessageToContent(self):
         self._messageContent[self._dataKey] = self.data
@@ -71,9 +70,6 @@ class DownloadMedia_finish(Message):
 
     def __init__(self):
         super().__init__(self.message)
-
-    def _setMessage(self, hash:str):
-        self.data = hash
 
 
 # -------------------- getPlaylistInfo_response ----------------------------
@@ -175,7 +171,3 @@ class DownloadPlaylists_finish(Message):
 
     def __init__(self):
         super().__init__(self.message)
-
-    def _setMessage(self, numberOfDownloadedPlaylists:int):
-        self.data = numberOfDownloadedPlaylists
-
