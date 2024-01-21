@@ -6,6 +6,7 @@ from typing import List
 
 from Common.SocketMessages import PlaylistInfo_response
 from Common.SocketMessages import DownloadMediaFromPlaylist_start, DownloadMediaFromPlaylist_finish, DownloadMediaFromPlaylistError, DownloadPlaylists_finish
+from Common.SocketRequests import DownloadPlaylistsRequest, ArchiveSongRequest
 
 import Common.YouTubeManager as YTManager
 import Common.SocketMessages as SocketMessages
@@ -52,7 +53,7 @@ def playlists_request():
        app.logger.debug("error")
        return redirect('playlists.html')
 
-@socketio.on('downloadPlaylists')
+@socketio.on(DownloadPlaylistsRequest.message)
 def handle_message(msg):
     playlists = youtubeConfig.getPlaylists()
     playlistsDir = youtubeConfig.getPath()
@@ -103,16 +104,16 @@ def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia:List[YTMan
         DownloadMediaFromPlaylist_finish().sendMessage(SocketMessages.PlaylistMediaInfo(songData.playlistIndex, songData.title, ""))
     return songCounter
 
-@socketio.on('archiveSong')
+@socketio.on(ArchiveSongRequest.message)
 def archiveSong(msg):
-    ytHash = msg['ytHash']
-    hash = youtubeManager.getMediaHashFromLink(ytHash)
+    archiveSong = ArchiveSongRequest(msg).archiveSong
+    hash = youtubeManager.getMediaHashFromLink(archiveSong.ytHash)
     if hash is None:
         logger.error("failed to get hash")
         return
     playlistsDir = youtubeConfig.getPath()
     archiveFilename = youtubeManager.mp3DownloadedListFileName
-    playlistName = msg['playlistName']
+    playlistName = archiveSong.platlistName
     archiveFilenameWithPath = "%s/%s/%s"%(playlistsDir,playlistName,archiveFilename)
     newSongForArchive = "youtube %s\n"%(hash)
     logger.debug("archive song: " + playlistName + "  "+ hash + " in file " + archiveFilenameWithPath)

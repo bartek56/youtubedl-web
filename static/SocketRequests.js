@@ -25,7 +25,7 @@ class Message
 
 
 // ------------------ downloadMedia -------------------
-class DownloadMediaData
+class DownloadMedia
 {
     constructor(link, type)
     {
@@ -53,7 +53,7 @@ class DownloadMediaRequest extends Message
 
     _setMessage(data)
     {
-        if (!(data instanceof DownloadMediaData))
+        if (!(data instanceof DownloadMedia))
         {
             console.error("wrong data for message")
             return
@@ -72,6 +72,7 @@ class DownloadPlaylistsRequest extends Message
         super("downloadPlaylists");
     }
 }
+
 
 // ------------------ archiveSong -------------------
 class ArchiveSong

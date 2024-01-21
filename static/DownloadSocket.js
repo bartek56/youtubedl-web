@@ -35,7 +35,7 @@ $(document).ready(function () {
 
 
         var request = new DownloadMediaRequest()
-        request.setMessage(new DownloadMediaData(url, downloadType))
+        request.setMessage(new DownloadMedia(url, downloadType))
         socketManager.sendMessage(request)
 
         return false;

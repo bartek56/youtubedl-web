@@ -4,6 +4,7 @@ from flask import render_template, flash, redirect, session, send_file
 
 from Common.SocketMessages import PlaylistInfo_response, PlaylistMediaInfo_response
 from Common.SocketMessages import MediaInfo_response, DownloadMedia_finish
+from Common.SocketRequests import DownloadMediaRequest, DownloadMedia
 
 import Common.YouTubeManager as YTManager
 import Common.SocketMessages as SocketMessages
@@ -82,11 +83,11 @@ def downloadSingle(url, downloadType):
         session[randomHash] = filename
         DownloadMedia_finish().sendMessage(randomHash)
 
-@socketio.on('downloadMedia')
+@socketio.on(DownloadMediaRequest.message)
 def downloadMedia(msg):
-    print(msg)
-    url = msg['link']
-    downloadType = str(msg['type'])
+    response = DownloadMediaRequest(msg).downloadMedia
+    url = response.link
+    downloadType = response.type
     if "playlist?list" in url and "watch?v" not in url:
         downloadPlaylist(url, downloadType)
     else:
