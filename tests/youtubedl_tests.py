@@ -54,6 +54,13 @@ class FlaskSocketIO(unittest.TestCase):
     songAlbum2FromPlaylist = "album2"
     songAlbum3FromPlaylist = "album3"
 
+    songTitleAndArtist1FromPlaylist = songArtist1FromPlaylist +" - "+ songTitle1FromPlaylist
+    songTitleAndArtist2FromPlaylist = songArtist2FromPlaylist +" - "+ songTitle2FromPlaylist
+    songTitleAndArtist3FromPlaylist = songArtist3FromPlaylist +" - "+ songTitle3FromPlaylist
+
+    songTitleAndArtist1FromPlaylistFilename = songTitleAndArtist1FromPlaylist + ".mp3"
+    songTitleAndArtist2FromPlaylistFilename = songTitleAndArtist2FromPlaylist + ".mp3"
+    songTitleAndArtist3FromPlaylistFilename = songTitleAndArtist3FromPlaylist + ".mp3"
 
     url1FromPlaylist = "https:/www.youtube.com/watch?v=11111"
     url2FromPlaylist = "https:/www.youtube.com/watch?v=22222"
@@ -101,7 +108,7 @@ class FlaskSocketIO(unittest.TestCase):
             ResultOfDownload(AudioData("11111",self.songTitle1FromPlaylist, self.songArtist1FromPlaylist, self.songAlbum1FromPlaylist)),
             ResultOfDownload(AudioData("11111",self.songTitle2FromPlaylist, self.songArtist2FromPlaylist, self.songAlbum2FromPlaylist))                                                    ])
         mock_getPath.configure_mock(return_value=self.playlistsPath)
-        mock_addMetadataToPlaylist.configure_mock(side_effect=["aaaaaaaa", "bbbbbbbbb"]) # TODO
+        mock_addMetadataToPlaylist.configure_mock(side_effect=[self.songTitleAndArtist1FromPlaylistFilename, self.songTitleAndArtist2FromPlaylistFilename])
 
 
         self.socketio_test_client.emit('downloadPlaylists', '')
@@ -148,7 +155,7 @@ class FlaskSocketIO(unittest.TestCase):
         self.assertEqual(received[2]['name'], DownloadMediaFromPlaylist_finish.message)
         downloadMediaData = received[2]['args'][0]["data"]
         self.assertEqual(downloadMediaData["playlist_index"], 0)
-        self.assertEqual(downloadMediaData["filename"], self.songTitle1FromPlaylist)
+        self.assertEqual(downloadMediaData["filename"], self.songTitleAndArtist1FromPlaylist)
 
 
         # -------------- playlist 2 ----------------
@@ -173,7 +180,7 @@ class FlaskSocketIO(unittest.TestCase):
         self.assertEqual(received[5]['name'], DownloadMediaFromPlaylist_finish.message)
         downloadMediaData = received[5]['args'][0]["data"]
         self.assertEqual(downloadMediaData["playlist_index"], 0)
-        self.assertEqual(downloadMediaData["filename"], self.songTitle2FromPlaylist)
+        self.assertEqual(downloadMediaData["filename"], self.songTitleAndArtist2FromPlaylist)
 
 
         # ------------ downloadPlaylist_finish ---------------------

@@ -99,8 +99,18 @@ $(document).ready(function () {
             return
         }
         var row = table.rows[rowForSong];
-        var cell = row.insertCell();
-        cell.innerHTML = 'V';
+        row.deleteCell(0);
+
+        var data = downloadMediaFromPlaylist_finish.getData()
+        console.log(data)
+        var cell1 = row.insertCell();
+        cell1.style.textAlign = 'left'
+        var info = downloadMediaFromPlaylist_finish.getData();
+        cell1.innerHTML = info.playlistIndex + ". "
+        cell1.innerHTML += info.filename
+
+        var cell2 = row.insertCell()
+        cell2.innerHTML = 'V';
     })
 
     socket.on(DownloadPlaylists_finish.Message, function(msg) {

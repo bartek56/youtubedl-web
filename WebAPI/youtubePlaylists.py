@@ -4,11 +4,11 @@ from flask import render_template, request, flash, redirect, session
 import os
 from typing import List
 
-from Common.SocketMessages import PlaylistInfo_response
+from Common.SocketMessages import PlaylistInfo_response, PlaylistMediaInfo
 from Common.SocketMessages import DownloadMediaFromPlaylist_start, DownloadMediaFromPlaylist_finish, DownloadMediaFromPlaylistError, DownloadPlaylists_finish
 from Common.SocketRequests import DownloadPlaylistsRequest, ArchiveSongRequest
 
-import Common.YouTubeManager as YTManager
+from Common.YouTubeManager import AudioData, PlaylistInfo, MediaFromPlaylist
 import Common.SocketMessages as SocketMessages
 import WebAPI.webUtils as webUtils
 
@@ -71,7 +71,7 @@ def handle_message(msg):
             DownloadPlaylists_finish().sendError("Failed to get info playlist")
             logger.error("Error to download media: %s", resultOfPlaylist.error())
             return
-        ytData:YTManager.PlaylistInfo = resultOfPlaylist.data()
+        ytData:PlaylistInfo = resultOfPlaylist.data()
         #TODO validate difference between names of playlist the same as MediaServerDownloader
         #playlistName = ytData.playlistName
         playlistName = playlist.name
@@ -79,7 +79,7 @@ def handle_message(msg):
         numberOfDownloadedSongs += downloadSongsFromPlaylist(playlistsDir, playlistName, ytData.listOfMedia)
     DownloadPlaylists_finish().sendMessage(numberOfDownloadedSongs)
 
-def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia:List[YTManager.MediaFromPlaylist]):
+def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia:List[MediaFromPlaylist]):
     path=os.path.join(playlistsDir, playlistName)
     youtubeManager.createDirIfNotExist(path)
     songCounter = 0
@@ -89,21 +89,21 @@ def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia:List[YTMan
             logger.info("clip \"%s\" from link %s is archived", songData.title, songData.url)
             continue
         logger.debug("start download clip from")
-        DownloadMediaFromPlaylist_start().sendMessage(SocketMessages.PlaylistMediaInfo(songData.playlistIndex, songData.title, ""))
+        DownloadMediaFromPlaylist_start().sendMessage(PlaylistMediaInfo(songData.playlistIndex, songData.title, ""))
 
-        result = youtubeManager._download_mp3(songData.url, path)
+        result:AudioData = youtubeManager._download_mp3(songData.url, path)
         if result.IsFailed():
             logger.error("Failed to download song from url")
-            DownloadMediaFromPlaylist_finish().sendError(DownloadMediaFromPlaylistError(str(songData.playlistIndex), songData.url, songData.title))
+            DownloadMediaFromPlaylist_finish().sendError(DownloadMediaFromPlaylistError(songData.playlistIndex, songData.url, songData.title))
             continue
         songCounter+=1
-        songMetadata:YTManager.AudioData
+        songMetadata:AudioData
         songMetadata = result.data()
         filenameFullPath = youtubeManager._addMetadataToPlaylist(playlistsDir, songData.playlistIndex, playlistName, songMetadata.artist,  songMetadata.album, songMetadata.title)
         filename = filenameFullPath.split("/")[-1]
         randomHash = webUtils.getRandomString()
         session[randomHash] = filename
-        DownloadMediaFromPlaylist_finish().sendMessage(SocketMessages.PlaylistMediaInfo(songData.playlistIndex, songData.title, ""))
+        DownloadMediaFromPlaylist_finish().sendMessage(PlaylistMediaInfo(songData.playlistIndex, filename.replace(".mp3", ""), ""))
     return songCounter
 
 @socketio.on(ArchiveSongRequest.message)
