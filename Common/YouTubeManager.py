@@ -482,6 +482,7 @@ class YoutubeManager:
         if not os.path.isfile(os.path.join(self.MUSIC_PATH, fileName)):
             logger.warning("File %s doesn't exist. Sanitize is require", fileName)
             mp3Data.title = yt_dlp.utils.sanitize_filename(mp3Data.title)
+        mp3Data.artist = yt_dlp.utils.sanitize_filename(mp3Data.artist)
         full_path = self.metadataManager.renameAndAddMetadataToSong(self.MUSIC_PATH, mp3Data.album, mp3Data.artist, mp3Data.title)
 
         if full_path is None:
@@ -592,11 +593,13 @@ class YoutubeManager:
         songCounter=0
         for x in range(len(songsTitleList)):
             songTitle = songsTitleList[x]
+            artist = artistList[x]
             fileName="%s%s"%(songTitle, ".mp3")
             if not os.path.isfile(os.path.join(path,fileName)):
                 logger.warning("File doesn't exist. Sanitize is require")
                 songTitle = yt_dlp.utils.sanitize_filename(songTitle)
-            self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndexList[x], playlistName, artistList[x], songTitle)
+            artist = yt_dlp.utils.sanitize_filename(artist)
+            self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndexList[x], playlistName, artist, songTitle)
             songCounter+=1
         logger.info("Downloaded %i songs", songCounter)
 
@@ -635,6 +638,8 @@ class YoutubeManager:
         if not os.path.isfile(os.path.join(path, fileName)):
             logger.warning("File doesn't exist. Sanitize is require")
             title = yt_dlp.utils.sanitize_filename(title)
+        artist = yt_dlp.utils.sanitize_filename(artist)
+
         return self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndex, playlistName, artist, album, title)
 
     def createDirIfNotExist(self, path):
@@ -758,10 +763,7 @@ class MediaServerDownloader(YoutubeManager):
             songsCounter += result.data()
         logger.info("[SUMMARY] downloaded %s songs"%(songsCounter))
 
-if __name__ == "__main__":
-    #logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.DEBUG)
-    logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
-    logger = logging.getLogger(__name__)
+def main():
     my_parser = argparse.ArgumentParser()
     my_parser.add_argument('-t','--type',
                        action='store',
@@ -809,3 +811,11 @@ if __name__ == "__main__":
                 yt.download_mp3(args.link)
         #if args.playlistUpdate is not None:
         #    yt.updat (args.playlistUpdate)
+
+if __name__ == "__main__":
+    #logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.DEBUG)
+    logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
+    logger = logging.getLogger(__name__)
+    main()
+    #yt = YoutubeManager()
+    #yt.downloadPlaylistMp3("/tmp/music", "test", "https://www.youtube.com/playlist?list=PL6uhlddQJkfh4YsbxgPE70a6KeFOCDgG_")
