@@ -49,6 +49,13 @@
                 </tr>
             </table>
             <p><input type="submit" name="add" value="add" /></p><br>
+            <br>
+
+            <td><label for="lpath">download path:</label></td>
+            <td><input type="text" id="path" name="path" value="{{ path }}">
+                <br>
+            </td>
+            <p><input type="submit" name="editPath" value="update" /></p>
 
             <select name="playlists" id="playlists" size="5" style="width: 250px;">
                 {% for o in playlists_data %}
@@ -58,6 +65,7 @@
 
             <p><input type="submit" name="remove" value="remove" /></p>
         </form>
+
         <form id="downloadPlaylists" method="POST" action="#">
             <input type="submit" value="Download playlists" id="submitButton">
             <br><br>

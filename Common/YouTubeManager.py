@@ -194,6 +194,14 @@ class YoutubeConfig:
             path = self.config["GLOBAL"]['path']
         return path
 
+    def setPath(self, path):
+        self.config.clear()
+        self.config.read(self.CONFIG_FILE)
+        if "GLOBAL" not in self.config:
+            self.config.add_section("GLOBAL")
+        self.config["GLOBAL"]["path"] = path
+        self.save()
+
     def getPlaylists(self) -> List[PlaylistConfig]:
         self.config.clear()
         self.config.read(self.CONFIG_FILE)

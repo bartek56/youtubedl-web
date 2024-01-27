@@ -22,36 +22,56 @@ def playlists():
 
         for playlistName in playlistsName:
             data.append({'name':playlistName})
+        path = youtubeConfig.getPath()
 
-        return render_template('playlists.html', playlists_data=data)
+        return render_template('playlists.html', playlists_data=data, path=path)
     else:
         return webUtils.alert_info("You do not have access to Youtube playlists")
 
 @app.route('/playlists',methods = ['POST', 'GET'])
 def playlists_request():
-   if request.method == 'POST':
-       if 'add' in request.form:
-           playlist_name = request.form['playlist_name']
-           link = request.form['link']
-           app.logger.debug("add playlist %s %s", playlist_name, link)
-           youtubeConfig.addPlaylist({"name":playlist_name, "link":link})
+    if request.method == 'POST':
+        if 'add' in request.form:
+            playlist_name = request.form['playlist_name']
+            link = request.form['link']
+            app.logger.debug("add playlist %s %s", playlist_name, link)
+            allPlaylists = youtubeConfig.getPlaylistsName()
+            print(allPlaylists)
+            print(playlist_name)
+            if playlist_name in allPlaylists:
+                info = "Playlist " + playlist_name + " was updated"
+            else:
+                info = "Playlist " + playlist_name + " has been added"
+            if youtubeConfig.addPlaylist({"name":playlist_name, "link":link}) is True:
+                 flash(info, 'success')
+            else:
+                warning = "Playlist " + playlist_name + " was not added"
+                flash(warning, 'warning')
 
-       if 'remove' in request.form:
-           playlistToRemove = str(request.form['playlists'])
-           result = youtubeConfig.removePlaylist(playlistToRemove)
-           if result:
-                app.logger.debug("removed playlist %s", playlistToRemove)
-                info = "Sucesssful removed playlist %s"%(playlistToRemove)
-                flash(info, 'success')
-           else:
-               info = "Failed to remove Youtube playlist: %s"%(playlistToRemove)
-               return webUtils.alert_info(info)
+        if 'remove' in request.form:
+            playlistToRemove = str(request.form['playlists'])
+            result = youtubeConfig.removePlaylist(playlistToRemove)
+            if result:
+                 app.logger.debug("removed playlist %s", playlistToRemove)
+                 info = "Sucesssful removed playlist %s"%(playlistToRemove)
+                 flash(info, 'success')
+            else:
+                info = "Failed to remove Youtube playlist: %s"%(playlistToRemove)
+                return webUtils.alert_info(info)
 
-       return redirect('playlists.html')
+        if 'editPath' in request.form:
+            newPath = request.form['path']
+            if os.path.isdir(newPath):
+                youtubeConfig.setPath(str(newPath))
+                flash("Successfull updated download path", "success")
+            else:
+                flash("wrong path", 'warning')
 
-   else:
-       app.logger.debug("error")
-       return redirect('playlists.html')
+        return redirect('playlists.html')
+
+    else:
+        app.logger.debug("error")
+        return redirect('playlists.html')
 
 @socketio.on(DownloadPlaylistsRequest.message)
 def handle_message(msg):

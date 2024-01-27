@@ -121,7 +121,6 @@ $(document).ready(function () {
         row.deleteCell(0);
 
         var data = downloadMediaFromPlaylist_finish.getData()
-        console.log(data)
         var cell1 = row.insertCell();
         cell1.style.textAlign = 'left'
         var info = downloadMediaFromPlaylist_finish.getData();
