@@ -8,10 +8,13 @@ $(document).ready(function () {
     var socket = io.connect();
     var socketManager = new SocketManager(socket)
 
+    var selectedLink = ""
+    var selectedPlaylist = ""
+
     $('form#downloadPlaylists').submit(function(msg) {
-        // disable button
-        var button = document.getElementById("submitButton");
-        button.disabled = true;
+        document.getElementById("submitButton2").disabled = true;
+        document.getElementById("submitButton").disabled = true;
+
 
         var loader = document.getElementById("spinner");
         loader.style.display = 'block';
@@ -24,6 +27,29 @@ $(document).ready(function () {
         return false;
     });
 
+    $('form#downloadSelectedPlaylist').submit(function(msg) {
+        var playlistName = document.getElementById("playlists").value
+        if (!playlistName)
+        {
+            alert("Choose playlist")
+            return false
+        }
+        document.getElementById("submitButton2").disabled = true;
+        document.getElementById("submitButton").disabled = true;
+
+        var loader = document.getElementById("spinner");
+        loader.style.display = 'block';
+        var table = document.getElementById("playlists_info");
+        table.innerHTML = '';
+        var result = document.getElementById("result");
+        result.innerHTML = '';
+
+        var playlistRequest = new DownloadPlaylistsRequest();
+        playlistRequest.setMessage(new DownloadPlaylists(selectedLink, selectedPlaylist))
+        socketManager.sendMessage(playlistRequest)
+        return false;
+    });
+
     function getData(playlistName) {
         $.ajax({
             url: '/getLinkOfPlaylist',
@@ -31,9 +57,11 @@ $(document).ready(function () {
             data: { playlistName: playlistName },
             success: function (data) {
                 var playlistNameHtml = document.getElementById("playlist_name")
+                selectedPlaylist = playlistName
                 playlistNameHtml.value = playlistName
                 var linkHtml = document.getElementById("link")
                 linkHtml.value = data
+                selectedLink = data
             }
         });
     }
@@ -134,6 +162,7 @@ $(document).ready(function () {
     socket.on(DownloadPlaylists_finish.Message, function(msg) {
         // enable button
         document.getElementById("submitButton").disabled = false;
+        document.getElementById("submitButton2").disabled = false;
         // stop spinner
         var loader = document.getElementById("spinner");
         loader.style.display = 'none';

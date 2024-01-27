@@ -75,28 +75,44 @@ def playlists_request():
 
 @socketio.on(DownloadPlaylistsRequest.message)
 def handle_message(msg):
-    playlists = youtubeConfig.getPlaylists()
     playlistsDir = youtubeConfig.getPath()
-    numberOfDownloadedSongs = 0
-    if len(playlists) == 0:
-        DownloadPlaylists_finish().sendError("Your music collection is empty")
-        return
     if playlistsDir == None:
         DownloadPlaylists_finish().sendError("Playlist dir doesn't exist")
         return
 
-    for playlist in playlists:
-        resultOfPlaylist = youtubeManager.getPlaylistInfo(playlist.link)
+    if len(msg) == 0:
+        logger.debug("download all playlists")
+        playlists = youtubeConfig.getPlaylists()
+        numberOfDownloadedSongs = 0
+        if len(playlists) == 0:
+            DownloadPlaylists_finish().sendError("Your music collection is empty")
+            return
+        for playlist in playlists:
+            resultOfPlaylist = youtubeManager.getPlaylistInfo(playlist.link)
+            if resultOfPlaylist.IsFailed():
+                DownloadPlaylists_finish().sendError("Failed to get info playlist")
+                logger.error("Error to download media: %s", resultOfPlaylist.error())
+                return
+            ytData:PlaylistInfo = resultOfPlaylist.data()
+            #TODO validate difference between names of playlist the same as MediaServerDownloader
+            #playlistName = ytData.playlistName
+            playlistName = playlist.name
+            PlaylistInfo_response().sendMessage(SocketMessages.PlaylistInfo(playlistName, ytData.listOfMedia))
+            numberOfDownloadedSongs += downloadSongsFromPlaylist(playlistsDir, playlistName, ytData.listOfMedia)
+    else:
+        downloadPlaylistRequest = DownloadPlaylistsRequest(msg).downloadPlaylists
+        playlistName = downloadPlaylistRequest.playlistName
+
+        logger.debug("download playlist " + playlistName)
+
+        resultOfPlaylist = youtubeManager.getPlaylistInfo(downloadPlaylistRequest.link)
         if resultOfPlaylist.IsFailed():
             DownloadPlaylists_finish().sendError("Failed to get info playlist")
             logger.error("Error to download media: %s", resultOfPlaylist.error())
             return
         ytData:PlaylistInfo = resultOfPlaylist.data()
-        #TODO validate difference between names of playlist the same as MediaServerDownloader
-        #playlistName = ytData.playlistName
-        playlistName = playlist.name
         PlaylistInfo_response().sendMessage(SocketMessages.PlaylistInfo(playlistName, ytData.listOfMedia))
-        numberOfDownloadedSongs += downloadSongsFromPlaylist(playlistsDir, playlistName, ytData.listOfMedia)
+        numberOfDownloadedSongs = downloadSongsFromPlaylist(playlistsDir, playlistName, ytData.listOfMedia)
     DownloadPlaylists_finish().sendMessage(numberOfDownloadedSongs)
 
 def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia:List[MediaFromPlaylist]):

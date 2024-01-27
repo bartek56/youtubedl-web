@@ -65,11 +65,31 @@ class DownloadMediaRequest extends Message
 
 
 // ------------------ downloadPlaylists -------------------
+class DownloadPlaylists
+{
+    constructor(link, name)
+    {
+        this.link = link
+        this.name = name
+    }
+}
+
 class DownloadPlaylistsRequest extends Message
 {
     constructor()
     {
         super("downloadPlaylists");
+    }
+
+    _setMessage(data)
+    {
+        if (!(data instanceof DownloadPlaylists))
+        {
+            console.error("wrong data for message")
+            return
+        }
+        this.message["link"] = data.link
+        this.message["name"] = data.name
     }
 }
 

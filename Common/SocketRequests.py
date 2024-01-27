@@ -10,10 +10,16 @@ class DownloadMediaRequest:
     def __init__(self, msg):
         self.downloadMedia = DownloadMedia(msg["link"], msg["type"])
 
-
 # --------------------- downloadPlaylists ----------------------------
+class DownloadPlaylists:
+    def __init__(self, link, name):
+        self.link = link
+        self.playlistName = name
+
 class DownloadPlaylistsRequest:
     message = "downloadPlaylists"
+    def __init__(self, msg):
+        self.downloadPlaylists = DownloadPlaylists(msg["link"], msg["name"])
 
 
 # ------------------------ archiveSong -------------------------------
