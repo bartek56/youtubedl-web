@@ -119,7 +119,8 @@ def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia:List[Media
         songCounter+=1
         songMetadata:AudioData
         songMetadata = result.data()
-        filenameFullPath = youtubeManager._addMetadataToPlaylist(playlistsDir, songData.playlistIndex, playlistName, songMetadata.artist,  songMetadata.album, songMetadata.title)
+        filenameFullPath = youtubeManager._addMetadataToPlaylist(playlistsDir, songData.playlistIndex, playlistName,
+                                                                 songMetadata.artist, songMetadata.album, songMetadata.title, songMetadata.hash)
         filename = filenameFullPath.split("/")[-1]
         randomHash = webUtils.getRandomString()
         session[randomHash] = filename

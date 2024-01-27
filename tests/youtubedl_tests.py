@@ -66,6 +66,10 @@ class FlaskSocketIO(unittest.TestCase):
     url2FromPlaylist = "https:/www.youtube.com/watch?v=22222"
     url3FromPlaylist = "https:/www.youtube.com/watch?v=33333"
 
+    hash1FromPlaylist = "11111"
+    hash2FromPlaylist = "22222"
+    hash3FromPlaylist = "33333"
+
     index1FromPlaylist = "1"
     index2FromPlaylist = "2"
     index3FromPlaylist = "3"
@@ -105,11 +109,10 @@ class FlaskSocketIO(unittest.TestCase):
                                                                       [MediaFromPlaylist(0,self.url2FromPlaylist, self.songTitle2FromPlaylist)]))])
         mock_isMusicArchive.configure_mock(return_value=False)
         mock_downloadMp3.configure_mock(side_effect=[
-            ResultOfDownload(AudioData("11111",self.songTitle1FromPlaylist, self.songArtist1FromPlaylist, self.songAlbum1FromPlaylist)),
-            ResultOfDownload(AudioData("11111",self.songTitle2FromPlaylist, self.songArtist2FromPlaylist, self.songAlbum2FromPlaylist))                                                    ])
+            ResultOfDownload(AudioData("11111",self.songTitle1FromPlaylist, self.hash1FromPlaylist, self.songArtist1FromPlaylist, self.songAlbum1FromPlaylist)),
+            ResultOfDownload(AudioData("11111",self.songTitle2FromPlaylist, self.hash2FromPlaylist, self.songArtist2FromPlaylist, self.songAlbum2FromPlaylist))])
         mock_getPath.configure_mock(return_value=self.playlistsPath)
         mock_addMetadataToPlaylist.configure_mock(side_effect=[self.songTitleAndArtist1FromPlaylistFilename, self.songTitleAndArtist2FromPlaylistFilename])
-
 
         self.socketio_test_client.emit('downloadPlaylists', '')
 
@@ -117,8 +120,8 @@ class FlaskSocketIO(unittest.TestCase):
         mock_getPath.assert_called_once()
         mock_getPlaylists.assert_called_once()
 
-        mock_addMetadataToPlaylist.assert_has_calls([mock.call(self.playlistsPath, 0, self.playlist1Name, self.songArtist1FromPlaylist, self.songAlbum1FromPlaylist,  self.songTitle1FromPlaylist),
-                                                    mock.call(self.playlistsPath, 0, self.playlist2Name, self.songArtist2FromPlaylist, self.songAlbum2FromPlaylist, self.songTitle2FromPlaylist )])
+        mock_addMetadataToPlaylist.assert_has_calls([mock.call(self.playlistsPath, 0, self.playlist1Name, self.songArtist1FromPlaylist, self.songAlbum1FromPlaylist, self.songTitle1FromPlaylist, self.hash1FromPlaylist),
+                                                     mock.call(self.playlistsPath, 0, self.playlist2Name, self.songArtist2FromPlaylist, self.songAlbum2FromPlaylist, self.songTitle2FromPlaylist, self.hash2FromPlaylist)])
         mock_downloadMp3.assert_has_calls([mock.call(self.url1FromPlaylist, self.playlistsPath+"/"+self.playlist1Name),
                                            mock.call(self.url2FromPlaylist, self.playlistsPath+"/"+self.playlist2Name)])
         mock_isMusicArchive.assert_has_calls([mock.call(self.playlistsPath+"/"+self.playlist1Name, self.url1FromPlaylist),

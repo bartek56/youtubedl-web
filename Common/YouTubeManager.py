@@ -96,8 +96,9 @@ class YoutubeClipData:
         return str
 
 class AudioData(YoutubeClipData):
-    def __init__(self, path:str=None, title:str=None, artist:str=None, album:str=None):
+    def __init__(self, path:str=None, title:str=None, hash:str=None, artist:str=None, album:str=None):
         super().__init__(path, title)
+        self.hash = hash
         self.artist = artist
         self.album = album
 
@@ -117,6 +118,10 @@ class AudioData(YoutubeClipData):
             if len(str) > 0:
                 str += " "
             str += "path: %s"%(self.path)
+        if self.hash is not None:
+            if len(str) > 0:
+                str += " "
+            str += "hash: %s"%(self.hash)
 
         return str
 
@@ -273,6 +278,7 @@ class YoutubeManager:
         self.quietSetting = False
         if self.logger is None:
             self.quietSetting = True
+        self.ytDomain = "https://youtu.be/"
 
         self.MUSIC_PATH=musicPath
         self.VIDEO_PATH=videoPath
@@ -491,7 +497,8 @@ class YoutubeManager:
             logger.warning("File %s doesn't exist. Sanitize is require", fileName)
             mp3Data.title = yt_dlp.utils.sanitize_filename(mp3Data.title)
         mp3Data.artist = yt_dlp.utils.sanitize_filename(mp3Data.artist)
-        full_path = self.metadataManager.renameAndAddMetadataToSong(self.MUSIC_PATH, mp3Data.album, mp3Data.artist, mp3Data.title)
+        website = self.ytDomain + mp3Data.hash
+        full_path = self.metadataManager.renameAndAddMetadataToSong(self.MUSIC_PATH, mp3Data.album, mp3Data.artist, mp3Data.title, website)
 
         if full_path is None:
             log = YoutubeManagerLogs.NOT_FOUND
@@ -505,6 +512,7 @@ class YoutubeManager:
         songTitle = ""
         artist = ""
         album = ""
+        hash = ""
 
         if "title" in data:
             songTitle = data['title']
@@ -512,8 +520,10 @@ class YoutubeManager:
             artist = data['artist']
         if "album" in data:
             album = data['album']
+        if "id" in data:
+            hash = data['id']
 
-        return AudioData(title=songTitle, artist=artist, album=album)
+        return AudioData(title=songTitle, hash=hash, artist=artist, album=album)
 
     def download_4k(self, url) -> ResultOfDownload:
         logger.info("start download video [high quality] from link %s", url)
@@ -588,10 +598,12 @@ class YoutubeManager:
         artistList = []
         playlistIndexList = []
         songsTitleList = []
+        hashList = []
 
         for i in results['entries']:
             playlistIndexList.append(i['playlist_index'])
             songsTitleList.append(i['title'])
+            hashList.append(i["id"])
 
             if "artist" in i:
                 artistList.append(i['artist'])
@@ -607,7 +619,8 @@ class YoutubeManager:
                 logger.warning("File doesn't exist. Sanitize is require")
                 songTitle = yt_dlp.utils.sanitize_filename(songTitle)
             artist = yt_dlp.utils.sanitize_filename(artist)
-            self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndexList[x], playlistName, artist, songTitle)
+            website = self.ytDomain + hashList[x]
+            self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndexList[x], playlistName, artist, songTitle, website)
             songCounter+=1
         logger.info("Downloaded %i songs", songCounter)
 
@@ -636,19 +649,22 @@ class YoutubeManager:
                 continue
             songMetadata:AudioData
             songMetadata = result.data()
-            self._addMetadataToPlaylist(playlistDir, songData.playlistIndex, playlistName, songMetadata.artist,  songMetadata.album, songMetadata.title)
+            self._addMetadataToPlaylist(playlistDir, songData.playlistIndex, playlistName, songMetadata.artist, songMetadata.album, songMetadata.title, songMetadata.hash)
             songCounter+=1
         return ResultOfDownload(songCounter)
 
-    def _addMetadataToPlaylist(self, playlistDir, playlistIndex, playlistName, artist, album, title):
+    def _addMetadataToPlaylist(self, playlistDir, playlistIndex, playlistName, artist, album, title, hash):
         fileName="%s%s"%(title, ".mp3")
         path=os.path.join(playlistDir, playlistName)
         if not os.path.isfile(os.path.join(path, fileName)):
             logger.warning("File doesn't exist. Sanitize is require")
             title = yt_dlp.utils.sanitize_filename(title)
         artist = yt_dlp.utils.sanitize_filename(artist)
+        website = ""
+        if hash is not None and len(hash) > 0:
+            website = self.ytDomain + hash
 
-        return self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndex, playlistName, artist, album, title)
+        return self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndex, playlistName, artist, album, title, website)
 
     def createDirIfNotExist(self, path):
         if not os.path.exists(path): # pragma: no cover
