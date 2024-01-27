@@ -10,11 +10,10 @@ $(document).ready(function () {
 
     var selectedLink = ""
     var selectedPlaylist = ""
-
+    document.getElementById("submitDownloadSelectedPlaylist").style.display = "none";
     $('form#downloadPlaylists').submit(function(msg) {
-        document.getElementById("submitButton2").disabled = true;
-        document.getElementById("submitButton").disabled = true;
-
+        document.getElementById("submitDownloadSelectedPlaylist").disabled = true;
+        document.getElementById("submitDownloadPlaylists").disabled = true;
 
         var loader = document.getElementById("spinner");
         loader.style.display = 'block';
@@ -23,29 +22,16 @@ $(document).ready(function () {
         table.innerHTML = '';
         var result = document.getElementById("result");
         result.innerHTML = '';
-        socketManager.sendMessage(new DownloadPlaylistsRequest())
-        return false;
-    });
-
-    $('form#downloadSelectedPlaylist').submit(function(msg) {
-        var playlistName = document.getElementById("playlists").value
-        if (!playlistName)
-        {
-            alert("Choose playlist")
-            return false
-        }
-        document.getElementById("submitButton2").disabled = true;
-        document.getElementById("submitButton").disabled = true;
-
-        var loader = document.getElementById("spinner");
-        loader.style.display = 'block';
-        var table = document.getElementById("playlists_info");
-        table.innerHTML = '';
-        var result = document.getElementById("result");
-        result.innerHTML = '';
+        var submitter = msg.originalEvent.submitter.id
 
         var playlistRequest = new DownloadPlaylistsRequest();
-        playlistRequest.setMessage(new DownloadPlaylists(selectedLink, selectedPlaylist))
+
+        if(submitter == "submitDownloadSelectedPlaylist")
+        {
+            playlistRequest.setMessage(new DownloadPlaylists(selectedLink, selectedPlaylist))
+        }
+        // otherwise download all playlists
+
         socketManager.sendMessage(playlistRequest)
         return false;
     });
@@ -68,6 +54,8 @@ $(document).ready(function () {
 
     $('#playlists').on('change', function(){
         var playlistName = document.getElementById("playlists").value;
+        document.getElementById("submitDownloadSelectedPlaylist").style.display = "inline";
+        document.getElementById("submitDownloadSelectedPlaylist").value = "Download " + playlistName;
         getData(playlistName)
     });
 
@@ -161,8 +149,8 @@ $(document).ready(function () {
 
     socket.on(DownloadPlaylists_finish.Message, function(msg) {
         // enable button
-        document.getElementById("submitButton").disabled = false;
-        document.getElementById("submitButton2").disabled = false;
+        document.getElementById("submitDownloadPlaylists").disabled = false;
+        document.getElementById("submitDownloadSelectedPlaylist").disabled = false;
         // stop spinner
         var loader = document.getElementById("spinner");
         loader.style.display = 'none';
