@@ -1,11 +1,12 @@
 from youtubedl import app, logger, youtubeConfig, youtubeManager, socketio
-from flask import render_template, request, flash, redirect, session
+from flask import render_template, request, flash, redirect, session, jsonify
 
 import os
 from typing import List
 
 from Common.SocketMessages import PlaylistInfo_response
-from Common.SocketMessages import DownloadMediaFromPlaylist_start, DownloadMediaFromPlaylist_finish, DownloadMediaFromPlaylistError, DownloadPlaylists_finish
+from Common.SocketMessages import DownloadMediaFromPlaylist_start, DownloadMediaFromPlaylist_finish
+from Common.SocketMessages import DownloadMediaFromPlaylistError, DownloadPlaylists_finish
 from Common.SocketRequests import DownloadPlaylistsRequest, ArchiveSongRequest
 
 import Common.YouTubeManager as YTManager
@@ -119,3 +120,9 @@ def archiveSong(msg):
     logger.debug("archive song: " + playlistName + "  "+ hash + " in file " + archiveFilenameWithPath)
     with open(archiveFilenameWithPath, 'a') as file:
         file.write(newSongForArchive)
+
+@app.route('/getLinkOfPlaylist', methods=['GET'])
+def getLinkOfPlaylist():
+    playlistName = request.args.get('playlistName')
+    url = youtubeConfig.getUrlOfPlaylist(playlistName)
+    return jsonify(url)

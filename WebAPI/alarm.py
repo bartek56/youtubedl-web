@@ -2,6 +2,7 @@ from Common.AlarmEnums import SystemdCommand, AlarmConfigFlask
 from youtubedl import app, logger, alarmManager
 
 from flask import render_template, request, flash
+from WebAPI import webUtils
 
 if app.debug == True: # pragma: no cover
     import sys
@@ -35,7 +36,6 @@ def alarmOff():
     logger.debug('alarm off')
     subprocess.run(SystemdCommand.STOP_ALARM_TIMER, shell=True)
     subprocess.run(SystemdCommand.DISABLE_ALARM_TIMER, shell=True)
-
     return "Nothing"
 
 @app.route('/alarm.html')
