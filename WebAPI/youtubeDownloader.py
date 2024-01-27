@@ -4,7 +4,7 @@ from flask import render_template, session, send_file
 
 from Common.SocketMessages import PlaylistInfo_response, PlaylistMediaInfo_response
 from Common.SocketMessages import MediaInfo_response, DownloadMedia_finish
-from Common.SocketRequests import DownloadMediaRequest, DownloadMedia
+from Common.SocketRequests import DownloadMediaRequest
 
 import Common.YouTubeManager as YTManager
 import Common.SocketMessages as SocketMessages
@@ -56,9 +56,9 @@ def downloadPlaylist(url, downloadType):
         playlistName = ytData.playlistName
         PlaylistInfo_response().sendMessage(SocketMessages.PlaylistInfo(playlistName, ytData.listOfMedia))
         downloadedFiles = downloadSongsFromList(ytData.listOfMedia, downloadType)
-        webUtils.compressToZip(downloadedFiles, playlistName)
+        zipFileName = webUtils.compressToZip(downloadedFiles, playlistName)
         randomHash = webUtils.getRandomString()
-        session[randomHash] = "%s.zip"%playlistName
+        session[randomHash] = zipFileName
         DownloadMedia_finish().sendMessage(randomHash)
 
 def downloadSingle(url, downloadType):
@@ -99,6 +99,5 @@ def download_file(name):
         app.logger.error("key for download_file doesn't exist !!!!")
         return render_template('index.html')
     fileToDownload = session[name]
-    fullPath = "/tmp/quick_download/" + fileToDownload
+    fullPath = youtubeManager.MUSIC_PATH + "/" + fileToDownload
     return send_file(fullPath, as_attachment=True)
-

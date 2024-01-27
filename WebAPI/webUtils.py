@@ -23,3 +23,4 @@ def compressToZip(files, playlistName):
         for file_path in files:
             arcname = file_path.split("/")[-1]
             zipf.write(file_path, arcname)
+    return zipFileName

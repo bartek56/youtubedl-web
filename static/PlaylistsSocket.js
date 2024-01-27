@@ -24,6 +24,25 @@ $(document).ready(function () {
         return false;
     });
 
+    function getData(playlistName) {
+        $.ajax({
+            url: '/getLinkOfPlaylist',
+            type: 'GET',
+            data: { playlistName: playlistName },
+            success: function (data) {
+                var playlistNameHtml = document.getElementById("playlist_name")
+                playlistNameHtml.value = playlistName
+                var linkHtml = document.getElementById("link")
+                linkHtml.value = data
+            }
+        });
+    }
+
+    $('#playlists').on('change', function(){
+        var playlistName = document.getElementById("playlists").value;
+        getData(playlistName)
+    });
+
     socket.on(PlaylistInfo_response.Message, function (msg) {
         var playlistInfo_response = new PlaylistInfo_response(msg)
         var table = document.getElementById("playlists_info");
