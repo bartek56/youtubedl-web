@@ -38,7 +38,7 @@ $(document).ready(function () {
 
     function getData(playlistName) {
         $.ajax({
-            url: '/getLinkOfPlaylist',
+            url: '/youtubedl/getLinkOfPlaylist',
             type: 'GET',
             data: { playlistName: playlistName },
             success: function (data) {
