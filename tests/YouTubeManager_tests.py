@@ -536,8 +536,22 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         self.assertEqual(result.error(), self.exceptionErrorExpected)
 
 class CustomConfigParser(ConfigParser):
+    path = "/tmp/muzyka/Youtube list"
+    playlist1Name = "relaks"
+    playlist1Link = "http://youtube.com/relaks"
+
+    playlist2Name = "chillout"
+    playlist2Link = "http://youtube.com/chillout"
+
     def read(self, filename):
-        self.read_string("[GLOBAL]\npath = /tmp/muzyka/Youtube list\n[relaks]\nname = relaks\nlink = http://youtube.com/relaks\n[chillout]\nname = chillout\nlink = http://youtube.com/chillout\n")
+        self.read_string("[GLOBAL]\n"
+                         "path = "+ self.path + "\n"+
+                         "["+self.playlist1Name+"]\n"+
+                         "name = "+self.playlist1Name+"\n"+
+                         "link = "+self.playlist1Link+"\n"
+                         "["+self.playlist2Name+"]\n"+
+                         "name = "+self.playlist2Name+"\n"+
+                         "link = "+self.playlist2Link+"\n")
 
     def setMockForRemoveSection(self, mock):
         self.remove_section = mock
@@ -557,7 +571,7 @@ class YouTubeManagerConfigTestCase(unittest.TestCase):
     def test_getPath(self):
         self.ytConfig.initialize("neverMind", CustomConfigParser())
         path = self.ytConfig.getPath()
-        self.assertEqual(path, "/tmp/muzyka/Youtube list")
+        self.assertEqual(path, CustomConfigParser.path)
 
     def test_getPathFailed(self):
         self.ytConfig.initialize("neverMind", CustomConfigParserEmptyPath())
@@ -568,23 +582,23 @@ class YouTubeManagerConfigTestCase(unittest.TestCase):
         self.ytConfig.initialize("neverMind", CustomConfigParser())
         playlists = self.ytConfig.getPlaylists()
         self.assertEqual(len(playlists), 2)
-        self.assertEqual(playlists[0].name, "relaks")
-        self.assertEqual(playlists[0].link, "http://youtube.com/relaks")
+        self.assertEqual(playlists[0].name, CustomConfigParser.playlist1Name)
+        self.assertEqual(playlists[0].link, CustomConfigParser.playlist1Link)
 
-        self.assertEqual(playlists[1].name, "chillout")
-        self.assertEqual(playlists[1].link, "http://youtube.com/chillout")
+        self.assertEqual(playlists[1].name, CustomConfigParser.playlist2Name)
+        self.assertEqual(playlists[1].link, CustomConfigParser.playlist2Link)
 
     def test_getPlaylistsName(self):
         self.ytConfig.initialize("neverMind", CustomConfigParser())
         playlists = self.ytConfig.getPlaylistsName()
         self.assertEqual(len(playlists), 2)
-        self.assertEqual(playlists[0], "relaks")
-        self.assertEqual(playlists[1], "chillout")
+        self.assertEqual(playlists[0], CustomConfigParser.playlist1Name)
+        self.assertEqual(playlists[1], CustomConfigParser.playlist2Name)
 
     def test_getUrlOfPaylist(self):
         self.ytConfig.initialize("neverMind", CustomConfigParser())
-        url = self.ytConfig.getUrlOfPlaylist("relaks")
-        self.assertEqual(url, "http://youtube.com/relaks")
+        url = self.ytConfig.getUrlOfPlaylist(CustomConfigParser.playlist1Name)
+        self.assertEqual(url, CustomConfigParser.playlist1Link)
 
     def test_getUrlOfPlaylistWrongName(self):
         self.ytConfig.initialize("neverMind", CustomConfigParser())
@@ -637,10 +651,10 @@ class YouTubeManagerConfigTestCase(unittest.TestCase):
     @mock.patch.object(YoutubeConfig, "save")
     def test_removePlaylist(self, mock_save, mock_removeSection):
         self.ytConfig.initialize("neverMind", CustomConfigParser())
-        self.assertTrue(self.ytConfig.removePlaylist("chillout"))
+        self.assertTrue(self.ytConfig.removePlaylist(CustomConfigParser.playlist1Name))
         self.assertEqual(mock_save.call_count, 1)
         self.assertEqual(mock_removeSection.call_count, 1)
-        mock_removeSection.assert_called_once_with("chillout")
+        mock_removeSection.assert_called_once_with(CustomConfigParser.playlist1Name)
 
     @mock.patch.object(YoutubeConfig, "save")
     def test_removePlaylist2(self, mock_save):
@@ -649,9 +663,9 @@ class YouTubeManagerConfigTestCase(unittest.TestCase):
         configParser.setMockForRemoveSection(removeSectionMock)
 
         self.ytConfig.initialize("neverMind", configParser)
-        self.assertTrue(self.ytConfig.removePlaylist("chillout"))
+        self.assertTrue(self.ytConfig.removePlaylist(CustomConfigParser.playlist1Name))
         self.assertEqual(mock_save.call_count, 1)
-        removeSectionMock.assert_called_once_with("chillout")
+        removeSectionMock.assert_called_once_with(CustomConfigParser.playlist1Name)
 
     @mock.patch.object(YoutubeConfig, "save")
     def test_removePlaylistWrongName(self, mock_save):
