@@ -19,7 +19,7 @@ from Common.YouTubeManager import AudioData
 import Common.YouTubeManager as YTManager
 import Common.SocketMessages as SocketMessages
 
-class FlaskSocketIO(unittest.TestCase):
+class FlaskQuickDownload(unittest.TestCase):
     randomString = "ABCDEFGHI"
     randomString1 = "AAAAAAAA"
     randomString2 = "BBBBBBBB"
@@ -78,7 +78,7 @@ class FlaskSocketIO(unittest.TestCase):
     index3FromPlaylist = "3"
 
     def __init__(self, *args, **kwargs):
-        super(FlaskSocketIO, self).__init__(*args, **kwargs)
+        super(FlaskQuickDownload, self).__init__(*args, **kwargs)
 
     def setUp(self):
         youtubedl.app.config['TESTING'] = True
@@ -107,18 +107,6 @@ class FlaskSocketIO(unittest.TestCase):
             self.assertEqual(playlistInfoData[1][index]['title'], playlist.title)
             index = index + 1
 
-    def checkDownloadMediaFromPlaylist_start(self, data, expectedPlaylistMediaInfo:PlaylistMediaInfo):
-        self.assertEqual(data["playlist_index"], expectedPlaylistMediaInfo.playlistIndex)
-        self.assertEqual(data["filename"], expectedPlaylistMediaInfo.filename)
-        # TODO
-        #self.assertEqual(data["hash"], expectedPlaylistMediaInfo.hash)
-
-    def checkDownloadMediaFromPlaylist_finish(self, data, expectedPlaylistMediaInfo:PlaylistMediaInfo):
-        self.assertEqual(data["playlist_index"], expectedPlaylistMediaInfo.playlistIndex)
-        self.assertEqual(data["filename"], expectedPlaylistMediaInfo.filename)
-        # TODO
-        #self.assertEqual(data["hash"], expectedPlaylistMediaInfo.hash)
-
     def checkMediaInfo_response(self, data, expectedMediaInfo:MediaInfo):
         self.assertEqual(data["title"], expectedMediaInfo.title)
         self.assertEqual(data["artist"], expectedMediaInfo.artist)
@@ -127,89 +115,6 @@ class FlaskSocketIO(unittest.TestCase):
         self.assertEqual(data["playlist_index"], expectedPlaylistMediaInfo.playlistIndex)
         self.assertEqual(data["filename"], expectedPlaylistMediaInfo.filename)
         self.assertEqual(data["hash"], expectedPlaylistMediaInfo.hash)
-
-    @mock.patch.object(YoutubeManager, 'getPlaylistInfo')
-    @mock.patch.object(YoutubeManager, 'createDirIfNotExist')
-    @mock.patch.object(YoutubeManager, '_isMusicClipArchived')
-    @mock.patch.object(YoutubeManager, '_download_mp3')
-    @mock.patch.object(YoutubeManager, '_addMetadataToPlaylist')
-    @mock.patch.object(YoutubeConfig, 'getPlaylists')
-    @mock.patch.object(YoutubeConfig, 'getPath')
-    def test_downloadTwoPlaylistsOneSongABoth(self,
-                               mock_getPath:MagicMock, mock_getPlaylists:MagicMock,
-                               mock_addMetadataToPlaylist:MagicMock, mock_downloadMp3:MagicMock,
-                               mock_isMusicArchive:MagicMock, mock_createDirIfNotExist:MagicMock,
-                               mock_getPlaylistInfo:MagicMock):
-        mock_getPlaylists.configure_mock(return_value=self.playlistsConfiguration)
-        mock_getPlaylistInfo.configure_mock(side_effect=[ResultOfDownload(PlaylistInfo(self.playlist1Name,
-                                                                      [MediaFromPlaylist(0,self.url1FromPlaylist, self.songTitle1FromPlaylist)])),
-                                                         ResultOfDownload(PlaylistInfo(self.playlist2Name,
-                                                                      [MediaFromPlaylist(0,self.url2FromPlaylist, self.songTitle2FromPlaylist)]))])
-        mock_isMusicArchive.configure_mock(return_value=False)
-        mock_downloadMp3.configure_mock(side_effect=[
-            ResultOfDownload(AudioData("11111",self.songTitle1FromPlaylist, self.hash1FromPlaylist, self.songArtist1FromPlaylist, self.songAlbum1FromPlaylist)),
-            ResultOfDownload(AudioData("11111",self.songTitle2FromPlaylist, self.hash2FromPlaylist, self.songArtist2FromPlaylist, self.songAlbum2FromPlaylist))])
-        mock_getPath.configure_mock(return_value=self.playlistsPath)
-        mock_addMetadataToPlaylist.configure_mock(side_effect=[self.songTitleAndArtist1FromPlaylistFilename, self.songTitleAndArtist2FromPlaylistFilename])
-
-        self.socketio_test_client.emit(DownloadPlaylistsRequest.message, '')
-
-
-        mock_getPath.assert_called_once()
-        mock_getPlaylists.assert_called_once()
-
-        mock_addMetadataToPlaylist.assert_has_calls([mock.call(self.playlistsPath, 0, self.playlist1Name, self.songArtist1FromPlaylist, self.songAlbum1FromPlaylist, self.songTitle1FromPlaylist, self.hash1FromPlaylist),
-                                                     mock.call(self.playlistsPath, 0, self.playlist2Name, self.songArtist2FromPlaylist, self.songAlbum2FromPlaylist, self.songTitle2FromPlaylist, self.hash2FromPlaylist)])
-        mock_downloadMp3.assert_has_calls([mock.call(self.url1FromPlaylist, self.playlistsPath+"/"+self.playlist1Name),
-                                           mock.call(self.url2FromPlaylist, self.playlistsPath+"/"+self.playlist2Name)])
-        mock_isMusicArchive.assert_has_calls([mock.call(self.playlistsPath+"/"+self.playlist1Name, self.url1FromPlaylist),
-                                              mock.call(self.playlistsPath+"/"+self.playlist2Name, self.url2FromPlaylist)])
-        mock_createDirIfNotExist.assert_has_calls([mock.call(self.playlistsPath+"/"+self.playlist1Name),
-                                                   mock.call(self.playlistsPath+"/"+self.playlist2Name)])
-        mock_getPlaylistInfo.assert_has_calls([mock.call(self.playlist1Link),
-                                               mock.call(self.playlist2Link)])
-        #TODO check session variables
-
-
-        received = self.socketio_test_client.get_received()
-        self.assertEqual(len(received), 7)
-
-
-        # -------------- playlist 1 ----------------
-        # ------------ getPlaylistInfo_response --------------
-        self.assertEqual(self.getNameOfMessage(received, 0), PlaylistInfo_response.message)
-        self.checkGetPlaylistInfo_response(self.getDataFromMessage(received, 0), self.playlist1Name,
-                                           [MediaFromPlaylist(0, self.url1FromPlaylist, self.songTitle1FromPlaylist)])
-
-        # ------------ downloadMediaFromPlaylist_start --------------
-        self.assertEqual(self.getNameOfMessage(received, 1), DownloadMediaFromPlaylist_start.message)
-        self.checkDownloadMediaFromPlaylist_start(self.getDataFromMessage(received, 1),
-                                                  PlaylistMediaInfo(0, self.songTitle1FromPlaylist, self.hash1FromPlaylist))
-
-        # ------------ downloadMediaFromPlaylist_finish --------------
-        self.assertEqual(self.getNameOfMessage(received, 2), DownloadMediaFromPlaylist_finish.message)
-        self.checkDownloadMediaFromPlaylist_finish(self.getDataFromMessage(received, 2),
-                                                   PlaylistMediaInfo(0, self.songTitleAndArtist1FromPlaylist, self.hash1FromPlaylist))
-
-        # -------------- playlist 2 ----------------
-        # ------------ getPlaylistInfo_response --------------
-        self.assertEqual(self.getNameOfMessage(received, 3), PlaylistInfo_response.message)
-        self.checkGetPlaylistInfo_response(self.getDataFromMessage(received, 3), self.playlist2Name,
-                                           [MediaFromPlaylist(0,self.url2FromPlaylist, self.songTitle2FromPlaylist)])
-
-        # ------------ downloadMediaFromPlaylist_start --------------
-        self.assertEqual(self.getNameOfMessage(received, 4), DownloadMediaFromPlaylist_start.message)
-        self.checkDownloadMediaFromPlaylist_start(self.getDataFromMessage(received, 4),
-                                                  PlaylistMediaInfo(0,self.songTitle2FromPlaylist, self.hash2FromPlaylist))
-
-        # ------------ downloadMediaFromPlaylist_finish --------------
-        self.assertEqual(self.getNameOfMessage(received, 5), DownloadMediaFromPlaylist_finish.message)
-        self.checkDownloadMediaFromPlaylist_finish(self.getDataFromMessage(received, 5),
-                                                   PlaylistMediaInfo(0,self.songTitleAndArtist2FromPlaylist, self.hash2FromPlaylist))
-
-        # ------------ downloadPlaylist_finish ---------------------
-        self.assertEqual(self.getNameOfMessage(received, 6), DownloadPlaylists_finish.message)
-        self.assertEqual(self.getDataFromMessage(received, 6), 2)
 
 
     @mock.patch.object(YoutubeManager, 'download_mp3')
@@ -318,6 +223,177 @@ class FlaskSocketIO(unittest.TestCase):
         # DownloadMedia_finish
         self.assertEqual(self.getNameOfMessage(received, 1), SocketMessages.DownloadMedia_finish().message)
         self.assertEqual(self.getDataFromMessage(received, 1), self.randomString)
+
+class FlaskDownloadPlaylists(unittest.TestCase):
+    playlistUrl = "https://www.youtube.com/playlist?list=PL6uhlddQJkfh4YsbxgPE70a6KeFOCDgG_"
+
+    playlistsPath = "/home/music/youtube playlists"
+
+    playlist1Name = "playlist1"
+    playlist2Name = "playlist2"
+    playlist3Name = "playlist3"
+    playlist1Link = "https://www.youtube.com/playlist?list=PL111111111"
+    playlist2Link = "https://www.youtube.com/playlist?list=PL222222222"
+    playlist3Link = "https://www.youtube.com/playlist?list=PL333333333"
+    playlistsConfiguration = [PlaylistConfig(playlist1Name,playlist1Link),
+                              PlaylistConfig(playlist2Name,playlist2Link)]
+
+    songTitle1FromPlaylist = "song1"
+    songTitle2FromPlaylist = "song2"
+    songTitle3FromPlaylist = "song3"
+    songArtist1FromPlaylist = "artist1"
+    songArtist2FromPlaylist = "artist2"
+    songArtist3FromPlaylist = "artist3"
+    songAlbum1FromPlaylist = "album1"
+    songAlbum2FromPlaylist = "album2"
+    songAlbum3FromPlaylist = "album3"
+
+    songTitleAndArtist1FromPlaylist = songArtist1FromPlaylist +" - "+ songTitle1FromPlaylist
+    songTitleAndArtist2FromPlaylist = songArtist2FromPlaylist +" - "+ songTitle2FromPlaylist
+    songTitleAndArtist3FromPlaylist = songArtist3FromPlaylist +" - "+ songTitle3FromPlaylist
+
+    songTitleAndArtist1FromPlaylistFilename = songTitleAndArtist1FromPlaylist + ".mp3"
+    songTitleAndArtist2FromPlaylistFilename = songTitleAndArtist2FromPlaylist + ".mp3"
+    songTitleAndArtist3FromPlaylistFilename = songTitleAndArtist3FromPlaylist + ".mp3"
+
+    url1FromPlaylist = "https:/www.youtube.com/watch?v=11111"
+    url2FromPlaylist = "https:/www.youtube.com/watch?v=22222"
+    url3FromPlaylist = "https:/www.youtube.com/watch?v=33333"
+
+    hash1FromPlaylist = "11111"
+    hash2FromPlaylist = "22222"
+    hash3FromPlaylist = "33333"
+
+    index1FromPlaylist = "1"
+    index2FromPlaylist = "2"
+    index3FromPlaylist = "3"
+
+    def __init__(self, *args, **kwargs):
+        super(FlaskDownloadPlaylists, self).__init__(*args, **kwargs)
+
+    def setUp(self):
+        youtubedl.app.config['TESTING'] = True
+        self.app = youtubedl.app
+        self.socketio_test_client = socketio.test_client(self.app)
+        self.mailManager = youtubedl.mailManager
+        self.ytManager = youtubedl.youtubeManager
+        self.ytConfig = youtubedl.youtubeConfig
+
+    def getNameOfMessage(self, message, index):
+        self.assertTrue(len(message) >= index)
+        self.assertIn("name", message[index])
+        return message[index]["name"]
+
+    def getDataFromMessage(self, message, index):
+        self.assertTrue(len(message) >= index)
+        self.assertIn("data", message[index]["args"][0])
+        return message[index]["args"][0]["data"]
+
+    def checkGetPlaylistInfo_response(self, playlistInfoData, expectedPlaylistName, expectedMediaFromPlaylist:List[MediaFromPlaylist]):
+        self.assertEqual(playlistInfoData[0], expectedPlaylistName)
+        index = 0
+        for playlist in expectedMediaFromPlaylist:
+            self.assertEqual(playlistInfoData[1][index]["playlist_index"], playlist.playlistIndex)
+            self.assertEqual(playlistInfoData[1][index]['url'], playlist.url)
+            self.assertEqual(playlistInfoData[1][index]['title'], playlist.title)
+            index = index + 1
+
+    def checkDownloadMediaFromPlaylist_start(self, data, expectedPlaylistMediaInfo:PlaylistMediaInfo):
+        self.assertEqual(data["playlist_index"], expectedPlaylistMediaInfo.playlistIndex)
+        self.assertEqual(data["filename"], expectedPlaylistMediaInfo.filename)
+        # TODO
+        #self.assertEqual(data["hash"], expectedPlaylistMediaInfo.hash)
+
+    def checkDownloadMediaFromPlaylist_finish(self, data, expectedPlaylistMediaInfo:PlaylistMediaInfo):
+        self.assertEqual(data["playlist_index"], expectedPlaylistMediaInfo.playlistIndex)
+        self.assertEqual(data["filename"], expectedPlaylistMediaInfo.filename)
+        # TODO
+        #self.assertEqual(data["hash"], expectedPlaylistMediaInfo.hash)
+
+
+    @mock.patch.object(YoutubeManager, 'getPlaylistInfo')
+    @mock.patch.object(YoutubeManager, 'createDirIfNotExist')
+    @mock.patch.object(YoutubeManager, '_isMusicClipArchived')
+    @mock.patch.object(YoutubeManager, '_download_mp3')
+    @mock.patch.object(YoutubeManager, '_addMetadataToPlaylist')
+    @mock.patch.object(YoutubeConfig, 'getPlaylists')
+    @mock.patch.object(YoutubeConfig, 'getPath')
+    def test_downloadTwoPlaylistsOneSongABoth(self,
+                               mock_getPath:MagicMock, mock_getPlaylists:MagicMock,
+                               mock_addMetadataToPlaylist:MagicMock, mock_downloadMp3:MagicMock,
+                               mock_isMusicArchive:MagicMock, mock_createDirIfNotExist:MagicMock,
+                               mock_getPlaylistInfo:MagicMock):
+        mock_getPlaylists.configure_mock(return_value=self.playlistsConfiguration)
+        mock_getPlaylistInfo.configure_mock(side_effect=[ResultOfDownload(PlaylistInfo(self.playlist1Name,
+                                                                      [MediaFromPlaylist(0,self.url1FromPlaylist, self.songTitle1FromPlaylist)])),
+                                                         ResultOfDownload(PlaylistInfo(self.playlist2Name,
+                                                                      [MediaFromPlaylist(0,self.url2FromPlaylist, self.songTitle2FromPlaylist)]))])
+        mock_isMusicArchive.configure_mock(return_value=False)
+        mock_downloadMp3.configure_mock(side_effect=[
+            ResultOfDownload(AudioData("11111",self.songTitle1FromPlaylist, self.hash1FromPlaylist, self.songArtist1FromPlaylist, self.songAlbum1FromPlaylist)),
+            ResultOfDownload(AudioData("11111",self.songTitle2FromPlaylist, self.hash2FromPlaylist, self.songArtist2FromPlaylist, self.songAlbum2FromPlaylist))])
+        mock_getPath.configure_mock(return_value=self.playlistsPath)
+        mock_addMetadataToPlaylist.configure_mock(side_effect=[self.songTitleAndArtist1FromPlaylistFilename, self.songTitleAndArtist2FromPlaylistFilename])
+
+        self.socketio_test_client.emit(DownloadPlaylistsRequest.message, '')
+
+
+        mock_getPath.assert_called_once()
+        mock_getPlaylists.assert_called_once()
+
+        mock_addMetadataToPlaylist.assert_has_calls([mock.call(self.playlistsPath, 0, self.playlist1Name, self.songArtist1FromPlaylist, self.songAlbum1FromPlaylist, self.songTitle1FromPlaylist, self.hash1FromPlaylist),
+                                                     mock.call(self.playlistsPath, 0, self.playlist2Name, self.songArtist2FromPlaylist, self.songAlbum2FromPlaylist, self.songTitle2FromPlaylist, self.hash2FromPlaylist)])
+        mock_downloadMp3.assert_has_calls([mock.call(self.url1FromPlaylist, self.playlistsPath+"/"+self.playlist1Name),
+                                           mock.call(self.url2FromPlaylist, self.playlistsPath+"/"+self.playlist2Name)])
+        mock_isMusicArchive.assert_has_calls([mock.call(self.playlistsPath+"/"+self.playlist1Name, self.url1FromPlaylist),
+                                              mock.call(self.playlistsPath+"/"+self.playlist2Name, self.url2FromPlaylist)])
+        mock_createDirIfNotExist.assert_has_calls([mock.call(self.playlistsPath+"/"+self.playlist1Name),
+                                                   mock.call(self.playlistsPath+"/"+self.playlist2Name)])
+        mock_getPlaylistInfo.assert_has_calls([mock.call(self.playlist1Link),
+                                               mock.call(self.playlist2Link)])
+        #TODO check session variables
+
+
+        received = self.socketio_test_client.get_received()
+        self.assertEqual(len(received), 7)
+
+
+        # -------------- playlist 1 ----------------
+        # ------------ getPlaylistInfo_response --------------
+        self.assertEqual(self.getNameOfMessage(received, 0), PlaylistInfo_response.message)
+        self.checkGetPlaylistInfo_response(self.getDataFromMessage(received, 0), self.playlist1Name,
+                                           [MediaFromPlaylist(0, self.url1FromPlaylist, self.songTitle1FromPlaylist)])
+
+        # ------------ downloadMediaFromPlaylist_start --------------
+        self.assertEqual(self.getNameOfMessage(received, 1), DownloadMediaFromPlaylist_start.message)
+        self.checkDownloadMediaFromPlaylist_start(self.getDataFromMessage(received, 1),
+                                                  PlaylistMediaInfo(0, self.songTitle1FromPlaylist, self.hash1FromPlaylist))
+
+        # ------------ downloadMediaFromPlaylist_finish --------------
+        self.assertEqual(self.getNameOfMessage(received, 2), DownloadMediaFromPlaylist_finish.message)
+        self.checkDownloadMediaFromPlaylist_finish(self.getDataFromMessage(received, 2),
+                                                   PlaylistMediaInfo(0, self.songTitleAndArtist1FromPlaylist, self.hash1FromPlaylist))
+
+        # -------------- playlist 2 ----------------
+        # ------------ getPlaylistInfo_response --------------
+        self.assertEqual(self.getNameOfMessage(received, 3), PlaylistInfo_response.message)
+        self.checkGetPlaylistInfo_response(self.getDataFromMessage(received, 3), self.playlist2Name,
+                                           [MediaFromPlaylist(0,self.url2FromPlaylist, self.songTitle2FromPlaylist)])
+
+        # ------------ downloadMediaFromPlaylist_start --------------
+        self.assertEqual(self.getNameOfMessage(received, 4), DownloadMediaFromPlaylist_start.message)
+        self.checkDownloadMediaFromPlaylist_start(self.getDataFromMessage(received, 4),
+                                                  PlaylistMediaInfo(0,self.songTitle2FromPlaylist, self.hash2FromPlaylist))
+
+        # ------------ downloadMediaFromPlaylist_finish --------------
+        self.assertEqual(self.getNameOfMessage(received, 5), DownloadMediaFromPlaylist_finish.message)
+        self.checkDownloadMediaFromPlaylist_finish(self.getDataFromMessage(received, 5),
+                                                   PlaylistMediaInfo(0,self.songTitleAndArtist2FromPlaylist, self.hash2FromPlaylist))
+
+        # ------------ downloadPlaylist_finish ---------------------
+        self.assertEqual(self.getNameOfMessage(received, 6), DownloadPlaylists_finish.message)
+        self.assertEqual(self.getDataFromMessage(received, 6), 2)
+
 
 class FlaskClientMailTestCase(unittest.TestCase):
 
