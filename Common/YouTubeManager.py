@@ -717,60 +717,6 @@ class MediaServerDownloader(YoutubeManager):
         self.ytConfig = YoutubeConfig()
         self.ytConfig.initialize(configFile)
 
-    def updateMetadataFromYTplaylist(self, playlistName):
-        path=os.path.join(self.PLAYLISTS_PATH, playlistName)
-
-        url = None
-        config = ConfigParser()
-        config.read(self.CONFIG_FILE)
-        for section_name in config.sections():
-            if section_name == playlistName:
-                url = config[section_name]['link']
-                break
-
-        if url is None:
-            print("[ERROR] playlist", playlistName,"not exist in configuration")
-            return
-
-        ydl_opts = {
-                'addmetadata': True,
-                }
-        results = yt_dlp.YoutubeDL(ydl_opts).extract_info(url,download=False)
-        if not results:
-            warningInfo="ERROR: not extract_info in results"
-            print (bcolors.FAIL + warningInfo + bcolors.ENDC)
-            return
-
-        artistList = []
-        albumList = []
-        playlistIndexList = []
-        songsTitleList = []
-        for i in results['entries']:
-            playlistIndexList.append(i['playlist_index'])
-            songsTitleList.append(i['title'])
-
-            if "artist" in i:
-                artistList.append(i['artist'])
-            else:
-                artistList.append("")
-
-            if "album" in i:
-                albumList.append(i['album'])
-            else:
-                albumList.append("")
-
-        for x in range(len(songsTitleList)):
-            songTitle = songsTitleList[x]
-            songName = self.metadataManager.lookingForFileAccordWithYTFilename(path, songTitle, artistList[x])
-            if songName == None:
-                songTitle = yt_dlp.utils.sanitize_filename(songTitle)
-                songName = self.metadataManager.lookingForFileAccordWithYTFilename(path, songTitle, artistList[x])
-            if songName != None:
-                self.metadataManager.renameAndAddMetadataToPlaylist(self.PLAYLISTS_PATH, playlistIndexList[x], playlistName, artistList[x], albumList[x], songName)
-            else:
-                warningInfo="ERROR: song not found: path %s, artist: %s, title: %s, id: %s"%(path, artistList[x], songsTitleList[x], playlistIndexList[x])
-                print (bcolors.FAIL + warningInfo + bcolors.ENDC)
-
     def download_playlists(self):
         if self.setMusicPath(self.ytConfig.getPath()) is None:
             logger.error("wrong path for playlists")
@@ -787,7 +733,7 @@ class MediaServerDownloader(YoutubeManager):
             songsCounter += result.data()
         logger.info("[SUMMARY] downloaded %s songs"%(songsCounter))
 
-def main():
+def main(): # pragma: no cover
     my_parser = argparse.ArgumentParser()
     my_parser.add_argument('-t','--type',
                        action='store',
@@ -836,7 +782,7 @@ def main():
         #if args.playlistUpdate is not None:
         #    yt.updat (args.playlistUpdate)
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
     #logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.DEBUG)
     logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
     logger = logging.getLogger(__name__)
