@@ -6,9 +6,9 @@ from Common.SocketMessages import PlaylistInfo_response, PlaylistMediaInfo_respo
 from Common.SocketMessages import MediaInfo_response, DownloadMedia_finish
 from Common.SocketRequests import DownloadMediaRequest
 
-import Common.YouTubeManager as YTManager
+import Common.YoutubeManager as YTManager
 import Common.SocketMessages as SocketMessages
-import WebAPI.webUtils as webUtils
+import WebAPI.WebUtils as WebUtils
 
 
 def downloadMediaOfType(url, type):
@@ -38,7 +38,7 @@ def downloadSongsFromList(listOfMedia, downloadType):
         data:YTManager.YoutubeClipData = resultOfMedia.data()
         downloadedFiles.append(data.path)
         filename = data.path.split("/")[-1]
-        randomHash = webUtils.getRandomString()
+        randomHash = WebUtils.getRandomString()
         session[randomHash] = filename
         PlaylistMediaInfo_response().sendMessage(SocketMessages.PlaylistMediaInfo(x.playlistIndex, filename, randomHash))
     if numberOfDownloadedSongs == 0:
@@ -56,8 +56,8 @@ def downloadPlaylist(url, downloadType):
         playlistName = ytData.playlistName
         PlaylistInfo_response().sendMessage(SocketMessages.PlaylistInfo(playlistName, ytData.listOfMedia))
         downloadedFiles = downloadSongsFromList(ytData.listOfMedia, downloadType)
-        zipFileName = webUtils.compressToZip(downloadedFiles, playlistName)
-        randomHash = webUtils.getRandomString()
+        zipFileName = WebUtils.compressToZip(downloadedFiles, playlistName)
+        randomHash = WebUtils.getRandomString()
         session[randomHash] = zipFileName
         DownloadMedia_finish().sendMessage(randomHash)
 
@@ -79,7 +79,7 @@ def downloadSingle(url, downloadType):
 
         data:YTManager.YoutubeClipData = result2.data()
         filename = data.path.split("/")[-1]
-        randomHash = webUtils.getRandomString()
+        randomHash = WebUtils.getRandomString()
         session[randomHash] = filename
         DownloadMedia_finish().sendMessage(randomHash)
 

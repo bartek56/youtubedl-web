@@ -1,5 +1,5 @@
 import unittest
-from Common.mailManager import Mail
+from Common.MailManager import Mail
 from unittest import mock
 
 class MailManagerTest(Mail):

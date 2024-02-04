@@ -1,6 +1,6 @@
 import unittest
 import unittest.mock as mock
-from Common.YouTubeManager import YoutubeManager, YoutubeConfig, PlaylistInfo, MediaFromPlaylist, MediaInfo, AudioData, VideoData, ResultOfDownload
+from Common.YoutubeManager import YoutubeManager, YoutubeConfig, PlaylistInfo, MediaFromPlaylist, MediaInfo, AudioData, VideoData, ResultOfDownload
 from configparser import ConfigParser
 import yt_dlp
 from yt_dlp import utils

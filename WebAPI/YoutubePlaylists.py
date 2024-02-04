@@ -8,9 +8,9 @@ from Common.SocketMessages import PlaylistInfo_response, PlaylistMediaInfo
 from Common.SocketMessages import DownloadMediaFromPlaylist_start, DownloadMediaFromPlaylist_finish, DownloadMediaFromPlaylistError, DownloadPlaylists_finish
 from Common.SocketRequests import DownloadPlaylistsRequest, ArchiveSongRequest
 
-from Common.YouTubeManager import AudioData, PlaylistInfo, MediaFromPlaylist
+from Common.YoutubeManager import AudioData, PlaylistInfo, MediaFromPlaylist
 import Common.SocketMessages as SocketMessages
-import WebAPI.webUtils as webUtils
+import WebAPI.WebUtils as WebUtils
 
 @app.route('/playlists.html')
 def playlists():
@@ -26,7 +26,7 @@ def playlists():
 
         return render_template('playlists.html', playlists_data=data, path=path)
     else:
-        return webUtils.alert_info("You do not have access to Youtube playlists")
+        return WebUtils.alert_info("You do not have access to Youtube playlists")
 
 @app.route('/playlists',methods = ['POST', 'GET'])
 def playlists_request():
@@ -57,7 +57,7 @@ def playlists_request():
                  flash(info, 'success')
             else:
                 info = "Failed to remove Youtube playlist: %s"%(playlistToRemove)
-                return webUtils.alert_info(info)
+                return WebUtils.alert_info(info)
 
         if 'editPath' in request.form:
             newPath = request.form['path']
@@ -138,7 +138,7 @@ def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia:List[Media
         filenameFullPath = youtubeManager._addMetadataToPlaylist(playlistsDir, songData.playlistIndex, playlistName,
                                                                  songMetadata.artist, songMetadata.album, songMetadata.title, songMetadata.hash)
         filename = filenameFullPath.split("/")[-1]
-        randomHash = webUtils.getRandomString()
+        randomHash = WebUtils.getRandomString()
         session[randomHash] = filename
         DownloadMediaFromPlaylist_finish().sendMessage(PlaylistMediaInfo(songData.playlistIndex, filename.replace(".mp3", ""), ""))
     return songCounter

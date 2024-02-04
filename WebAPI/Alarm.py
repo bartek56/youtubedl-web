@@ -2,7 +2,7 @@ from Common.AlarmEnums import SystemdCommand, AlarmConfigFlask
 from youtubedl import app, logger, alarmManager
 
 from flask import render_template, request, flash
-from WebAPI import webUtils
+from WebAPI import WebUtils
 
 if app.debug == True: # pragma: no cover
     import sys
@@ -49,7 +49,7 @@ def alarm():
         #    return alert_info2("Alarm script doesn't exist")
         return render_template("alarm.html", **alarmManager.loadAlarmConfig())
     else:
-        return webUtils.alert_info("You do not have access to alarm settings")
+        return WebUtils.alert_info("You do not have access to alarm settings")
 
 @app.route('/save_alarm', methods = ['POST', 'GET'])
 def save_alarm_html():

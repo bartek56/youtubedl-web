@@ -1,8 +1,8 @@
 import logging
 from flask import Flask, render_template
 from flask_socketio import SocketIO
-from Common.mailManager import Mail
-from Common.YouTubeManager import YoutubeManager, YoutubeConfig
+from Common.MailManager import Mail
+from Common.YoutubeManager import YoutubeManager, YoutubeConfig
 from Common.AlarmManager import AlarmManager
 from flask_session import Session
 
@@ -47,10 +47,10 @@ youtubeConfig.initialize(CONFIG_FILE)
 alarmManager = AlarmManager(subprocess, ALARM_TIMER, ALARM_SCRIPT)
 
 ## import subsides
-import WebAPI.alarm
-import WebAPI.youtubeDownloader
-import WebAPI.youtubePlaylists
-import WebAPI.mail
+import WebAPI.Alarm
+import WebAPI.YoutubeDownloader
+import WebAPI.YoutubePlaylists
+import WebAPI.Mail
 
 ## --------------------------------------
 
