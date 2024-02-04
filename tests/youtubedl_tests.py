@@ -19,24 +19,10 @@ from Common.YouTubeManager import AudioData
 import Common.YouTubeManager as YTManager
 import Common.SocketMessages as SocketMessages
 
-class FlaskQuickDownload(unittest.TestCase):
-    randomString = "ABCDEFGHI"
-    randomString1 = "AAAAAAAA"
-    randomString2 = "BBBBBBBB"
-    randomString3 = "CCCCCCCC"
-    empty = " "
-    title = "test_title"
-    artist = "test_artist"
-    album = "test_album"
-    extMp3 = "mp3"
-    extMp4 = "mp4"
-    path = "/tmp/" + title+".mp3"
-    downloadDir = "/home/music"
-    url = "https://www.youtube.com/watch?v=1Pl-FT0VCNs"
+class FlaskToolsForUT:
     playlistUrl = "https://www.youtube.com/playlist?list=PL6uhlddQJkfh4YsbxgPE70a6KeFOCDgG_"
 
     playlistsPath = "/home/music/youtube playlists"
-    playlistName = "playlistNameTest"
 
     playlist1Name = "playlist1"
     playlist2Name = "playlist2"
@@ -77,6 +63,34 @@ class FlaskQuickDownload(unittest.TestCase):
     index2FromPlaylist = "2"
     index3FromPlaylist = "3"
 
+    def getDataFromMessage(self, message, index):
+        self.assertTrue(len(message) >= index)
+        self.assertIn("data", message[index]["args"][0])
+        return message[index]["args"][0]["data"]
+
+    def getNameOfMessage(self, message, index):
+        self.assertTrue(len(message) >= index)
+        self.assertIn("name", message[index])
+        return message[index]["name"]
+
+class FlaskQuickDownload(unittest.TestCase, FlaskToolsForUT):
+    randomString = "ABCDEFGHI"
+    randomString1 = "AAAAAAAA"
+    randomString2 = "BBBBBBBB"
+    randomString3 = "CCCCCCCC"
+    empty = " "
+    title = "test_title"
+    artist = "test_artist"
+    album = "test_album"
+    extMp3 = "mp3"
+    extMp4 = "mp4"
+    path = "/tmp/" + title+".mp3"
+    downloadDir = "/home/music"
+    url = "https://www.youtube.com/watch?v=1Pl-FT0VCNs"
+
+    playlistsPath = "/home/music/youtube playlists"
+    playlistName = "playlistNameTest"
+
     def __init__(self, *args, **kwargs):
         super(FlaskQuickDownload, self).__init__(*args, **kwargs)
 
@@ -87,16 +101,6 @@ class FlaskQuickDownload(unittest.TestCase):
         self.mailManager = youtubedl.mailManager
         self.ytManager = youtubedl.youtubeManager
         self.ytConfig = youtubedl.youtubeConfig
-
-    def getDataFromMessage(self, message, index):
-        self.assertTrue(len(message) >= index)
-        self.assertIn("data", message[index]["args"][0])
-        return message[index]["args"][0]["data"]
-
-    def getNameOfMessage(self, message, index):
-        self.assertTrue(len(message) >= index)
-        self.assertIn("name", message[index])
-        return message[index]["name"]
 
     def checkGetPlaylistInfo_response(self, playlistInfoData, expectedPlaylistName, expectedMediaFromPlaylist:List[MediaFromPlaylist]):
         self.assertEqual(playlistInfoData[0], expectedPlaylistName)
@@ -224,49 +228,7 @@ class FlaskQuickDownload(unittest.TestCase):
         self.assertEqual(self.getNameOfMessage(received, 1), SocketMessages.DownloadMedia_finish().message)
         self.assertEqual(self.getDataFromMessage(received, 1), self.randomString)
 
-class FlaskDownloadPlaylists(unittest.TestCase):
-    playlistUrl = "https://www.youtube.com/playlist?list=PL6uhlddQJkfh4YsbxgPE70a6KeFOCDgG_"
-
-    playlistsPath = "/home/music/youtube playlists"
-
-    playlist1Name = "playlist1"
-    playlist2Name = "playlist2"
-    playlist3Name = "playlist3"
-    playlist1Link = "https://www.youtube.com/playlist?list=PL111111111"
-    playlist2Link = "https://www.youtube.com/playlist?list=PL222222222"
-    playlist3Link = "https://www.youtube.com/playlist?list=PL333333333"
-    playlistsConfiguration = [PlaylistConfig(playlist1Name,playlist1Link),
-                              PlaylistConfig(playlist2Name,playlist2Link)]
-
-    songTitle1FromPlaylist = "song1"
-    songTitle2FromPlaylist = "song2"
-    songTitle3FromPlaylist = "song3"
-    songArtist1FromPlaylist = "artist1"
-    songArtist2FromPlaylist = "artist2"
-    songArtist3FromPlaylist = "artist3"
-    songAlbum1FromPlaylist = "album1"
-    songAlbum2FromPlaylist = "album2"
-    songAlbum3FromPlaylist = "album3"
-
-    songTitleAndArtist1FromPlaylist = songArtist1FromPlaylist +" - "+ songTitle1FromPlaylist
-    songTitleAndArtist2FromPlaylist = songArtist2FromPlaylist +" - "+ songTitle2FromPlaylist
-    songTitleAndArtist3FromPlaylist = songArtist3FromPlaylist +" - "+ songTitle3FromPlaylist
-
-    songTitleAndArtist1FromPlaylistFilename = songTitleAndArtist1FromPlaylist + ".mp3"
-    songTitleAndArtist2FromPlaylistFilename = songTitleAndArtist2FromPlaylist + ".mp3"
-    songTitleAndArtist3FromPlaylistFilename = songTitleAndArtist3FromPlaylist + ".mp3"
-
-    url1FromPlaylist = "https:/www.youtube.com/watch?v=11111"
-    url2FromPlaylist = "https:/www.youtube.com/watch?v=22222"
-    url3FromPlaylist = "https:/www.youtube.com/watch?v=33333"
-
-    hash1FromPlaylist = "11111"
-    hash2FromPlaylist = "22222"
-    hash3FromPlaylist = "33333"
-
-    index1FromPlaylist = "1"
-    index2FromPlaylist = "2"
-    index3FromPlaylist = "3"
+class FlaskDownloadPlaylists(unittest.TestCase, FlaskToolsForUT):
 
     def __init__(self, *args, **kwargs):
         super(FlaskDownloadPlaylists, self).__init__(*args, **kwargs)
@@ -278,16 +240,6 @@ class FlaskDownloadPlaylists(unittest.TestCase):
         self.mailManager = youtubedl.mailManager
         self.ytManager = youtubedl.youtubeManager
         self.ytConfig = youtubedl.youtubeConfig
-
-    def getNameOfMessage(self, message, index):
-        self.assertTrue(len(message) >= index)
-        self.assertIn("name", message[index])
-        return message[index]["name"]
-
-    def getDataFromMessage(self, message, index):
-        self.assertTrue(len(message) >= index)
-        self.assertIn("data", message[index]["args"][0])
-        return message[index]["args"][0]["data"]
 
     def checkGetPlaylistInfo_response(self, playlistInfoData, expectedPlaylistName, expectedMediaFromPlaylist:List[MediaFromPlaylist]):
         self.assertEqual(playlistInfoData[0], expectedPlaylistName)
@@ -394,7 +346,6 @@ class FlaskDownloadPlaylists(unittest.TestCase):
         self.assertEqual(self.getNameOfMessage(received, 6), DownloadPlaylists_finish.message)
         self.assertEqual(self.getDataFromMessage(received, 6), 2)
 
-
 class FlaskClientMailTestCase(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
@@ -459,45 +410,64 @@ class FlaskClientConfigurePlaylists(unittest.TestCase):
     unchecked="unchecked"
     empty=""
 
+    playlistnameToRemove = "playlist_to_remove"
+    playlistname1 = "playlist1"
+    playlistname2 = "playlist2"
+    successfullRemovedPlaylistMsg = b'Sucesssful removed playlist'
+    failedRemovedPlaylistMsg = b'Failed to remove Youtube playlist:'
+    mediaserverTitle = b'<title>Media Server</title>'
+    statusCodeSuccess = 200
+
     def __init__(self, *args, **kwargs):
         super(FlaskClientConfigurePlaylists, self).__init__(*args, **kwargs)
 
     def setUp(self):
         youtubedl.app.config['TESTING'] = True
         self.app = youtubedl.app.test_client()
-        self.ytConfig = youtubedl.youtubeConfig
 
-    @mock.patch.object(YoutubeConfig, 'removePlaylist', return_value=True)
-    def test_remove_playlist(self, mock_removePlaylist):
-        class CustomConfigParser(ConfigParser):
-            def read(self, filename):
-                self.read_string("[playlist_to_remove]\nname = playlist_to_remove\nlink = http://youtube.com/test\n[playlist]\nname = playlist\nlink = http://youtube.com/test\n")
-        self.ytConfig.initialize("testConfig.ini", CustomConfigParser())
-        rv = self.app.post('/playlists', data=dict(remove=True, playlists="playlist_to_remove"), follow_redirects=True)
-        mock_removePlaylist.assert_called_once_with("playlist_to_remove")
-        assert rv.status_code == 200
-        assert b'<title>Media Server</title>' in rv.data
+    @mock.patch.object(YoutubeConfig, 'removePlaylist')
+    @mock.patch.object(YoutubeConfig, 'getPlaylistsName')
+    def test_remove_playlist(self, mock_getPlaylistsName:MagicMock, mock_removePlaylist:MagicMock):
+        mock_removePlaylist.configure_mock(return_value=True)
+        mock_getPlaylistsName.configure_mock(return_value=[self.playlistname1, self.playlistname1])
 
-    @mock.patch.object(YoutubeConfig, 'removePlaylist', return_value=True)
-    @mock.patch.object(YoutubeConfig, 'getPlaylistsName', return_value=["playlist1", "playlist2"])
-    def test_remove_playlist2(self, mock_getPlaylistsName, mock_removePlaylist):
-        self.ytConfig.initialize("testConfig.ini")
-        rv = self.app.post('/playlists', data=dict(remove=True, playlists="playlist_to_remove"), follow_redirects=True)
-        mock_removePlaylist.assert_called_once_with("playlist_to_remove")
+        rv = self.app.post('/playlists', data=dict(remove=True, playlists=self.playlistnameToRemove), follow_redirects=True)
+
+        mock_removePlaylist.assert_called_once_with(self.playlistnameToRemove)
         mock_getPlaylistsName.assert_called_once()
-        assert rv.status_code == 200
-        #assert b'Sucesssful removed playlist' in rv.data
-        assert b'<title>Media Server</title>' in rv.data
+        self.assertEqual(rv.status_code, self.statusCodeSuccess)
 
-    @mock.patch.object(YoutubeConfig, 'removePlaylist', return_value=False)
-    @mock.patch.object(YoutubeConfig, 'getPlaylistsName', return_value=["playlist1", "playlist2"])
-    def test_remove_playlist_failed(self, mock_getPlaylistsName, mock_removePlaylist):
-        self.ytConfig.initialize("testConfig.ini")
-        rv = self.app.post('/playlists', data=dict(remove=True, playlists="playlist_to_remove"), follow_redirects=True)
-        mock_removePlaylist.assert_called_once_with("playlist_to_remove")
-        assert rv.status_code == 200
-        assert b'<title>Media Server</title>' in rv.data
-        assert b'Failed to remove Youtube playlist:' in rv.data
+        assert self.successfullRemovedPlaylistMsg in rv.data
+        assert self.mediaserverTitle in rv.data
+
+    @mock.patch.object(YoutubeConfig, 'removePlaylist')
+    @mock.patch.object(YoutubeConfig, 'getPlaylistsName')
+    def test_remove_playlist2(self, mock_getPlaylistsName:MagicMock, mock_removePlaylist:MagicMock):
+        mock_removePlaylist.configure_mock(return_value=True)
+        mock_getPlaylistsName.configure_mock(return_value=[self.playlistname1, self.playlistname1])
+
+        rv = self.app.post('/playlists', data=dict(remove=True, playlists=self.playlistnameToRemove), follow_redirects=True)
+
+        mock_removePlaylist.assert_called_once_with(self.playlistnameToRemove)
+        mock_getPlaylistsName.assert_called_once()
+        self.assertEqual(rv.status_code, self.statusCodeSuccess)
+
+        assert self.successfullRemovedPlaylistMsg in rv.data
+        assert self.mediaserverTitle in rv.data
+
+    @mock.patch.object(YoutubeConfig, 'removePlaylist')
+    @mock.patch.object(YoutubeConfig, 'getPlaylistsName')
+    def test_remove_playlist_failed(self, mock_getPlaylistsName:MagicMock, mock_removePlaylist:MagicMock):
+        mock_removePlaylist.configure_mock(return_value=False)
+
+        rv = self.app.post('/playlists', data=dict(remove=True, playlists=self.playlistnameToRemove), follow_redirects=True)
+
+        mock_removePlaylist.assert_called_once_with(self.playlistnameToRemove)
+        mock_getPlaylistsName.assert_not_called()
+        self.assertEqual(rv.status_code, self.statusCodeSuccess)
+
+        assert self.failedRemovedPlaylistMsg in rv.data
+        assert self.mediaserverTitle in rv.data
 
 class FlaskClientAlarmTestCase(unittest.TestCase):
 
