@@ -732,6 +732,7 @@ class MediaServerDownloader(YoutubeManager):
             logger.info("--------------- downloaded %s songs from \"%s\" playlist ------------------", result.data(), playlist.name)
             songsCounter += result.data()
         logger.info("[SUMMARY] downloaded %s songs"%(songsCounter))
+        return songsCounter
 
 def main(): # pragma: no cover
     my_parser = argparse.ArgumentParser()

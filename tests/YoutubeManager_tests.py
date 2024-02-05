@@ -1,6 +1,7 @@
 import unittest
 import unittest.mock as mock
-from Common.YoutubeManager import YoutubeManager, YoutubeConfig, PlaylistInfo, MediaFromPlaylist, MediaInfo, AudioData, VideoData, ResultOfDownload
+from unittest.mock import MagicMock
+from Common.YoutubeManager import YoutubeManager, MediaServerDownloader, YoutubeConfig, PlaylistInfo, MediaFromPlaylist, MediaInfo, AudioData, VideoData, ResultOfDownload
 from configparser import ConfigParser
 import yt_dlp
 from yt_dlp import utils
@@ -543,6 +544,8 @@ class CustomConfigParser(ConfigParser):
     playlist2Name = "chillout"
     playlist2Link = "http://youtube.com/chillout"
 
+    numberOfPlaylists = 2
+
     def read(self, filename):
         self.read_string("[GLOBAL]\n"
                          "path = "+ self.path + "\n"+
@@ -677,6 +680,32 @@ class YouTubeManagerConfigTestCase(unittest.TestCase):
         self.assertFalse(self.ytConfig.removePlaylist("wrongName"))
         self.assertEqual(mock_save.call_count, 0)
         self.assertEqual(removeSectionMock.call_count, 0)
+
+class MediaServerDownloaderTestCase(unittest.TestCase):
+    def setUp(self):
+        self.downloader = MediaServerDownloader("test.ini")
+        self.downloader.ytConfig.initialize("test.ini", CustomConfigParser())
+        self.downloader.setMusicPath = MagicMock()
+        self.downloader.downloadPlaylistMp3 = MagicMock()
+
+    def test_downloadPlaylists(self):
+        self.downloader.setMusicPath.configure_mock(return_value="/music/path/")
+        listOfPlaylistResult = [4, 15]
+        lisOfResults = []
+        expectedNumberOfDownloadedSongs = 0
+        for x in range(CustomConfigParser.numberOfPlaylists):
+            numberOfDonwloadedSongs = listOfPlaylistResult[x]
+            expectedNumberOfDownloadedSongs += numberOfDonwloadedSongs
+            lisOfResults.append(ResultOfDownload(numberOfDonwloadedSongs))
+        self.downloader.downloadPlaylistMp3.configure_mock(side_effect=lisOfResults)
+
+        result = self.downloader.download_playlists()
+
+        self.assertEqual(result, expectedNumberOfDownloadedSongs)
+        self.downloader.setMusicPath.assert_has_calls([mock.call(CustomConfigParser.path)])
+        self.downloader.downloadPlaylistMp3.assert_has_calls(
+            [mock.call(CustomConfigParser.path, CustomConfigParser.playlist1Name, CustomConfigParser.playlist1Link),
+             mock.call(CustomConfigParser.path, CustomConfigParser.playlist2Name, CustomConfigParser.playlist2Link)])
 
 class ResultOfDownloadTestCase(unittest.TestCase):
     def test_resultSuccess(self):

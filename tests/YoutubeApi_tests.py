@@ -223,10 +223,10 @@ class FlaskQuickDownload(unittest.TestCase, FlaskToolsForUT):
         self.assertEqual(self.getNameOfMessage(received, 1), SocketMessages.DownloadMedia_finish().message)
         self.assertEqual(self.getDataFromMessage(received, 1), self.randomString)
 
-class FlaskDownloadPlaylists(unittest.TestCase, FlaskToolsForUT):
+class FlaskQuickDownloadPlaylists(unittest.TestCase, FlaskToolsForUT):
 
     def __init__(self, *args, **kwargs):
-        super(FlaskDownloadPlaylists, self).__init__(*args, **kwargs)
+        super(FlaskQuickDownloadPlaylists, self).__init__(*args, **kwargs)
 
     def setUp(self):
         youtubedl.app.config['TESTING'] = True
