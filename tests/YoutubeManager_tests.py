@@ -75,10 +75,10 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
     fourthHash = "4444"
     fourthWebsite = ytDomain+fourthHash
 
-    ytDownloadMp3Response1 ={"title":firstTitle, "artist":firstArtist, "album":firstAlbum}
-    ytDownloadMp3Response2 ={"title":secondTitle, "artist":secondArtist, "album":secondAlbum}
-    ytDownloadMp3Response3 ={"title":thirdTitle, "artist":thirdArtist, "album":thirdAlbum}
-    ytDownloadMp3Response4 ={"title":fourthTitle, "artist":fourthArtist, "album":fourthAlbum}
+    ytDownloadMp3Response1 = {"title":firstTitle, "artist":firstArtist, "album":firstAlbum, "id":firstHash}
+    ytDownloadMp3Response2 = {"title":secondTitle, "artist":secondArtist, "album":secondAlbum, "id":secondHash}
+    ytDownloadMp3Response3 = {"title":thirdTitle, "artist":thirdArtist, "album":thirdAlbum, "id":thirdHash}
+    ytDownloadMp3Response4 = {"title":fourthTitle, "artist":fourthArtist, "album":fourthAlbum, "id":fourthHash}
 
     ytPlaylistInfoResponse4 = {"title": playlistName,"entries":[{"playlist_name":playlistName, "playlist_index":playlistIndex1, "url":firstUrl, "title":firstTitle},
                                                                 {"playlist_name":playlistName, "playlist_index":playlistIndex2, "url":secondUrl, "title":secondTitle},
@@ -342,10 +342,10 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
                                             ])
 
         self.assertEqual(mock_metadata.call_count, self.numberOfSongs)
-        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistIndex1, self.playlistName, self.firstArtist, self.firstAlbum, self.firstTitle, ''),
-                                        mock.call(self.musicPath, self.playlistIndex2, self.playlistName, self.secondArtist, self.secondAlbum, self.secondTitle, ''),
-                                        mock.call(self.musicPath, self.playlistIndex3, self.playlistName, self.thirdArtist, self.thirdAlbum, self.thirdTitle, ''),
-                                        mock.call(self.musicPath, self.playlistIndex4, self.playlistName, self.fourthArtist, self.fourthAlbum, self.fourthTitle, '')])
+        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistIndex1, self.playlistName, self.firstArtist, self.firstAlbum, self.firstTitle, self.firstWebsite),
+                                        mock.call(self.musicPath, self.playlistIndex2, self.playlistName, self.secondArtist, self.secondAlbum, self.secondTitle, self.secondWebsite),
+                                        mock.call(self.musicPath, self.playlistIndex3, self.playlistName, self.thirdArtist, self.thirdAlbum, self.thirdTitle, self.thirdWebsite),
+                                        mock.call(self.musicPath, self.playlistIndex4, self.playlistName, self.fourthArtist, self.fourthAlbum, self.fourthTitle, self.fourthWebsite)])
 
         self.assertTrue(result.IsSuccess())
         self.assertEqual(result.data(), self.numberOfSongs)
@@ -369,7 +369,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
                                             ])
 
         self.assertEqual(mock_metadata.call_count, 1)
-        mock_metadata.assert_called_once_with(self.musicPath, self.playlistIndex4, self.playlistName, self.fourthArtist, self.fourthAlbum, self.fourthTitle, "")
+        mock_metadata.assert_called_once_with(self.musicPath, self.playlistIndex4, self.playlistName, self.fourthArtist, self.fourthAlbum, self.fourthTitle, self.fourthWebsite)
 
         self.assertTrue(result.IsSuccess())
         self.assertEqual(result.data(), 1)
@@ -395,9 +395,9 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
                                             ])
 
         self.assertEqual(mock_metadata.call_count, self.numberOfSongs-1)
-        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistIndex1, self.playlistName, self.firstArtist, self.firstAlbum, self.firstTitle, ''),
-                                        mock.call(self.musicPath, self.playlistIndex2, self.playlistName, self.secondArtist, self.secondAlbum, self.secondTitle, ''),
-                                        mock.call(self.musicPath, self.playlistIndex4, self.playlistName, self.fourthArtist,  self.fourthAlbum, self.fourthTitle, '')])
+        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistIndex1, self.playlistName, self.firstArtist, self.firstAlbum, self.firstTitle, self.firstWebsite),
+                                        mock.call(self.musicPath, self.playlistIndex2, self.playlistName, self.secondArtist, self.secondAlbum, self.secondTitle, self.secondWebsite),
+                                        mock.call(self.musicPath, self.playlistIndex4, self.playlistName, self.fourthArtist,  self.fourthAlbum, self.fourthTitle, self.fourthWebsite)])
 
         self.assertTrue(result.IsSuccess())
         self.assertEqual(result.data(), self.numberOfSongs-1)
