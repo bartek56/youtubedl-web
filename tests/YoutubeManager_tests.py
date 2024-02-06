@@ -575,6 +575,19 @@ class YouTubeManagerConfigTestCase(unittest.TestCase):
         path = self.ytConfig.getPath()
         self.assertEqual(path, CustomConfigParser.path)
 
+    @mock.patch.object(YoutubeConfig, "save")
+    @mock.patch('configparser.ConfigParser.__setitem__')
+    @mock.patch('configparser.ConfigParser.__getitem__')
+    def test_setPath(self, mock_getItem, mock_setItem, mock_save):
+        self.ytConfig.initialize("neverMind", CustomConfigParser())
+        newPath = "/tmp/"
+
+        self.ytConfig.setPath(newPath)
+
+        mock_getItem.assert_has_calls([mock.call("GLOBAL"),
+                                       mock.call().__setitem__('path', newPath)])
+        self.assertEqual(mock_save.call_count, 1)
+
     def test_getPathFailed(self):
         self.ytConfig.initialize("neverMind", CustomConfigParserEmptyPath())
         path = self.ytConfig.getPath()
@@ -682,6 +695,7 @@ class YouTubeManagerConfigTestCase(unittest.TestCase):
 
 class MediaServerDownloaderTestCase(unittest.TestCase):
     def setUp(self):
+        logging.disable(logging.CRITICAL)
         self.downloader = MediaServerDownloader("test.ini")
         self.downloader.ytConfig.initialize("test.ini", CustomConfigParser())
         self.downloader.downloadPlaylistMp3 = MagicMock()
