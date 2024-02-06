@@ -295,12 +295,7 @@ class YoutubeManager:
         self.medium720pSettings = Medium720pFormatSettings()
         self.low360pSettings =    Low360pFormatSettings()
 
-    def setMusicPath(self, path:str):
-        if not os.path.isdir(path):
-            logger.error("wrong path for set music")
-            return
-        self.MUSIC_PATH = path
-        return path
+
 
     def _validateYTResult(self, results):
         if results is None:
@@ -716,6 +711,13 @@ class MediaServerDownloader(YoutubeManager):
         super().__init__()
         self.ytConfig = YoutubeConfig()
         self.ytConfig.initialize(configFile)
+
+    def setMusicPath(self, path:str):
+        if not os.path.isdir(path):
+            logger.error("wrong path for set music")
+            return
+        self.MUSIC_PATH = path
+        return path
 
     def download_playlists(self):
         if self.setMusicPath(self.ytConfig.getPath()) is None:

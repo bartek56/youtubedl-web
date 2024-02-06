@@ -6,12 +6,14 @@ import youtubedl
 import unittest
 import unittest.mock as mock
 from unittest.mock import MagicMock
+import logging
 
 
 class FlaskClientAlarmTestCase(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         super(FlaskClientAlarmTestCase, self).__init__(*args, **kwargs)
+        logging.disable(logging.CRITICAL)
         self.checked="checked"
         self.unchecked="unchecked"
         self.empty=""
@@ -443,3 +445,5 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
         assert str('value="'+str(defaultVolume)+'" name="'+AlarmConfigFlask.DEFAULT_VOLUME+'">').encode() in rv.data
         assert b'<title>Media Server</title>' in rv.data
 
+if __name__ == "__main__":
+    unittest.main()

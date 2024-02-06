@@ -62,3 +62,6 @@ class FlaskClientMailTestCase(unittest.TestCase):
     def test_wrong_mail(self, mock_Gmail):
         rv = self.mail('jkk', '')
         assert b'You have to fill in the fields' in rv.data
+
+if __name__ == "__main__":
+    unittest.main()

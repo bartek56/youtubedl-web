@@ -8,8 +8,6 @@ from yt_dlp import utils
 import metadata_mp3
 import logging
 
-logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.FATAL)
-
 class YouTubeManagerDlTestCase(unittest.TestCase):
     musicPath = "/media/music"
     videoPath = "/media/video"
@@ -100,6 +98,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
     ytDownloadVideoResponse={"title":title, "artist":artist, "ext":extMp4}
 
     def setUp(self):
+        logging.disable(logging.CRITICAL)
         self.ytManager = YoutubeManager(videoPath=self.videoPath, musicPath=self.musicPath, mp3ArchiveFilename=self.ytMp3ArchiveFilename)
         self.ytManager.createDirIfNotExist = mock.MagicMock()
         self.ytManager.openFile = mock.MagicMock()
@@ -685,10 +684,28 @@ class MediaServerDownloaderTestCase(unittest.TestCase):
     def setUp(self):
         self.downloader = MediaServerDownloader("test.ini")
         self.downloader.ytConfig.initialize("test.ini", CustomConfigParser())
-        self.downloader.setMusicPath = MagicMock()
         self.downloader.downloadPlaylistMp3 = MagicMock()
 
+    def test_setMusicPathSuccess(self):
+        oldMusicPath = self.downloader.MUSIC_PATH
+        newMusicPath = "/tmp"
+
+        self.assertTrue(self.downloader.setMusicPath(newMusicPath))
+
+        self.assertEqual(self.downloader.MUSIC_PATH, newMusicPath)
+        self.assertNotEqual(self.downloader.MUSIC_PATH, oldMusicPath)
+
+    def test_setMusicPathFailed(self):
+        oldMusicPath = self.downloader.MUSIC_PATH
+        newMusicPath = "/wrongPath"
+
+        self.assertIsNone(self.downloader.setMusicPath(newMusicPath))
+
+        self.assertNotEqual(self.downloader.MUSIC_PATH, newMusicPath)
+        self.assertEqual(self.downloader.MUSIC_PATH, oldMusicPath)
+
     def test_downloadPlaylists(self):
+        self.downloader.setMusicPath = MagicMock()
         self.downloader.setMusicPath.configure_mock(return_value="/music/path/")
         listOfPlaylistResult = [4, 15]
         lisOfResults = []
