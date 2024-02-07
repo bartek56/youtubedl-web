@@ -149,13 +149,17 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         self.assertEqual(data.title, ytResponse["title"])
         self.assertEqual(data.path, self.videoPath+"/"+ytResponse["title"]+"_"+videoResolution+"."+ytResponse["ext"])
 
-    def test_getMediaHash(self):
+    def test_getMediaHash1(self):
         hash = self.ytManager.getMediaHashFromLink("https://www.youtube.com/watch?v=Lr4x3sCH7l0&list=PL6uhlddQJkfh4YsbxgPE70a6KeFOCDgG")
         self.assertEqual(hash, "Lr4x3sCH7l0")
 
-    def test_getMediaHash(self):
+    def test_getMediaHash2(self):
         hash = self.ytManager.getMediaHashFromLink("https://www.youtube.com/watch?v=Lr4x3sCH7l0")
         self.assertEqual(hash, "Lr4x3sCH7l0")
+
+    def test_getMediaHash3(self):
+        hash = self.ytManager.getMediaHashFromLink("https://www.youtube.com/Lr4x3sCH7l0")
+        self.assertIsNone(hash)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     def test_getPlaylistInfo(self, mock_extractInfo):
@@ -588,6 +592,19 @@ class YouTubeManagerConfigTestCase(unittest.TestCase):
                                        mock.call().__setitem__('path', newPath)])
         self.assertEqual(mock_save.call_count, 1)
 
+    @mock.patch.object(YoutubeConfig, "save")
+    @mock.patch('configparser.ConfigParser.__setitem__')
+    @mock.patch('configparser.ConfigParser.__getitem__')
+    def test_setNewPath(self, mock_getItem, mock_setItem, mock_save):
+        self.ytConfig.initialize("neverMind", CustomConfigParserEmptyPath())
+        newPath = "/tmp/"
+
+        self.ytConfig.setPath(newPath)
+
+        mock_getItem.assert_has_calls([mock.call("GLOBAL"),
+                                       mock.call().__setitem__('path', newPath)])
+        self.assertEqual(mock_save.call_count, 1)
+
     def test_getPathFailed(self):
         self.ytConfig.initialize("neverMind", CustomConfigParserEmptyPath())
         path = self.ytConfig.getPath()
@@ -737,6 +754,33 @@ class MediaServerDownloaderTestCase(unittest.TestCase):
         self.downloader.downloadPlaylistMp3.assert_has_calls(
             [mock.call(CustomConfigParser.path, CustomConfigParser.playlist1Name, CustomConfigParser.playlist1Link),
              mock.call(CustomConfigParser.path, CustomConfigParser.playlist2Name, CustomConfigParser.playlist2Link)])
+
+    def test_downloadPlaylistsOnePlaylistFailed(self):
+        self.downloader.setMusicPath = MagicMock()
+        self.downloader.setMusicPath.configure_mock(return_value="/music/path/")
+        lisOfResults = []
+        expectedNumberOfDownloadedSongs = 4
+        lisOfResults.append(ResultOfDownload(4))
+        lisOfResults.append(ResultOfDownload("error"))
+        self.downloader.downloadPlaylistMp3.configure_mock(side_effect=lisOfResults)
+
+        result = self.downloader.download_playlists()
+
+        self.assertEqual(result, expectedNumberOfDownloadedSongs)
+        self.downloader.setMusicPath.assert_has_calls([mock.call(CustomConfigParser.path)])
+        self.downloader.downloadPlaylistMp3.assert_has_calls(
+            [mock.call(CustomConfigParser.path, CustomConfigParser.playlist1Name, CustomConfigParser.playlist1Link),
+             mock.call(CustomConfigParser.path, CustomConfigParser.playlist2Name, CustomConfigParser.playlist2Link)])
+
+    def test_downloadPlaylistsFailedWrongPath(self):
+        self.downloader.setMusicPath = MagicMock()
+        self.downloader.setMusicPath.configure_mock(return_value=None)
+
+        result = self.downloader.download_playlists()
+
+        self.assertIsNone(result)
+        self.downloader.setMusicPath.assert_has_calls([mock.call(CustomConfigParser.path)])
+        self.downloader.downloadPlaylistMp3.assert_not_called()
 
 class ResultOfDownloadTestCase(unittest.TestCase):
     def test_resultSuccess(self):
