@@ -1,0 +1,20 @@
+{
+    "name": "YoutubeDl",
+    "short_name": "YoutubeDl",
+    "start_url": "/youtubedl/index.html",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#2196F3",
+    "icons": [
+      {
+        "src": "/static/youtubedl_128x128.png",
+        "type": "image/png",
+        "sizes": "128x128"
+      },
+      {
+        "src": "/static/youtubedl_512x512.png",
+        "type": "image/png",
+        "sizes": "512x512"
+      }
+    ]
+  }

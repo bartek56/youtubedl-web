@@ -1,5 +1,5 @@
 import logging
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
 from flask_socketio import SocketIO
 from Common.MailManager import Mail
 from Common.YoutubeManager import YoutubeManager, YoutubeConfig
@@ -17,7 +17,7 @@ socketio = SocketIO(app, manage_session=False)
 if app.debug == True: # pragma: no cover
     import sys
     sys.path.append("./tests")
-    import subprocessDebug as subprocess
+    import SubprocessDebug as subprocess
 else:
     import subprocess
 
@@ -58,6 +58,10 @@ import WebAPI.Mail
 @app.route('/index.html')
 def index():
     return render_template('index.html')
+
+@app.route('/<subside>/manifest.json')
+def manifest(subside):
+    return send_from_directory('static', f'{subside}_manifest.json')
 
 @socketio.event
 def connect():

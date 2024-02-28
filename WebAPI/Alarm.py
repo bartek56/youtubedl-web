@@ -7,7 +7,7 @@ from WebAPI import WebUtils
 if app.debug == True: # pragma: no cover
     import sys
     sys.path.append("./tests")
-    import subprocessDebug as subprocess
+    import SubprocessDebug as subprocess
 else:
     import subprocess
 
