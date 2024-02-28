@@ -1,7 +1,7 @@
 from Common.AlarmEnums import SystemdCommand, AlarmConfigFlask
 from youtubedl import app, logger, alarmManager
 
-from flask import render_template, request, flash
+from flask import render_template, request, flash, send_from_directory
 from WebAPI import WebUtils
 
 if app.debug == True: # pragma: no cover
@@ -10,6 +10,10 @@ if app.debug == True: # pragma: no cover
     import SubprocessDebug as subprocess
 else:
     import subprocess
+
+@app.route('/alarm/manifest.json')
+def manifest():
+    return send_from_directory('static', 'alarm_manifest.json')
 
 @app.route('/alarm_test_start')
 def alarmTestStart():

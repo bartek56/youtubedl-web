@@ -1,5 +1,5 @@
 from youtubedl import app, logger, youtubeManager, socketio
-from flask import render_template, session, send_file
+from flask import render_template, session, send_file, send_from_directory
 
 
 from Common.SocketMessages import PlaylistInfo_response, PlaylistMediaInfo_response
@@ -10,6 +10,9 @@ import Common.YoutubeManager as YTManager
 import Common.SocketMessages as SocketMessages
 import WebAPI.WebUtils as WebUtils
 
+@app.route('/manifest.json')
+def manifestMain():
+    return send_from_directory('static', 'youtubedl_manifest.json')
 
 def downloadMediaOfType(url, type):
     if type == "mp3":
