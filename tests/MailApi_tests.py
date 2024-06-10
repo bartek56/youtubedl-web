@@ -1,8 +1,8 @@
 from typing import List
-import youtubedl
 import unittest
 import unittest.mock as mock
-from Common.MailManager import Mail
+from youtubedlWeb.Common.MailManager import Mail
+from youtubedlWeb import create_app
 
 class FlaskClientMailTestCase(unittest.TestCase):
 
@@ -13,9 +13,9 @@ class FlaskClientMailTestCase(unittest.TestCase):
         self.empty=""
 
     def setUp(self):
-        youtubedl.app.config['TESTING'] = True
-        self.app = youtubedl.app.test_client()
-        self.mailManager = youtubedl.mailManager
+        self.mainApp = create_app(True)
+        self.app = self.mainApp.test_client()
+        self.mailManager = self.mainApp.mailManager
 
     def test_home_page(self):
         rv = self.app.get('/index.html')

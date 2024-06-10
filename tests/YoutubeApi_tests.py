@@ -1,18 +1,17 @@
 from typing import List
-from youtubedl import socketio
-import youtubedl
+from youtubedlWeb import create_app, socketio
 import unittest
 import unittest.mock as mock
 from unittest.mock import MagicMock
 
-from Common.SocketMessages import PlaylistInfo_response, PlaylistInfo, MediaFromPlaylist, DownloadMediaFromPlaylist_start
-from Common.SocketMessages import DownloadMediaFromPlaylist_finish, DownloadPlaylists_finish, PlaylistMediaInfo, MediaInfo
-from Common.SocketRequests import DownloadMediaRequest, DownloadPlaylistsRequest
+from youtubedlWeb.Common.SocketMessages import PlaylistInfo_response, PlaylistInfo, MediaFromPlaylist, DownloadMediaFromPlaylist_start
+from youtubedlWeb.Common.SocketMessages import DownloadMediaFromPlaylist_finish, DownloadPlaylists_finish, PlaylistMediaInfo, MediaInfo
+from youtubedlWeb.Common.SocketRequests import DownloadMediaRequest, DownloadPlaylistsRequest
+from youtubedlWeb.Common.YoutubeManager import PlaylistConfig, ResultOfDownload, YoutubeManager, YoutubeConfig, AudioData
 
-from Common.YoutubeManager import YoutubeManager, YoutubeConfig, ResultOfDownload, PlaylistConfig
-from Common.YoutubeManager import AudioData
-import Common.YoutubeManager as YTManager
-import Common.SocketMessages as SocketMessages
+#from Common.YoutubeManager import YoutubeManager, YoutubeConfig, ResultOfDownload, PlaylistConfig
+import youtubedlWeb.Common.YoutubeManager as YTManager
+import youtubedlWeb.Common.SocketMessages as SocketMessages
 
 class FlaskToolsForUT:
     playlistUrl = "https://www.youtube.com/playlist?list=PL6uhlddQJkfh4YsbxgPE70a6KeFOCDgG_"
@@ -90,12 +89,12 @@ class FlaskQuickDownload(unittest.TestCase, FlaskToolsForUT):
         super(FlaskQuickDownload, self).__init__(*args, **kwargs)
 
     def setUp(self):
-        youtubedl.app.config['TESTING'] = True
-        self.app = youtubedl.app
-        self.socketio_test_client = socketio.test_client(self.app)
-        self.mailManager = youtubedl.mailManager
-        self.ytManager = youtubedl.youtubeManager
-        self.ytConfig = youtubedl.youtubeConfig
+        self.mainApp = create_app(True)
+        self.app = self.mainApp.test_client()
+        self.socketio_test_client = socketio.test_client(self.mainApp)
+        self.mailManager = self.mainApp.mailManager
+        self.ytManager = self.mainApp.youtubeManager
+        self.ytConfig = self.mainApp.youtubeConfig
 
     def checkGetPlaylistInfo_response(self, playlistInfoData, expectedPlaylistName, expectedMediaFromPlaylist:List[MediaFromPlaylist]):
         self.assertEqual(playlistInfoData[0], expectedPlaylistName)
@@ -118,7 +117,7 @@ class FlaskQuickDownload(unittest.TestCase, FlaskToolsForUT):
 
     @mock.patch.object(YoutubeManager, 'download_mp3')
     @mock.patch.object(YoutubeManager, 'getMediaInfo')
-    @mock.patch('WebAPI.WebUtils.getRandomString')
+    @mock.patch('youtubedlWeb.Common.WebUtils.getRandomString')
     def test_downloadMp3(self, mock_getRandomString:MagicMock, mock_getMediaInfo:MagicMock, mock_downloadMp3:MagicMock):
         mock_getMediaInfo.configure_mock(return_value=ResultOfDownload(YTManager.MediaInfo(self.title,self.artist,self.album,self.url)))
         mock_downloadMp3.configure_mock(return_value=ResultOfDownload(YTManager.AudioData(self.path, self.title, self.artist, self.album)))
@@ -145,8 +144,8 @@ class FlaskQuickDownload(unittest.TestCase, FlaskToolsForUT):
 
     @mock.patch.object(YoutubeManager, 'download_mp3')
     @mock.patch.object(YoutubeManager, 'getPlaylistInfo')
-    @mock.patch('WebAPI.WebUtils.getRandomString')
-    @mock.patch('WebAPI.WebUtils.compressToZip')
+    @mock.patch('youtubedlWeb.Common.WebUtils.getRandomString')
+    @mock.patch('youtubedlWeb.Common.WebUtils.compressToZip')
     def test_downloadMp3Playlist(self, mock_zip:MagicMock, mock_getRandomString:MagicMock, mock_getPlaylistInfo:MagicMock, mock_downloadMp3:MagicMock):
         mock_getPlaylistInfo.configure_mock(return_value = ResultOfDownload(
             YTManager.PlaylistInfo(self.playlistName,
@@ -196,7 +195,7 @@ class FlaskQuickDownload(unittest.TestCase, FlaskToolsForUT):
 
     @mock.patch.object(YoutubeManager, 'download_720p')
     @mock.patch.object(YoutubeManager, 'getMediaInfo')
-    @mock.patch('WebAPI.WebUtils.getRandomString')
+    @mock.patch('youtubedlWeb.Common.WebUtils.getRandomString')
     def test_download720p(self, mock_randomString:MagicMock, mock_getMediaInfo:MagicMock, mock_download720p:MagicMock):
         mock_download720p.configure_mock(return_value=ResultOfDownload(YTManager.VideoData(self.downloadDir+"/"+self.title+"."+self.extMp4, self.title)))
         mock_getMediaInfo.configure_mock(return_value=ResultOfDownload(YTManager.MediaInfo(self.title, self.artist, self.album, self.url)))
@@ -229,12 +228,12 @@ class FlaskQuickDownloadPlaylists(unittest.TestCase, FlaskToolsForUT):
         super(FlaskQuickDownloadPlaylists, self).__init__(*args, **kwargs)
 
     def setUp(self):
-        youtubedl.app.config['TESTING'] = True
-        self.app = youtubedl.app
-        self.socketio_test_client = socketio.test_client(self.app)
-        self.mailManager = youtubedl.mailManager
-        self.ytManager = youtubedl.youtubeManager
-        self.ytConfig = youtubedl.youtubeConfig
+        self.mainApp = create_app(True)
+        self.app = self.mainApp.test_client()
+        self.socketio_test_client = socketio.test_client(self.mainApp)
+        self.mailManager = self.mainApp.mailManager
+        self.ytManager = self.mainApp.youtubeManager
+        self.ytConfig = self.mainApp.youtubeConfig
 
     def checkGetPlaylistInfo_response(self, playlistInfoData, expectedPlaylistName, expectedMediaFromPlaylist:List[MediaFromPlaylist]):
         self.assertEqual(playlistInfoData[0], expectedPlaylistName)
@@ -358,8 +357,8 @@ class FlaskClientConfigurePlaylists(unittest.TestCase):
         super(FlaskClientConfigurePlaylists, self).__init__(*args, **kwargs)
 
     def setUp(self):
-        youtubedl.app.config['TESTING'] = True
-        self.app = youtubedl.app.test_client()
+        self.mainApp = create_app(True)
+        self.app = self.mainApp.test_client()
 
     @mock.patch.object(YoutubeConfig, 'removePlaylist')
     @mock.patch.object(YoutubeConfig, 'getPlaylistsName')

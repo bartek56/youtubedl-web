@@ -1,5 +1,5 @@
 import unittest
-from Common.MailManager import Mail
+from youtubedlWeb.Common.MailManager import Mail
 from unittest import mock
 
 class MailManagerTest(Mail):
