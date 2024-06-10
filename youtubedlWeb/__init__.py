@@ -46,13 +46,14 @@ def create_app(isTest=False):
     app.youtubeManager = YoutubeManager()
     app.alarmManager = AlarmManager(subprocess, ALARM_TIMER, ALARM_SCRIPT)
 
-    handler = app.logger.handlers[0]
-    if app.debug == True: # pragma: no cover
-        handler.setLevel(logging.DEBUG)
-    else:
-        handler.setLevel(logging.INFO)
-    formater = logging.Formatter("%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s")
-    handler.setFormatter(formater)
+    if len(app.logger.handlers) == 1:
+        handler = app.logger.handlers[0]
+        if app.debug == True: # pragma: no cover
+            handler.setLevel(logging.DEBUG)
+        else:
+            handler.setLevel(logging.INFO)
+        formater = logging.Formatter("%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s")
+        handler.setFormatter(formater)
 
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)
