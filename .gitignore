@@ -6,8 +6,8 @@
 __pycache__
 
 #Flask
-static/bootstrap-*
-static/clockpicker
+youtubedlWeb/static/bootstrap-*
+youtubedlWeb/static/clockpicker
 flask_session
 #googleAPI
 client_secret.json
