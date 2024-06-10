@@ -1,12 +1,11 @@
 from typing import List
-from Common.AlarmEnums import AlarmConfigFlask, AlarmConfigLinux, SystemdCommand
-from WebAPI.Alarm import alarmManager
-import WebAPI.Alarm as Alarm
-import youtubedl
+from youtubedlWeb.Common.AlarmEnums import AlarmConfigFlask, AlarmConfigLinux, SystemdCommand
+#from youtubedlWeb.WebAPI.Alarm import alarmManager
 import unittest
 import unittest.mock as mock
 from unittest.mock import MagicMock
 import logging
+from youtubedlWeb import create_app, ALARM_SCRIPT, ALARM_TIMER
 
 
 class FlaskClientAlarmTestCase(unittest.TestCase):
@@ -19,10 +18,10 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
         self.empty=""
 
     def setUp(self):
-        youtubedl.app.config['TESTING'] = True
-        self.app = youtubedl.app.test_client()
-        Alarm.alarmManager.loadConfig = MagicMock()
-        Alarm.alarmManager.saveConfig = MagicMock()
+        self.mainApp = create_app(True)
+        self.app = self.mainApp.test_client()
+        self.mainApp.alarmManager.loadConfig = MagicMock()
+        self.mainApp.alarmManager.saveConfig = MagicMock()
 
     def tearDown(self):
         pass
@@ -40,7 +39,7 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
 
         mock_proc_check_output.configure_mock(side_effect=[alarmPlaylistString, "active"])
 
-        Alarm.alarmManager.loadConfig.configure_mock(side_effect=[
+        self.mainApp.alarmManager.loadConfig.configure_mock(side_effect=[
                     ["[Unit]","Description=Alarm","",
                     "[Timer]","OnCalendar=Mon,Tue,Wed,Thu,Fri,Sat,Sun "+alarmTime,"",
                     "[Install]","WantedBy=multi-user.target",""],
@@ -55,10 +54,10 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
                     "",""]
                     ])
 
-        alarmConfig = alarmManager.loadAlarmConfig()
+        alarmConfig = self.mainApp.alarmManager.loadAlarmConfig()
 
         self.assertEqual(mock_proc_check_output.call_count, 2)
-        self.assertEqual(Alarm.alarmManager.loadConfig.call_count, 2)
+        self.assertEqual(self.mainApp.alarmManager.loadConfig.call_count, 2)
 
         self.assertEqual(alarmConfig[AlarmConfigFlask.ALARM_TIME], alarmTime)
         self.assertEqual(alarmConfig[AlarmConfigFlask.THE_NEWEST_SONG], self.checked)
@@ -92,7 +91,7 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
 
         mock_proc_check_output.configure_mock(side_effect=[alarmPlaylistString, "inactive"])
 
-        Alarm.alarmManager.loadConfig.configure_mock(side_effect=[
+        self.mainApp.alarmManager.loadConfig.configure_mock(side_effect=[
                     ["[Unit]","Description=Alarm","",
                     "[Timer]","OnCalendar=Mon,Tue,Wed,Thu,Fri,Sat,Sun "+alarmTime,"",
                     "[Install]","WantedBy=multi-user.target",""],
@@ -107,10 +106,10 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
                     "",""]
                     ])
 
-        alarmConfig = alarmManager.loadAlarmConfig()
+        alarmConfig = self.mainApp.alarmManager.loadAlarmConfig()
 
         self.assertEqual(mock_proc_check_output.call_count, 2)
-        self.assertEqual(Alarm.alarmManager.loadConfig.call_count, 2)
+        self.assertEqual(self.mainApp.alarmManager.loadConfig.call_count, 2)
 
         self.assertEqual(alarmConfig[AlarmConfigFlask.ALARM_TIME], alarmTime)
         self.assertEqual(alarmConfig[AlarmConfigFlask.THE_NEWEST_SONG], self.empty)
@@ -143,7 +142,7 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
         alarmMode=AlarmConfigFlask.ALARM_MODE_PLAYLIST
 
         #settings before saving
-        Alarm.alarmManager.loadConfig.configure_mock(side_effect=[
+        self.mainApp.alarmManager.loadConfig.configure_mock(side_effect=[
                     ["[Unit]","Description=Alarm","",
                     "[Timer]","OnCalendar=Sun 09:00","",
                     "[Install]","WantedBy=multi-user.target",""],
@@ -158,12 +157,12 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
                     "",""]
                     ])
 
-        Alarm.alarmManager.updateAlarmConfig(alarmDays,time,minVolume,maxVolume,defaultVolume,growingVolume,growingSpeed,alarmPlaylist,alarmMode)
-        Alarm.alarmManager.saveConfig.assert_has_calls([mock.call(youtubedl.ALARM_TIMER,
+        self.mainApp.alarmManager.updateAlarmConfig(alarmDays,time,minVolume,maxVolume,defaultVolume,growingVolume,growingSpeed,alarmPlaylist,alarmMode)
+        self.mainApp.alarmManager.saveConfig.assert_has_calls([mock.call(ALARM_TIMER,
                                                     ['[Unit]', 'Description=Alarm', '',
                                                      '[Timer]', 'OnCalendar=' + alarmDays +' '+ time + ' \n', '',
                                                      '[Install]', 'WantedBy=multi-user.target', '']),
-                                          mock.call(youtubedl.ALARM_SCRIPT,
+                                          mock.call(ALARM_SCRIPT,
                                                     ['#/bin/bash',
                                                     AlarmConfigLinux.MIN_VOLUME+'='+str(minVolume)+'\n',
                                                     AlarmConfigLinux.MAX_VOLUME+'='+str(maxVolume)+'\n',
@@ -185,7 +184,7 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
         alarmMode=AlarmConfigFlask.ALARM_MODE_NEWEST
 
         #settings before saving
-        Alarm.alarmManager.loadConfig.configure_mock(side_effect=[
+        self.mainApp.alarmManager.loadConfig.configure_mock(side_effect=[
                     ["[Unit]","Description=Alarm","",
                     "[Timer]","OnCalendar=Sun 09:00","",
                     "[Install]","WantedBy=multi-user.target",""],
@@ -200,12 +199,12 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
                     "",""]
                     ])
 
-        Alarm.alarmManager.updateAlarmConfig(alarmDays,time,minVolume,maxVolume,defaultVolume,growingVolume,growingSpeed,alarmPlaylist,alarmMode)
-        Alarm.alarmManager.saveConfig.assert_has_calls([mock.call(youtubedl.ALARM_TIMER,
+        self.mainApp.alarmManager.updateAlarmConfig(alarmDays,time,minVolume,maxVolume,defaultVolume,growingVolume,growingSpeed,alarmPlaylist,alarmMode)
+        self.mainApp.alarmManager.saveConfig.assert_has_calls([mock.call(ALARM_TIMER,
                                                     ['[Unit]', 'Description=Alarm', '',
                                                      '[Timer]', 'OnCalendar=' + alarmDays +' '+ time + ' \n', '',
                                                      '[Install]', 'WantedBy=multi-user.target', '']),
-                                          mock.call(youtubedl.ALARM_SCRIPT,
+                                          mock.call(ALARM_SCRIPT,
                                                     ['#/bin/bash',
                                                     AlarmConfigLinux.MIN_VOLUME+'='+str(minVolume)+'\n',
                                                     AlarmConfigLinux.MAX_VOLUME+'='+str(maxVolume)+'\n',
@@ -232,7 +231,7 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
         returnCode.returncode = 0
         mock_subprocess_run.configure_mock(return_value=returnCode)
 
-        Alarm.alarmManager.loadConfig.configure_mock(side_effect=[
+        self.mainApp.alarmManager.loadConfig.configure_mock(side_effect=[
                     ["[Unit]","Description=Alarm","","[Timer]","OnCalendar=Mon,Tue,Wed,Thu,Fri,Sat,Sun 07:50",
                     "","[Install]","WantedBy=multi-user.target",""], #configuration before update
                     ["#/bin/bash",
@@ -265,11 +264,11 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
                                     alarm_active="true", monday=['monday'], tueday=['tueday'], wedday=['wedday']),
                             follow_redirects=True)
 
-        Alarm.alarmManager.saveConfig.assert_has_calls([mock.call(youtubedl.ALARM_TIMER,
+        self.mainApp.alarmManager.saveConfig.assert_has_calls([mock.call(ALARM_TIMER,
                                                     ['[Unit]', 'Description=Alarm', '',
                                                      '[Timer]', 'OnCalendar=' + alarmDays +' '+ time + ' \n', '',
                                                      '[Install]', 'WantedBy=multi-user.target', '']),
-                                          mock.call(youtubedl.ALARM_SCRIPT,
+                                          mock.call(ALARM_SCRIPT,
                                                     ['#/bin/bash',
                                                     AlarmConfigLinux.MIN_VOLUME+'='+str(minVolume)+'\n',
                                                     AlarmConfigLinux.MAX_VOLUME+'='+str(maxVolume)+'\n',
@@ -323,7 +322,7 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
         returnCode.returncode = 0
         mock_subprocess_run.configure_mock(return_value=returnCode)
 
-        Alarm.alarmManager.loadConfig.configure_mock(side_effect=[
+        self.mainApp.alarmManager.loadConfig.configure_mock(side_effect=[
                     ["[Unit]","Description=Alarm","","[Timer]","OnCalendar=Mon,Sat 07:50",
                     "","[Install]","WantedBy=multi-user.target",""], #configuration before update
                     ["#/bin/bash",
@@ -356,11 +355,11 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
                                     alarm_active="true", monday=['monday'], tueday=['tueday'], wedday=['wedday'], thuday=['thuday'], friday=['friday'], satday=['satday'], sunday=['sunday'] ),
                             follow_redirects=True)
 
-        Alarm.alarmManager.saveConfig.assert_has_calls([mock.call(alarmManager. ALARM_TIMER,
+        self.mainApp.alarmManager.saveConfig.assert_has_calls([mock.call(self.mainApp.alarmManager. ALARM_TIMER,
                                                     ['[Unit]', 'Description=Alarm', '',
                                                      '[Timer]', 'OnCalendar=' + alarmDays +' '+ time + ' \n', '',
                                                      '[Install]', 'WantedBy=multi-user.target', '']),
-                                          mock.call(youtubedl.ALARM_SCRIPT,
+                                          mock.call(ALARM_SCRIPT,
                                                     ['#/bin/bash',
                                                     AlarmConfigLinux.MIN_VOLUME+'='+str(minVolume)+'\n',
                                                     AlarmConfigLinux.MAX_VOLUME+'='+str(maxVolume)+'\n',
@@ -407,7 +406,7 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
         growingSpeed=45
 
         mock_proc_check_output.configure_mock(side_effect=["Favorites\nAlarm\n", "active"])
-        Alarm.alarmManager.loadConfig.configure_mock(side_effect=[
+        self.mainApp.alarmManager.loadConfig.configure_mock(side_effect=[
                     ["[Unit]","Description=Alarm","",
                     "[Timer]","OnCalendar=Mon,Tue,Wed,Thu,Fri,Sat,Sun "+alarm_time,"",
                     "[Install]","WantedBy=multi-user.target",""],
@@ -424,7 +423,7 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
 
         rv = self.app.get('/alarm.html')
         self.assertEqual(mock_proc_check_output.call_count, 2)
-        self.assertEqual(Alarm.alarmManager.loadConfig.call_count, 2)
+        self.assertEqual(self.mainApp.alarmManager.loadConfig.call_count, 2)
 
         assert rv.status_code == 200
         assert str('name="'+AlarmConfigFlask.ALARM_TIME+'" value="'+alarm_time+'"').encode() in rv.data

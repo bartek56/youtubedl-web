@@ -9,9 +9,16 @@ from .Common.MailManager import Mail
 
 socketio = SocketIO(manage_session=False)
 
-def create_app():
+CONFIG_FILE="/etc/mediaserver/youtubedl.ini"
+ALARM_TIMER="/etc/mediaserver/alarm.timer"
+ALARM_SCRIPT="/etc/mediaserver/alarm.sh"
+
+def create_app(isTest=False):
     app = Flask(__name__)
     #app.config.from_object(Config) #TODO
+
+    if isTest:
+        app.config["TESTING"] = True
     app.secret_key = "super_extra_key"
     app.config["SESSION_TYPE"] = "filesystem"
     app.config["SESSION_PERMANENT"] = True
@@ -22,9 +29,7 @@ def create_app():
     socketio.init_app(app)
 
     ## Initialize component
-    CONFIG_FILE="/etc/mediaserver/youtubedl.ini"
-    ALARM_TIMER="/etc/mediaserver/alarm.timer"
-    ALARM_SCRIPT="/etc/mediaserver/alarm.sh"
+
     if app.debug == True: # pragma: no cover
         import sys
         sys.path.append("./tests")
