@@ -1,28 +1,30 @@
-from youtubedl import app, logger, youtubeManager, socketio
-from flask import render_template, session, send_file, send_from_directory
+from flask import Blueprint, render_template, session, send_file, send_from_directory
+from flask import current_app as app
+from youtubedlWeb import socketio
 
+from youtubedlWeb.Common.SocketMessages import PlaylistInfo_response, PlaylistMediaInfo_response
+from youtubedlWeb.Common.SocketMessages import MediaInfo_response, DownloadMedia_finish
+from youtubedlWeb.Common.SocketRequests import DownloadMediaRequest
 
-from Common.SocketMessages import PlaylistInfo_response, PlaylistMediaInfo_response
-from Common.SocketMessages import MediaInfo_response, DownloadMedia_finish
-from Common.SocketRequests import DownloadMediaRequest
+import youtubedlWeb.Common.YoutubeManager as YTManager
+import youtubedlWeb.Common.SocketMessages as SocketMessages
+import youtubedlWeb.Common.WebUtils as WebUtils
 
-import Common.YoutubeManager as YTManager
-import Common.SocketMessages as SocketMessages
-import WebAPI.WebUtils as WebUtils
+youtubeDwonlaoder_bp = Blueprint('youtubeDownloader', __name__)
 
-@app.route('/manifest.json')
+@youtubeDwonlaoder_bp.route('/manifest.json')
 def manifestMain():
     return send_from_directory('static', 'youtubedl_manifest.json')
 
 def downloadMediaOfType(url, type):
     if type == "mp3":
-        return youtubeManager.download_mp3(url)
+        return app.youtubeManager.download_mp3(url)
     elif type == "360p":
-        return youtubeManager.download_360p(url)
+        return app.youtubeManager.download_360p(url)
     elif type == "720p":
-        return youtubeManager.download_720p(url)
+        return app.youtubeManager.download_720p(url)
     elif type =="4k":
-        return youtubeManager.download_4k(url)
+        return app.youtubeManager.download_4k(url)
 
 def downloadSongsFromList(listOfMedia, downloadType):
     downloadedFiles = []
@@ -35,7 +37,7 @@ def downloadSongsFromList(listOfMedia, downloadType):
             error = "Failed to download song with index " + str(index)
             #TODO
             #PlaylistMediaInfo_response().sendError(error)
-            logger.error(error)
+            app.logger.error(error)
             continue
         numberOfDownloadedSongs+=1
         data:YTManager.YoutubeClipData = resultOfMedia.data()
@@ -50,10 +52,10 @@ def downloadSongsFromList(listOfMedia, downloadType):
     return downloadedFiles
 
 def downloadPlaylist(url, downloadType):
-        resultOfPlaylist = youtubeManager.getPlaylistInfo(url)
+        resultOfPlaylist = app.youtubeManager.getPlaylistInfo(url)
         if resultOfPlaylist.IsFailed():
             DownloadMedia_finish().sendError("Failed to get info playlist")
-            logger.error("Error to download media: %s", resultOfPlaylist.error())
+            app.logger.error("Error to download media: %s", resultOfPlaylist.error())
             return
         ytData:YTManager.PlaylistInfo = resultOfPlaylist.data()
         playlistName = ytData.playlistName
@@ -65,10 +67,10 @@ def downloadPlaylist(url, downloadType):
         DownloadMedia_finish().sendMessage(randomHash)
 
 def downloadSingle(url, downloadType):
-        result = youtubeManager.getMediaInfo(url)
+        result = app.youtubeManager.getMediaInfo(url)
         if result.IsFailed():
             DownloadMedia_finish().sendError(result.error())
-            logger.error("Failed download from url %s - error: %s", url, result.error())
+            app.logger.error("Failed download from url %s - error: %s", url, result.error())
             return
         mediaInfo:YTManager.MediaInfo = result.data()
 
@@ -76,7 +78,7 @@ def downloadSingle(url, downloadType):
         result2 = downloadMediaOfType(url, downloadType)
 
         if result2.IsFailed():
-            logger.error("Failed with download media %s - %s", url, result2.error())
+            app.logger.error("Failed with download media %s - %s", url, result2.error())
             DownloadMedia_finish().sendError("problem with download media: " + result2.error())
             return
 
@@ -96,11 +98,11 @@ def downloadMedia(msg):
     else:
         downloadSingle(url, downloadType)
 
-@app.route('/download/<name>')
+@youtubeDwonlaoder_bp.route('/download/<name>')
 def download_file(name):
     if name not in session.keys():
         app.logger.error("key for download_file doesn't exist !!!!")
         return render_template('index.html')
     fileToDownload = session[name]
-    fullPath = youtubeManager.MUSIC_PATH + "/" + fileToDownload
+    fullPath = app.youtubeManager.MUSIC_PATH + "/" + fileToDownload
     return send_file(fullPath, as_attachment=True)

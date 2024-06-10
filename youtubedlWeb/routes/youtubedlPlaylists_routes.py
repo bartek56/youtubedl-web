@@ -1,14 +1,14 @@
 from flask import Blueprint, render_template, request, jsonify, flash, redirect, session
 from flask import current_app as app
-#from youtubedlWeb import socketio
+from youtubedlWeb import socketio
 from youtubedlWeb.Common.SocketRequests import ArchiveSongRequest, DownloadPlaylistsRequest
 from youtubedlWeb.Common.SocketMessages import DownloadPlaylists_finish, DownloadMediaFromPlaylist_finish, PlaylistInfo, PlaylistMediaInfo, PlaylistInfo_response, MediaFromPlaylist, DownloadMediaFromPlaylist_start, DownloadMediaFromPlaylistError
-import youtubedlWeb.WebAPI.WebUtils as WebUtils
+import youtubedlWeb.Common.WebUtils as WebUtils
 import os
 
-auth_bp = Blueprint('auth', __name__)
+youtubePlaylists_bp = Blueprint('youtubePlaylists', __name__)
 
-@auth_bp.route('/playlists.html')
+@youtubePlaylists_bp.route('/playlists.html')
 def playlists():
         remoteAddress = request.remote_addr
 
@@ -21,7 +21,7 @@ def playlists():
 
         return render_template('playlists.html', playlists_data=data, path=path)
 
-@auth_bp.route('/playlists',methods = ['POST', 'GET'])
+@youtubePlaylists_bp.route('/playlists',methods = ['POST', 'GET'])
 def playlists_request():
     if request.method == 'POST':
         if 'add' in request.form:
@@ -66,7 +66,7 @@ def playlists_request():
         app.logger.debug("error")
         return redirect('playlists.html')
 
-#@socketio.on(DownloadPlaylistsRequest.message)
+@socketio.on(DownloadPlaylistsRequest.message)
 def handle_message(msg):
     playlistsDir = app.youtubeConfig.getPath()
     if playlistsDir == None:
@@ -135,7 +135,7 @@ def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia):
         DownloadMediaFromPlaylist_finish().sendMessage(PlaylistMediaInfo(songData.playlistIndex, filename.replace(".mp3", ""), ""))
     return songCounter
 
-#@socketio.on(ArchiveSongRequest.message)
+@socketio.on(ArchiveSongRequest.message)
 def archiveSong(msg):
     archiveSong = ArchiveSongRequest(msg).archiveSong
     hash = app.youtubeManager.getMediaHashFromLink(archiveSong.ytHash)
@@ -151,9 +151,8 @@ def archiveSong(msg):
     with open(archiveFilenameWithPath, 'a') as file:
         file.write(newSongForArchive)
 
-#@app.route('/getLinkOfPlaylist', methods=['GET'])
+@youtubePlaylists_bp.route('/getLinkOfPlaylist', methods=['GET'])
 def getLinkOfPlaylist():
     playlistName = request.args.get('playlistName')
     url = app.youtubeConfig.getUrlOfPlaylist(playlistName)
     return jsonify(url)
-

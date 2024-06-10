@@ -1,6 +1,0 @@
-include youtubedlWeb/youtubedl.py
-recursive-include youtubedlWeb/templates *
-recursive-include youtubedlWeb/static *
-recursive-include youtubedlWeb/Common *
-recursive-include youtubedlWeb/WebAPI *
-include requirements.txt

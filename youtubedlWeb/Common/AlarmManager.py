@@ -1,4 +1,4 @@
-from Common.AlarmEnums import AlarmConfigFlask, AlarmConfigLinux, SystemdCommand
+from .AlarmEnums import AlarmConfigFlask, AlarmConfigLinux, SystemdCommand
 
 import logging
 logger = logging.getLogger(__name__)

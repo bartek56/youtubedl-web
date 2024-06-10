@@ -1,49 +1,44 @@
-from Common.AlarmEnums import SystemdCommand, AlarmConfigFlask
-from youtubedl import logger, alarmManager
+from youtubedlWeb.Common.AlarmEnums import SystemdCommand, AlarmConfigFlask
+from flask import Blueprint
 from flask import current_app as app
 
 from flask import render_template, request, flash, send_from_directory
-from WebAPI import WebUtils
+from youtubedlWeb.Common import WebUtils
 
-if app.debug == True: # pragma: no cover
-    import sys
-    sys.path.append("./tests")
-    import SubprocessDebug as subprocess
-else:
-    import subprocess
+alarm_bp = Blueprint('alarm', __name__)
 
-@app.route('/alarm/manifest.json')
+@alarm_bp.route('/alarm/manifest.json')
 def manifest():
     return send_from_directory('static', 'alarm_manifest.json')
 
-@app.route('/alarm_test_start')
+@alarm_bp.route('/alarm_test_start')
 def alarmTestStart():
-    logger.debug('alarm test start')
-    subprocess.run(SystemdCommand.START_ALARM_SERVICE, shell=True)
+    app.logger.debug('alarm test start')
+    app.subprocess.run(SystemdCommand.START_ALARM_SERVICE, shell=True)
     return "Nothing"
 
-@app.route('/alarm_test_stop')
+@alarm_bp.route('/alarm_test_stop')
 def alarmTestStop():
-    logger.debug('alarm test stop')
-    subprocess.run(SystemdCommand.STOP_ALARM_SERVICE, shell=True)
-    subprocess.run('/usr/bin/mpc stop', shell=True)
-    return render_template("alarm.html", **alarmManager.loadAlarmConfig())
+    app.logger.debug('alarm test stop')
+    app.subprocess.run(SystemdCommand.STOP_ALARM_SERVICE, shell=True)
+    app.subprocess.run('/usr/bin/mpc stop', shell=True)
+    return render_template("alarm.html", **app.alarmManager.loadAlarmConfig())
 
-@app.route('/alarm_on')
+@alarm_bp.route('/alarm_on')
 def alarmOn():
-    logger.debug("alarm on")
-    subprocess.run(SystemdCommand.ENABLE_ALARM_TIMER, shell=True)
-    subprocess.run(SystemdCommand.START_ALARM_TIMER, shell=True)
-    return render_template("alarm.html", **alarmManager.loadAlarmConfig())
+    app.logger.debug("alarm on")
+    app.subprocess.run(SystemdCommand.ENABLE_ALARM_TIMER, shell=True)
+    app.subprocess.run(SystemdCommand.START_ALARM_TIMER, shell=True)
+    return render_template("alarm.html", **app.alarmManager.loadAlarmConfig())
 
-@app.route('/alarm_off')
+@alarm_bp.route('/alarm_off')
 def alarmOff():
-    logger.debug('alarm off')
-    subprocess.run(SystemdCommand.STOP_ALARM_TIMER, shell=True)
-    subprocess.run(SystemdCommand.DISABLE_ALARM_TIMER, shell=True)
+    app.logger.debug('alarm off')
+    app.subprocess.run(SystemdCommand.STOP_ALARM_TIMER, shell=True)
+    app.subprocess.run(SystemdCommand.DISABLE_ALARM_TIMER, shell=True)
     return "Nothing"
 
-@app.route('/alarm.html')
+@alarm_bp.route('/alarm.html')
 def alarm():
     remoteAddress = request.remote_addr
 
@@ -52,11 +47,11 @@ def alarm():
         #    return alert_info2("Alarm timer doesn't exist")
         #elif os.path.isfile("/etc/mediaserver/alarm.sh") == False:
         #    return alert_info2("Alarm script doesn't exist")
-        return render_template("alarm.html", **alarmManager.loadAlarmConfig())
+        return render_template("alarm.html", **app.alarmManager.loadAlarmConfig())
     else:
         return WebUtils.alert_info("You do not have access to alarm settings")
 
-@app.route('/save_alarm', methods = ['POST', 'GET'])
+@alarm_bp.route('/save_alarm', methods = ['POST', 'GET'])
 def save_alarm_html():
     if request.method == 'POST':
         time = request.form[AlarmConfigFlask.ALARM_TIME]
@@ -93,28 +88,28 @@ def save_alarm_html():
         if "alarm_active" in request.form:
             alarmIsEnable = True
 
-        alarmManager.updateAlarmConfig(alarmDays,time,minVolume,maxVolume,defaultVolume,growingVolume,growingSpeed,
+        app.alarmManager.updateAlarmConfig(alarmDays,time,minVolume,maxVolume,defaultVolume,growingVolume,growingSpeed,
                         alarmPlaylist,alarmMode)
 
         if alarmIsEnable:
-            p = subprocess.run(SystemdCommand.STOP_ALARM_TIMER, shell=True)
+            p = app.subprocess.run(SystemdCommand.STOP_ALARM_TIMER, shell=True)
             if p.returncode != 0:
                 flash("Failed to restart alarm timer", 'danger')
-                return render_template("alarm.html", **alarmManager.loadAlarmConfig())
+                return render_template("alarm.html", **app.alarmManager.loadAlarmConfig())
 
-        p = subprocess.run(SystemdCommand.DAEMON_RELOAD, shell=True)
+        p = app.subprocess.run(SystemdCommand.DAEMON_RELOAD, shell=True)
         if p.returncode != 0:
                 flash("Failed to daemon-reload", 'danger')
-                return render_template("alarm.html", **alarmManager.loadAlarmConfig())
+                return render_template("alarm.html", **app.alarmManager.loadAlarmConfig())
 
         if alarmIsEnable:
-            p = subprocess.run(SystemdCommand.START_ALARM_TIMER, shell=True)
+            p = app.subprocess.run(SystemdCommand.START_ALARM_TIMER, shell=True)
             if p.returncode != 0:
                 flash("Failed to start alarm timer", 'danger')
-                return render_template("alarm.html", **alarmManager.loadAlarmConfig())
+                return render_template("alarm.html", **app.alarmManager.loadAlarmConfig())
 
-        logger.info("alarm saved, systemctl daemon-reload")
+        app.logger.info("alarm saved, systemctl daemon-reload")
 
         flash("Successfull saved alarm", 'success')
 
-    return render_template("alarm.html", **alarmManager.loadAlarmConfig())
+    return render_template("alarm.html", **app.alarmManager.loadAlarmConfig())

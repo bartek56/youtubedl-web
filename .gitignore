@@ -4,6 +4,9 @@
 
 #python
 __pycache__
+build
+dist
+*-info
 
 #Flask
 youtubedlWeb/static/bootstrap-*
