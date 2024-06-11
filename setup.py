@@ -13,7 +13,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'youtubedlWeb=youtubedlWeb.youtubedlWeb:main',
+            'youtubedlWeb=youtubedlWeb.youtubedl:main',
         ],
     },
     author='Bartosz Brzozowski',

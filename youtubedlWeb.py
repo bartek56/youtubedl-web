@@ -2,6 +2,7 @@ from youtubedlWeb import create_app, socketio
 
 app = create_app()
 
+#script for running from repository
 def main():
     socketio.run(app)
 
