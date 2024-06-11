@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify, flash, redirect, session
 from flask import current_app as app
-from youtubedlWeb import socketio
 from youtubedlWeb.Common.SocketRequests import ArchiveSongRequest, DownloadPlaylistsRequest
 from youtubedlWeb.Common.SocketMessages import DownloadPlaylists_finish, DownloadMediaFromPlaylist_finish, PlaylistInfo, PlaylistMediaInfo, PlaylistInfo_response, MediaFromPlaylist, DownloadMediaFromPlaylist_start, DownloadMediaFromPlaylistError
 import youtubedlWeb.Common.WebUtils as WebUtils
@@ -66,47 +65,64 @@ def playlists_request():
         app.logger.debug("error")
         return redirect('playlists.html')
 
-@socketio.on(DownloadPlaylistsRequest.message)
-def handle_message(msg):
-    playlistsDir = app.youtubeConfig.getPath()
-    if playlistsDir == None:
-        DownloadPlaylists_finish().sendError("Playlist dir doesn't exist")
-        return
-
-    if len(msg) == 0:
-        app.logger.debug("download all playlists")
-        playlists = app.youtubeConfig.getPlaylists()
-        numberOfDownloadedSongs = 0
-        if len(playlists) == 0:
-            DownloadPlaylists_finish().sendError("Your music collection is empty")
+def register_socketio_youtubePlaylist(socketio):
+    @socketio.on(DownloadPlaylistsRequest.message)
+    def handle_message(msg):
+        playlistsDir = app.youtubeConfig.getPath()
+        if playlistsDir == None:
+            DownloadPlaylists_finish().sendError("Playlist dir doesn't exist")
             return
-        for playlist in playlists:
-            resultOfPlaylist = app.youtubeManager.getPlaylistInfo(playlist.link)
+
+        if len(msg) == 0:
+            app.logger.debug("download all playlists")
+            playlists = app.youtubeConfig.getPlaylists()
+            numberOfDownloadedSongs = 0
+            if len(playlists) == 0:
+                DownloadPlaylists_finish().sendError("Your music collection is empty")
+                return
+            for playlist in playlists:
+                resultOfPlaylist = app.youtubeManager.getPlaylistInfo(playlist.link)
+                if resultOfPlaylist.IsFailed():
+                    DownloadPlaylists_finish().sendError("Failed to get info playlist")
+                    app.logger.error("Error to download media: %s", resultOfPlaylist.error())
+                    return
+                ytData = resultOfPlaylist.data()
+                #TODO validate difference between names of playlist the same as MediaServerDownloader
+                #playlistName = ytData.playlistName
+                playlistName = playlist.name
+                PlaylistInfo_response().sendMessage(PlaylistInfo(playlistName, ytData.listOfMedia))
+                numberOfDownloadedSongs += downloadSongsFromPlaylist(playlistsDir, playlistName, ytData.listOfMedia)
+        else:
+            downloadPlaylistRequest = DownloadPlaylistsRequest(msg).downloadPlaylists
+            playlistName = downloadPlaylistRequest.playlistName
+    
+            app.logger.debug("download playlist " + playlistName)
+    
+            resultOfPlaylist = app.youtubeManager.getPlaylistInfo(downloadPlaylistRequest.link)
             if resultOfPlaylist.IsFailed():
                 DownloadPlaylists_finish().sendError("Failed to get info playlist")
                 app.logger.error("Error to download media: %s", resultOfPlaylist.error())
                 return
-            ytData = resultOfPlaylist.data()
-            #TODO validate difference between names of playlist the same as MediaServerDownloader
-            #playlistName = ytData.playlistName
-            playlistName = playlist.name
+            ytData:PlaylistInfo = resultOfPlaylist.data()
             PlaylistInfo_response().sendMessage(PlaylistInfo(playlistName, ytData.listOfMedia))
-            numberOfDownloadedSongs += downloadSongsFromPlaylist(playlistsDir, playlistName, ytData.listOfMedia)
-    else:
-        downloadPlaylistRequest = DownloadPlaylistsRequest(msg).downloadPlaylists
-        playlistName = downloadPlaylistRequest.playlistName
-
-        app.logger.debug("download playlist " + playlistName)
-
-        resultOfPlaylist = app.youtubeManager.getPlaylistInfo(downloadPlaylistRequest.link)
-        if resultOfPlaylist.IsFailed():
-            DownloadPlaylists_finish().sendError("Failed to get info playlist")
-            app.logger.error("Error to download media: %s", resultOfPlaylist.error())
+            numberOfDownloadedSongs = downloadSongsFromPlaylist(playlistsDir, playlistName, ytData.listOfMedia)
+        DownloadPlaylists_finish().sendMessage(numberOfDownloadedSongs)
+   
+    @socketio.on(ArchiveSongRequest.message)
+    def archiveSong(msg):
+        archiveSong = ArchiveSongRequest(msg).archiveSong
+        hash = app.youtubeManager.getMediaHashFromLink(archiveSong.ytHash)
+        if hash is None:
+            app.logger.error("failed to get hash")
             return
-        ytData:PlaylistInfo = resultOfPlaylist.data()
-        PlaylistInfo_response().sendMessage(PlaylistInfo(playlistName, ytData.listOfMedia))
-        numberOfDownloadedSongs = downloadSongsFromPlaylist(playlistsDir, playlistName, ytData.listOfMedia)
-    DownloadPlaylists_finish().sendMessage(numberOfDownloadedSongs)
+        playlistsDir = app.youtubeConfig.getPath()
+        archiveFilename = app.youtubeManager.mp3DownloadedListFileName
+        playlistName = archiveSong.platlistName
+        archiveFilenameWithPath = "%s/%s/%s"%(playlistsDir,playlistName,archiveFilename)
+        newSongForArchive = "youtube %s\n"%(hash)
+        app.logger.debug("archive song: " + playlistName + "  "+ hash + " in file " + archiveFilenameWithPath)
+        with open(archiveFilenameWithPath, 'a') as file:
+            file.write(newSongForArchive)
 
 def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia):
     path=os.path.join(playlistsDir, playlistName)
@@ -135,21 +151,7 @@ def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia):
         DownloadMediaFromPlaylist_finish().sendMessage(PlaylistMediaInfo(songData.playlistIndex, filename.replace(".mp3", ""), ""))
     return songCounter
 
-@socketio.on(ArchiveSongRequest.message)
-def archiveSong(msg):
-    archiveSong = ArchiveSongRequest(msg).archiveSong
-    hash = app.youtubeManager.getMediaHashFromLink(archiveSong.ytHash)
-    if hash is None:
-        app.logger.error("failed to get hash")
-        return
-    playlistsDir = app.youtubeConfig.getPath()
-    archiveFilename = app.youtubeManager.mp3DownloadedListFileName
-    playlistName = archiveSong.platlistName
-    archiveFilenameWithPath = "%s/%s/%s"%(playlistsDir,playlistName,archiveFilename)
-    newSongForArchive = "youtube %s\n"%(hash)
-    app.logger.debug("archive song: " + playlistName + "  "+ hash + " in file " + archiveFilenameWithPath)
-    with open(archiveFilenameWithPath, 'a') as file:
-        file.write(newSongForArchive)
+
 
 @youtubePlaylists_bp.route('/getLinkOfPlaylist', methods=['GET'])
 def getLinkOfPlaylist():

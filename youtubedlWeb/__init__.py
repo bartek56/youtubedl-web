@@ -60,8 +60,8 @@ def create_app(isTest=False):
 
     # Import i rejestracja blueprintów
     from .routes.main_routes import main_bp
-    from .routes.youtubedlPlaylists_routes import youtubePlaylists_bp
-    from .routes.youtubeDownloader_routes import youtubeDwonlaoder_bp
+    from .routes.youtubedlPlaylists_routes import youtubePlaylists_bp, register_socketio_youtubePlaylist
+    from .routes.youtubeDownloader_routes import youtubeDwonlaoder_bp, register_socketio_youtubeDownlaoder
     from .routes.alarm_routes import alarm_bp
     from .routes.mail_routes import mail_bp
     app.register_blueprint(main_bp)
@@ -69,5 +69,8 @@ def create_app(isTest=False):
     app.register_blueprint(youtubeDwonlaoder_bp)
     app.register_blueprint(alarm_bp)
     app.register_blueprint(mail_bp)
+
+    register_socketio_youtubeDownlaoder(socketio)
+    register_socketio_youtubePlaylist(socketio)
 
     return app

@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, session, send_file, send_from_directory
 from flask import current_app as app
-from youtubedlWeb import socketio
 
 from youtubedlWeb.Common.SocketMessages import PlaylistInfo_response, PlaylistMediaInfo_response
 from youtubedlWeb.Common.SocketMessages import MediaInfo_response, DownloadMedia_finish
@@ -88,15 +87,16 @@ def downloadSingle(url, downloadType):
         session[randomHash] = filename
         DownloadMedia_finish().sendMessage(randomHash)
 
-@socketio.on(DownloadMediaRequest.message)
-def downloadMedia(msg):
-    response = DownloadMediaRequest(msg).downloadMedia
-    url = response.link
-    downloadType = response.type
-    if "playlist?list" in url and "watch?v" not in url:
-        downloadPlaylist(url, downloadType)
-    else:
-        downloadSingle(url, downloadType)
+def register_socketio_youtubeDownlaoder(socketio):
+    @socketio.on(DownloadMediaRequest.message)
+    def downloadMedia(msg):
+        response = DownloadMediaRequest(msg).downloadMedia
+        url = response.link
+        downloadType = response.type
+        if "playlist?list" in url and "watch?v" not in url:
+            downloadPlaylist(url, downloadType)
+        else:
+            downloadSingle(url, downloadType)
 
 @youtubeDwonlaoder_bp.route('/download/<name>')
 def download_file(name):
