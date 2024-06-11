@@ -1,11 +1,11 @@
 from typing import List
 from youtubedlWeb.Common.AlarmEnums import AlarmConfigFlask, AlarmConfigLinux, SystemdCommand
-#from youtubedlWeb.WebAPI.Alarm import alarmManager
 import unittest
 import unittest.mock as mock
 from unittest.mock import MagicMock
 import logging
 from youtubedlWeb import create_app, ALARM_SCRIPT, ALARM_TIMER
+from youtubedlWeb.config import ConfigTesting
 
 
 class FlaskClientAlarmTestCase(unittest.TestCase):
@@ -18,7 +18,7 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
         self.empty=""
 
     def setUp(self):
-        self.mainApp = create_app(True)
+        self.mainApp = create_app(config=ConfigTesting)
         self.app = self.mainApp.test_client()
         self.mainApp.alarmManager.loadConfig = MagicMock()
         self.mainApp.alarmManager.saveConfig = MagicMock()

@@ -1,5 +1,6 @@
 from typing import List
 from youtubedlWeb import create_app, socketio
+from youtubedlWeb.config import ConfigTesting
 import unittest
 import unittest.mock as mock
 from unittest.mock import MagicMock
@@ -89,7 +90,7 @@ class FlaskQuickDownload(unittest.TestCase, FlaskToolsForUT):
         super(FlaskQuickDownload, self).__init__(*args, **kwargs)
 
     def setUp(self):
-        self.mainApp = create_app(True)
+        self.mainApp = create_app(config=ConfigTesting)
         self.app = self.mainApp.test_client()
         self.socketio_test_client = socketio.test_client(self.mainApp)
         self.mailManager = self.mainApp.mailManager
@@ -228,7 +229,7 @@ class FlaskQuickDownloadPlaylists(unittest.TestCase, FlaskToolsForUT):
         super(FlaskQuickDownloadPlaylists, self).__init__(*args, **kwargs)
 
     def setUp(self):
-        self.mainApp = create_app(True)
+        self.mainApp = create_app(config=ConfigTesting)
         self.app = self.mainApp.test_client()
         self.socketio_test_client = socketio.test_client(self.mainApp)
         self.mailManager = self.mainApp.mailManager
@@ -357,7 +358,7 @@ class FlaskClientConfigurePlaylists(unittest.TestCase):
         super(FlaskClientConfigurePlaylists, self).__init__(*args, **kwargs)
 
     def setUp(self):
-        self.mainApp = create_app(True)
+        self.mainApp = create_app(config=ConfigTesting)
         self.app = self.mainApp.test_client()
 
     @mock.patch.object(YoutubeConfig, 'removePlaylist')

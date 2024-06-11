@@ -2,7 +2,7 @@ import logging
 from flask import Flask
 from flask_socketio import SocketIO
 from flask_session import Session
-#from config import Config
+from .config import Config
 from .Common.YoutubeManager import YoutubeManager, YoutubeConfig
 from .Common.AlarmManager import AlarmManager
 from .Common.MailManager import Mail
@@ -13,22 +13,12 @@ CONFIG_FILE="/etc/mediaserver/youtubedl.ini"
 ALARM_TIMER="/etc/mediaserver/alarm.timer"
 ALARM_SCRIPT="/etc/mediaserver/alarm.sh"
 
-def create_app(isTest=False):
+def create_app(config=Config):
     app = Flask(__name__)
-    #app.config.from_object(Config) #TODO
-
-    if isTest:
-        app.config["TESTING"] = True
-    app.secret_key = "super_extra_key"
-    app.config["SESSION_TYPE"] = "filesystem"
-    app.config["SESSION_PERMANENT"] = True
-
-    # Inicjalizacja rozszerzeń
+    app.config.from_object(config)
 
     Session(app)
     socketio.init_app(app)
-
-    ## Initialize component
 
     if app.debug == True: # pragma: no cover
         import sys
@@ -36,10 +26,10 @@ def create_app(isTest=False):
         import SubprocessDebug as subprocess
     else:
         import subprocess
-    app.mailManager = Mail()
 
     app.subprocess = subprocess
 
+    app.mailManager = Mail()
     app.youtubeConfig = YoutubeConfig()
     app.youtubeConfig.initialize(CONFIG_FILE)
 
@@ -58,7 +48,6 @@ def create_app(isTest=False):
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)
 
-    # Import i rejestracja blueprintów
     from .routes.main_routes import main_bp
     from .routes.youtubedlPlaylists_routes import youtubePlaylists_bp, register_socketio_youtubePlaylist
     from .routes.youtubeDownloader_routes import youtubeDwonlaoder_bp, register_socketio_youtubeDownlaoder

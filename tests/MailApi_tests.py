@@ -3,6 +3,7 @@ import unittest
 import unittest.mock as mock
 from youtubedlWeb.Common.MailManager import Mail
 from youtubedlWeb import create_app
+from youtubedlWeb.config import ConfigTesting
 
 class FlaskClientMailTestCase(unittest.TestCase):
 
@@ -13,7 +14,7 @@ class FlaskClientMailTestCase(unittest.TestCase):
         self.empty=""
 
     def setUp(self):
-        self.mainApp = create_app(True)
+        self.mainApp = create_app(config=ConfigTesting)
         self.app = self.mainApp.test_client()
         self.mailManager = self.mainApp.mailManager
 
