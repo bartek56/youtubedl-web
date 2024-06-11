@@ -1,0 +1,2 @@
+recursive-include youtubedlWeb/static *
+recursive-include youtubedlWeb/templates *

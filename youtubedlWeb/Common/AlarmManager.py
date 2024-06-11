@@ -76,15 +76,21 @@ class AlarmManager:
             else:
                 break
 
-        out = self.subprocess.check_output("mpc lsplaylists | grep -v m3u", shell=True, text=True)
+        isMpcSupported = True
+
         playlists = []
-        musicPlaylistName=""
-        for x in out:
-            if x != '\n':
-                musicPlaylistName += x
-            else:
-                playlists.append(musicPlaylistName)
-                musicPlaylistName=""
+        try:
+            out = self.subprocess.check_output("mpc lsplaylists | grep -v m3u", shell=True, text=True)
+        except:
+            isMpcSupported = False
+        if isMpcSupported:
+            musicPlaylistName=""
+            for x in out:
+                if x != '\n':
+                    musicPlaylistName += x
+                else:
+                    playlists.append(musicPlaylistName)
+                    musicPlaylistName=""
 
         alarmIsOn = "unchecked"
         try:

@@ -28,8 +28,6 @@ def playlists_request():
             link = request.form['link']
             app.logger.debug("add playlist %s %s", playlist_name, link)
             allPlaylists = app.youtubeConfig.getPlaylistsName()
-            print(allPlaylists)
-            print(playlist_name)
             if playlist_name in allPlaylists:
                 info = "Playlist " + playlist_name + " was updated"
             else:
@@ -65,6 +63,12 @@ def playlists_request():
         app.logger.debug("error")
         return redirect('playlists.html')
 
+@youtubePlaylists_bp.route('/getLinkOfPlaylist', methods=['GET'])
+def getLinkOfPlaylist():
+    playlistName = request.args.get('playlistName')
+    url = app.youtubeConfig.getUrlOfPlaylist(playlistName)
+    return jsonify(url)
+
 def register_socketio_youtubePlaylist(socketio):
     @socketio.on(DownloadPlaylistsRequest.message)
     def handle_message(msg):
@@ -95,9 +99,8 @@ def register_socketio_youtubePlaylist(socketio):
         else:
             downloadPlaylistRequest = DownloadPlaylistsRequest(msg).downloadPlaylists
             playlistName = downloadPlaylistRequest.playlistName
-    
             app.logger.debug("download playlist " + playlistName)
-    
+
             resultOfPlaylist = app.youtubeManager.getPlaylistInfo(downloadPlaylistRequest.link)
             if resultOfPlaylist.IsFailed():
                 DownloadPlaylists_finish().sendError("Failed to get info playlist")
@@ -107,7 +110,7 @@ def register_socketio_youtubePlaylist(socketio):
             PlaylistInfo_response().sendMessage(PlaylistInfo(playlistName, ytData.listOfMedia))
             numberOfDownloadedSongs = downloadSongsFromPlaylist(playlistsDir, playlistName, ytData.listOfMedia)
         DownloadPlaylists_finish().sendMessage(numberOfDownloadedSongs)
-   
+
     @socketio.on(ArchiveSongRequest.message)
     def archiveSong(msg):
         archiveSong = ArchiveSongRequest(msg).archiveSong
@@ -150,11 +153,3 @@ def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia):
         session[randomHash] = filename
         DownloadMediaFromPlaylist_finish().sendMessage(PlaylistMediaInfo(songData.playlistIndex, filename.replace(".mp3", ""), ""))
     return songCounter
-
-
-
-@youtubePlaylists_bp.route('/getLinkOfPlaylist', methods=['GET'])
-def getLinkOfPlaylist():
-    playlistName = request.args.get('playlistName')
-    url = app.youtubeConfig.getUrlOfPlaylist(playlistName)
-    return jsonify(url)
