@@ -8,7 +8,9 @@ from unittest.mock import MagicMock
 from youtubedlWeb.Common.SocketMessages import PlaylistInfo_response, PlaylistInfo, MediaFromPlaylist, DownloadMediaFromPlaylist_start
 from youtubedlWeb.Common.SocketMessages import DownloadMediaFromPlaylist_finish, DownloadPlaylists_finish, PlaylistMediaInfo, MediaInfo
 from youtubedlWeb.Common.SocketRequests import DownloadMediaRequest, DownloadPlaylistsRequest
-from youtubedlWeb.Common.YoutubeManager import PlaylistConfig, ResultOfDownload, YoutubeManager, YoutubeConfig, AudioData
+from youtubedlWeb.Common.YoutubeManager import YoutubeManager
+from youtubedlWeb.Common.YoutubeConfig import YoutubeConfig
+from youtubedlWeb.Common.YoutubeTypes import PlaylistConfig, ResultOfDownload, AudioData
 
 #from Common.YoutubeManager import YoutubeManager, YoutubeConfig, ResultOfDownload, PlaylistConfig
 import youtubedlWeb.Common.YoutubeManager as YTManager

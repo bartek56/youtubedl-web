@@ -1,7 +1,9 @@
 import unittest
 import unittest.mock as mock
 from unittest.mock import MagicMock
-from youtubedlWeb.Common.YoutubeManager import YoutubeManager, MediaServerDownloader, YoutubeConfig, PlaylistInfo, MediaFromPlaylist, MediaInfo, AudioData, VideoData, ResultOfDownload
+from youtubedlWeb.Common.YoutubeManager import YoutubeManager, MediaServerDownloader
+from youtubedlWeb.Common.YoutubeConfig import YoutubeConfig
+from youtubedlWeb.Common.YoutubeTypes import PlaylistInfo, MediaFromPlaylist, MediaInfo, AudioData, VideoData, ResultOfDownload
 from configparser import ConfigParser
 import yt_dlp
 from yt_dlp import utils
