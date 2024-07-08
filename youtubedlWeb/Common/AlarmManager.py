@@ -93,6 +93,7 @@ class AlarmManager:
                     musicPlaylistName=""
 
         alarmIsOn = "unchecked"
+        nextAlarm = ""
         try:
             output = self.subprocess.check_output(SystemdCommand.IS_ACTIVE_ALARM_TIMER, shell=True, text=True)
             #exception is called when alarm is disabled
@@ -100,6 +101,7 @@ class AlarmManager:
                 alarmIsOn = "unchecked"
             else:
                 alarmIsOn = "checked"
+                nextAlarm = "The next alarm for:" + self.getTimeOfNextAlarm()
         except self.subprocess.CalledProcessError as grepexc:
             logger.info("Exception - alarm is disabled")
             alarmIsOn = "unchecked"
@@ -121,13 +123,17 @@ class AlarmManager:
                 AlarmConfigFlask.MAX_VOLUME:maxVolume,
                 AlarmConfigFlask.DEFAULT_VOLUME:defaultVolume,
                 AlarmConfigFlask.GROWING_VOLUME:growingVolume,
-                AlarmConfigFlask.GROWING_SPEED:growingSpeed}
+                AlarmConfigFlask.GROWING_SPEED:growingSpeed,
+                AlarmConfigFlask.NEXT_ALARM:nextAlarm}
 
     def loadConfig(self, configFile):
         f = open(configFile, "r")
         content = f.readlines()
         f.close()
         return content
+
+    def getTimeOfNextAlarm(self):
+        return str(self.subprocess.check_output(SystemdCommand.STATUS_ALARM_TIMER + " | grep \"Trigger:\" | cut -d';' -f2- | sed -e \"s/ left//\"", shell=True, text=True))
 
     def updateAlarmConfig(self, alarmDays, time, minVolume, maxVolume, defaultVolume,
               growingVolume, growingSpeed, alarmPlaylist, alarmMode):
@@ -171,3 +177,8 @@ class AlarmManager:
         for x in content:
             f.write(x)
         f.close()
+
+if __name__ == "__main__":
+    import subprocess
+    alarmManager = AlarmManager(subprocess, "", "")
+    alarmManager.getTimeOfNextAlarm()

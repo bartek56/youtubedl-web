@@ -21,6 +21,7 @@ class AlarmConfigFlask():
     DEFAULT_VOLUME = "default_volume"
     GROWING_VOLUME = "growing_volume"
     GROWING_SPEED =  "growing_speed"
+    NEXT_ALARM = "next_alarm"
 
 class AlarmConfigLinux():
     THE_NEWEST_SONG =     "theNewestSongs"
@@ -35,6 +36,7 @@ class SystemdCommand():
     START_ALARM_TIMER =     "sudo /bin/systemctl start alarm.timer"
     START_ALARM_SERVICE =   "sudo /bin/systemctl start alarm.service"
     STOP_ALARM_TIMER =      "sudo /bin/systemctl stop alarm.timer"
+    STATUS_ALARM_TIMER =    "sudo /bin/systemctl status alarm.timer"
     STOP_ALARM_SERVICE =    "sudo /bin/systemctl stop alarm.service"
     ENABLE_ALARM_TIMER =    "sudo /bin/systemctl enable alarm.timer"
     DISABLE_ALARM_TIMER =   "sudo /bin/systemctl disable alarm.timer"
