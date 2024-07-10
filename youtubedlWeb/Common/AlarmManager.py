@@ -101,10 +101,20 @@ class AlarmManager:
                 alarmIsOn = "unchecked"
             else:
                 alarmIsOn = "checked"
-                nextAlarm = "The next alarm for:" + self.getTimeOfNextAlarm()
+                nextAlarm = "The next alarm for:" + self.getTimeOfService(SystemdCommand.STATUS_ALARM_TIMER)
         except self.subprocess.CalledProcessError as grepexc:
             logger.info("Exception - alarm is disabled")
             alarmIsOn = "unchecked"
+
+        nextSnooze = ""
+        try:
+            output = self.subprocess.check_output(SystemdCommand.IS_ACTIVE_ALARM_SNOOZE_TIMER, shell=True, text=True)
+            #exception is called when alarm is disabled
+            if "in" not in output:
+                nextSnooze= "The next snooze alarm for:" + self.getTimeOfService(SystemdCommand.STATUS_ALARM_SNOOZE_TIMER)
+
+        except self.subprocess.CalledProcessError as grepexc:
+            logger.info("Exception - alarm_snooze is disabled")
 
         return {AlarmConfigFlask.ALARM_TIME: time,
                 AlarmConfigFlask.THE_NEWEST_SONG:theNewestSongCheckBox,
@@ -124,7 +134,8 @@ class AlarmManager:
                 AlarmConfigFlask.DEFAULT_VOLUME:defaultVolume,
                 AlarmConfigFlask.GROWING_VOLUME:growingVolume,
                 AlarmConfigFlask.GROWING_SPEED:growingSpeed,
-                AlarmConfigFlask.NEXT_ALARM:nextAlarm}
+                AlarmConfigFlask.NEXT_ALARM:nextAlarm,
+                AlarmConfigFlask.NEXT_SNOOZE:nextSnooze}
 
     def loadConfig(self, configFile):
         f = open(configFile, "r")
@@ -132,8 +143,8 @@ class AlarmManager:
         f.close()
         return content
 
-    def getTimeOfNextAlarm(self):
-        return str(self.subprocess.check_output(SystemdCommand.STATUS_ALARM_TIMER + " | grep \"Trigger:\" | cut -d';' -f2- | sed -e \"s/ left//\"", shell=True, text=True))
+    def getTimeOfService(self, systemdService:SystemdCommand):
+        return str(self.subprocess.check_output(systemdService + " | grep \"Trigger:\" | cut -d';' -f2- | sed -e \"s/ left//\"", shell=True, text=True))
 
     def updateAlarmConfig(self, alarmDays, time, minVolume, maxVolume, defaultVolume,
               growingVolume, growingSpeed, alarmPlaylist, alarmMode):
@@ -181,4 +192,4 @@ class AlarmManager:
 if __name__ == "__main__":
     import subprocess
     alarmManager = AlarmManager(subprocess, "", "")
-    alarmManager.getTimeOfNextAlarm()
+    alarmManager.getTimeOfService(SystemdCommand.STATUS_ALARM_TIMER)

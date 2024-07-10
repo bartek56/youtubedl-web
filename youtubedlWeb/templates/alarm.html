@@ -51,6 +51,17 @@
               }
               return true;
           });
+          $("#alarm_snooze_button").click(function (event)
+          {
+              var button = document.getElementById('alarm_snooze_button');
+              var alarmSnoozeStatus = document.getElementById('next_snooze')
+              alarmSnoozeStatus.hidden  = true;
+              var alarmStatus = document.getElementById('next_alarm')
+              alarmStatus.hidden  = false;
+
+              $.getJSON('/alarm_snooze_off', { }, function(data) { });
+              return false;
+          });
 
           var checkRadio = document.querySelector('input[name="alarm_mode"]:checked');
 
@@ -182,11 +193,28 @@
             </label>
           </div>
           <div id="alarm_status">
-            <!--{% if next_alarm|length > 1 %}-->
-                <br>
-                <p class="font-monospace">{{ next_alarm }}</p>
-                <br>
-            <!--{% endif %}-->
+              {% if next_snooze|length > 1 %}
+              <div id="next_alarm" hidden="true">
+              {% else %}
+              <div id="next_alarm">
+              {% endif %}
+                  <!--{% if next_alarm|length > 1 %}-->
+                  <br>
+                  <p class="font-monospace">{{ next_alarm }}</p>
+                  <br>
+                  <!--{% endif %}-->
+              </div>
+              {% if next_snooze|length > 1 %}
+              <div id="next_snooze">
+              {% else %}
+              <div id="next_snooze" hidden="true">
+              {% endif %}
+                  <!--{% if next_snooze|length > 1 %}-->
+                  <br>
+                  <p class="font-monospace">{{ next_snooze }}</p>
+                  <input type="button" id="alarm_snooze_button" value="stop_snooze" />
+                  <!--{% endif %}-->
+              </div>
           </div>
 
         </div>

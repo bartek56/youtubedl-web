@@ -37,8 +37,9 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
         growingVolume=9
         growingSpeed=45
         nextAlarm=" 4h"
+        nextSnooze=""
 
-        mock_proc_check_output.configure_mock(side_effect=[alarmPlaylistString, "active", nextAlarm])
+        mock_proc_check_output.configure_mock(side_effect=[alarmPlaylistString, "active", nextAlarm, "inactive", nextSnooze])
 
         self.mainApp.alarmManager.loadConfig.configure_mock(side_effect=[
                     ["[Unit]","Description=Alarm","",
@@ -57,7 +58,7 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
 
         alarmConfig = self.mainApp.alarmManager.loadAlarmConfig()
 
-        self.assertEqual(mock_proc_check_output.call_count, 3)
+        self.assertEqual(mock_proc_check_output.call_count, 4)
         self.assertEqual(self.mainApp.alarmManager.loadConfig.call_count, 2)
 
         self.assertEqual(alarmConfig[AlarmConfigFlask.ALARM_TIME], alarmTime)
@@ -91,7 +92,7 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
         growingVolume=9
         growingSpeed=45
 
-        mock_proc_check_output.configure_mock(side_effect=[alarmPlaylistString, "inactive"])
+        mock_proc_check_output.configure_mock(side_effect=[alarmPlaylistString, "inactive", "inactive"])
 
         self.mainApp.alarmManager.loadConfig.configure_mock(side_effect=[
                     ["[Unit]","Description=Alarm","",
@@ -110,7 +111,7 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
 
         alarmConfig = self.mainApp.alarmManager.loadAlarmConfig()
 
-        self.assertEqual(mock_proc_check_output.call_count, 2)
+        self.assertEqual(mock_proc_check_output.call_count, 3)
         self.assertEqual(self.mainApp.alarmManager.loadConfig.call_count, 2)
 
         self.assertEqual(alarmConfig[AlarmConfigFlask.ALARM_TIME], alarmTime)
@@ -216,7 +217,7 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
                                                     AlarmConfigLinux.PLAYLIST+'="'+alarmPlaylist+'"\n',
                                                     AlarmConfigLinux.THE_NEWEST_SONG+'=true\n', '', ''])])
 
-    @mock.patch('subprocess.check_output', side_effect=["Favorites\nAlarm\n", "active", " for 4h"])
+    @mock.patch('subprocess.check_output', side_effect=["Favorites\nAlarm\n", "active", " for 4h", "inactive"])
     @mock.patch('subprocess.run')
     def test_save_alarm_html(self, mock_subprocess_run, mock_subprocess_checkoutput):
         alarmDays="Mon,Tue,Wed"
@@ -285,7 +286,7 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
                                               mock.call(SystemdCommand.START_ALARM_TIMER, shell=True)])
 
 
-        self.assertEqual(mock_subprocess_checkoutput.call_count, 3)
+        self.assertEqual(mock_subprocess_checkoutput.call_count, 4)
         mock_subprocess_checkoutput.assert_has_calls([mock.call('mpc lsplaylists | grep -v m3u', shell=True, text=True),
                                                       mock.call(SystemdCommand.IS_ACTIVE_ALARM_TIMER, shell=True, text=True),
                                                       mock.call(SystemdCommand.STATUS_ALARM_TIMER+" | grep \"Trigger:\" | cut -d\';\' -f2- | sed -e \"s/ left//\"", shell=True, text=True)])
@@ -311,7 +312,7 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
         assert str('value="'+str(defaultVolume)+'" name="'+AlarmConfigFlask.DEFAULT_VOLUME+'">').encode() in rv.data
         assert b'<title>Media Server</title>' in rv.data
 
-    @mock.patch('subprocess.check_output', side_effect=["Favorites\nAlarm\n", "active", " for 4h"])
+    @mock.patch('subprocess.check_output', side_effect=["Favorites\nAlarm\n", "active", " for 4h", "inactive"])
     @mock.patch('subprocess.run')
     def test_save_alarm_html_2(self, mock_subprocess_run, mock_subprocess_checkoutput):
         alarmDays="Mon,Tue,Wed,Thu,Fri,Sat,Sun"
@@ -379,7 +380,7 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
                                               mock.call(SystemdCommand.DAEMON_RELOAD, shell=True),
                                               mock.call(SystemdCommand.START_ALARM_TIMER, shell=True)])
 
-        self.assertEqual(mock_subprocess_checkoutput.call_count, 3)
+        self.assertEqual(mock_subprocess_checkoutput.call_count, 4)
 
         mock_subprocess_checkoutput.assert_has_calls([mock.call('mpc lsplaylists | grep -v m3u', shell=True, text=True),
                                                       mock.call(SystemdCommand.IS_ACTIVE_ALARM_TIMER, shell=True, text=True),
@@ -414,7 +415,7 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
         growingVolume=7
         growingSpeed=45
 
-        mock_proc_check_output.configure_mock(side_effect=["Favorites\nAlarm\n", "active", " for 8h"])
+        mock_proc_check_output.configure_mock(side_effect=["Favorites\nAlarm\n", "active", " 8h", " inactive"])
         self.mainApp.alarmManager.loadConfig.configure_mock(side_effect=[
                     ["[Unit]","Description=Alarm","",
                     "[Timer]","OnCalendar=Mon,Tue,Wed,Thu,Fri,Sat,Sun "+alarm_time,"",
@@ -431,7 +432,7 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
                     ])
 
         rv = self.app.get('/alarm.html')
-        self.assertEqual(mock_proc_check_output.call_count, 3)
+        self.assertEqual(mock_proc_check_output.call_count, 4)
         self.assertEqual(self.mainApp.alarmManager.loadConfig.call_count, 2)
 
         assert rv.status_code == 200
@@ -451,6 +452,61 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
         assert str('value="'+str(minVolume)+'" name="'+AlarmConfigFlask.MIN_VOLUME+'">').encode()         in rv.data
         assert str('value="'+str(maxVolume)+'" name="'+AlarmConfigFlask.MAX_VOLUME+'">').encode()         in rv.data
         assert str('value="'+str(defaultVolume)+'" name="'+AlarmConfigFlask.DEFAULT_VOLUME+'">').encode() in rv.data
+        assert b'The next alarm for: 8h' in rv.data
+        assert b'<div id="next_alarm">' in rv.data
+        assert b'<div id="next_snooze" hidden="true">' in rv.data
+        assert b'<title>Media Server</title>' in rv.data
+
+    @mock.patch('subprocess.check_output')
+    def test_snooze_alarm_html(self, mock_proc_check_output):
+        alarm_time="06:50"
+        minVolume=16
+        maxVolume=55
+        defaultVolume=11
+        growingVolume=7
+        growingSpeed=45
+
+        mock_proc_check_output.configure_mock(side_effect=["Favorites\nAlarm\n", "active", " 8h", "active", " 7 minutes"])
+        self.mainApp.alarmManager.loadConfig.configure_mock(side_effect=[
+                    ["[Unit]","Description=Alarm","",
+                    "[Timer]","OnCalendar=Mon,Tue,Wed,Thu,Fri,Sat,Sun "+alarm_time,"",
+                    "[Install]","WantedBy=multi-user.target",""],
+                    ["#/bin/bash",
+                    AlarmConfigLinux.MIN_VOLUME+"="+str(minVolume),
+                    AlarmConfigLinux.MAX_VOLUME+"="+str(maxVolume),
+                    AlarmConfigLinux.DEFAULT_VOLUME+"="+str(defaultVolume),
+                    AlarmConfigLinux.GROWING_VOLUME+"="+str(growingVolume),
+                    AlarmConfigLinux.GROWING_SPEED+"="+str(growingSpeed),
+                    AlarmConfigLinux.PLAYLIST+"=\"\"",
+                    AlarmConfigLinux.THE_NEWEST_SONG+"=true",
+                    ""]
+                    ])
+
+        rv = self.app.get('/alarm.html')
+        self.assertEqual(mock_proc_check_output.call_count, 5)
+        self.assertEqual(self.mainApp.alarmManager.loadConfig.call_count, 2)
+
+        assert rv.status_code == 200
+        assert str('name="'+AlarmConfigFlask.ALARM_TIME+'" value="'+alarm_time+'"').encode() in rv.data
+        assert str('name="'+AlarmConfigFlask.ALARM_MODE+'" value="'+AlarmConfigFlask.ALARM_MODE_NEWEST+'" checked>').encode() in rv.data
+        assert str('name="'+AlarmConfigFlask.ALARM_MODE+'" value="'+AlarmConfigFlask.ALARM_MODE_PLAYLIST+'" >').encode()      in rv.data
+        assert str('name="'+AlarmConfigFlask.ALARM_ACTIVE+'" value="checked" checked>').encode()                              in rv.data
+        assert b'<option value="Alarm">Alarm</option>'                               in rv.data
+        assert b'<option value="Favorites">Favorites</option>'                       in rv.data
+        assert b'value="monday" checked>'                                            in rv.data
+        assert b'value="tueday" checked>'                                            in rv.data
+        assert b'value="wedday" checked>'                                            in rv.data
+        assert b'value="thuday" checked>'                                            in rv.data
+        assert b'value="friday" checked>'                                            in rv.data
+        assert b'value="satday" checked>'                                            in rv.data
+        assert b'value="sunday" checked>'                                            in rv.data
+        assert str('value="'+str(minVolume)+'" name="'+AlarmConfigFlask.MIN_VOLUME+'">').encode()         in rv.data
+        assert str('value="'+str(maxVolume)+'" name="'+AlarmConfigFlask.MAX_VOLUME+'">').encode()         in rv.data
+        assert str('value="'+str(defaultVolume)+'" name="'+AlarmConfigFlask.DEFAULT_VOLUME+'">').encode() in rv.data
+        assert b'The next snooze alarm for: 7 minutes' in rv.data
+        assert b'The next alarm for: 8h' in rv.data
+        assert b'<div id="next_alarm" hidden="true">' in rv.data
+        assert b'<div id="next_snooze">' in rv.data
         assert b'<title>Media Server</title>' in rv.data
 
 if __name__ == "__main__":

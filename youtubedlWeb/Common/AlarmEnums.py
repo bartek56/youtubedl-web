@@ -22,6 +22,7 @@ class AlarmConfigFlask():
     GROWING_VOLUME = "growing_volume"
     GROWING_SPEED =  "growing_speed"
     NEXT_ALARM = "next_alarm"
+    NEXT_SNOOZE = "next_snooze"
 
 class AlarmConfigLinux():
     THE_NEWEST_SONG =     "theNewestSongs"
@@ -36,9 +37,12 @@ class SystemdCommand():
     START_ALARM_TIMER =     "sudo /bin/systemctl start alarm.timer"
     START_ALARM_SERVICE =   "sudo /bin/systemctl start alarm.service"
     STOP_ALARM_TIMER =      "sudo /bin/systemctl stop alarm.timer"
+    STOP_ALARM_SNOOZE_TIMER =      "sudo /bin/systemctl stop alarm_snooze.timer"
     STATUS_ALARM_TIMER =    "sudo /bin/systemctl status alarm.timer"
+    STATUS_ALARM_SNOOZE_TIMER =    "sudo /bin/systemctl status alarm_snooze.timer"
     STOP_ALARM_SERVICE =    "sudo /bin/systemctl stop alarm.service"
     ENABLE_ALARM_TIMER =    "sudo /bin/systemctl enable alarm.timer"
     DISABLE_ALARM_TIMER =   "sudo /bin/systemctl disable alarm.timer"
     DAEMON_RELOAD =         "sudo /bin/systemctl daemon-reload"
     IS_ACTIVE_ALARM_TIMER = "systemctl is-active alarm.timer"
+    IS_ACTIVE_ALARM_SNOOZE_TIMER = "systemctl is-active alarm_snooze.timer"

@@ -38,6 +38,12 @@ def alarmOff():
     app.subprocess.run(SystemdCommand.DISABLE_ALARM_TIMER, shell=True)
     return "Nothing"
 
+@alarm_bp.route('/alarm_snooze_off')
+def alarmSnoozeOff():
+    app.logger.debug('alarm_snooze_off')
+    app.subprocess.run(SystemdCommand.STOP_ALARM_SNOOZE_TIMER, shell=True)
+    return render_template("alarm.html", **app.alarmManager.loadAlarmConfig())
+
 @alarm_bp.route('/alarm.html')
 def alarm():
     remoteAddress = request.remote_addr
