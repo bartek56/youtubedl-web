@@ -36,15 +36,18 @@
           $("#enable_alarm_button").click(function (event)
           {
               var button = document.getElementById('enable_alarm_button')
+              var alarmStatusSection = document.getElementById('alarm_status')
               if (button.value === "unchecked")
               {
-                  $.getJSON('/youtubedl/alarm_on', { }, function(data) { });
+                  $.getJSON('/alarm_on', { }, function(data) { });
                   button.value = "checked"
+                  alarmStatusSection.hidden = false
               }
               else
               {
-                  $.getJSON('/youtubedl/alarm_off', { }, function(data) { });
+                  $.getJSON('/alarm_off', { }, function(data) { });
                   button.value = "unchecked"
+                  alarmStatusSection.hidden  = true;
               }
               return true;
           });
@@ -178,8 +181,12 @@
               Sun
             </label>
           </div>
-          <div>
-            {{ next_alarm }}
+          <div id="alarm_status">
+            <!--{% if next_alarm|length > 1 %}-->
+                <br>
+                <p class="font-monospace">{{ next_alarm }}</p>
+                <br>
+            <!--{% endif %}-->
           </div>
 
         </div>
@@ -200,9 +207,9 @@
             {% for i in [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20] %}
                 {% if i == growing_volume %}
                     <option value="{{i}}" selected>{{i}}</option>
-                {% else %}}
+                {% else %}
                     <option value="{{i}}">{{i}}</option>
-                {% endif %}}
+                {% endif %}
             {% endfor %}
           </select>
           <label class="form-label">Growing speed [s]</label>
@@ -210,9 +217,9 @@
             {% for i in [20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59] %}
                 {% if i == growing_speed %}
                     <option value="{{i}}" selected>{{i}}</option>
-                {% else %}}
+                {% else %}
                     <option value="{{i}}">{{i}}</option>
-                {% endif %}}
+                {% endif %}
             {% endfor %}
           </select>
           <input type="button" id="alarm_test_button" value="start" />
