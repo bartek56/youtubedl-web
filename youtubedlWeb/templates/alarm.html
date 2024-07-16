@@ -39,13 +39,13 @@
               var alarmStatusSection = document.getElementById('alarm_status')
               if (button.value === "unchecked")
               {
-                  $.getJSON('/alarm_on', { }, function(data) { });
+                  $.getJSON('/youtubedl/alarm_on', { }, function(data) { });
                   button.value = "checked"
                   alarmStatusSection.hidden = false
               }
               else
               {
-                  $.getJSON('/alarm_off', { }, function(data) { });
+                  $.getJSON('/youtubedl/alarm_off', { }, function(data) { });
                   button.value = "unchecked"
                   alarmStatusSection.hidden  = true;
               }
@@ -59,7 +59,7 @@
               var alarmStatus = document.getElementById('next_alarm')
               alarmStatus.hidden  = false;
 
-              $.getJSON('/alarm_snooze_off', { }, function(data) { });
+              $.getJSON('/youtubedl/alarm_snooze_off', { }, function(data) { });
               return false;
           });
 
