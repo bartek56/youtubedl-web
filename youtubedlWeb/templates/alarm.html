@@ -46,8 +46,16 @@
               else
               {
                   $.getJSON('/youtubedl/alarm_off', { }, function(data) { });
-                  button.value = "unchecked"
+                  button.value = "unchecked";
                   alarmStatusSection.hidden  = true;
+
+                  var alarmSnoozeStatus = document.getElementById('next_snooze')
+                  if (alarmSnoozeStatus.hidden == false)
+                  {
+                    console.log("alarm snooze off");
+                    $.getJSON('/youtubedl/alarm_snooze_off', { }, function(data) { });
+                    alarmSnoozeStatus.hidden = true;
+                  }
               }
               return true;
           });
@@ -198,22 +206,18 @@
               {% else %}
               <div id="next_alarm">
               {% endif %}
-                  <!--{% if next_alarm|length > 1 %}-->
                   <br>
                   <p class="font-monospace">{{ next_alarm }}</p>
                   <br>
-                  <!--{% endif %}-->
               </div>
               {% if next_snooze|length > 1 %}
               <div id="next_snooze">
               {% else %}
               <div id="next_snooze" hidden="true">
               {% endif %}
-                  <!--{% if next_snooze|length > 1 %}-->
                   <br>
                   <p class="font-monospace">{{ next_snooze }}</p>
                   <input type="button" id="alarm_snooze_button" value="stop_snooze" />
-                  <!--{% endif %}-->
               </div>
           </div>
 
