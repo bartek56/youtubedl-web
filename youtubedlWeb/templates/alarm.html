@@ -37,11 +37,16 @@
           {
               var button = document.getElementById('enable_alarm_button')
               var alarmStatusSection = document.getElementById('alarm_status')
+              var alarmSnoozeStatus = document.getElementById('next_snooze')
+              var alarmStatus = document.getElementById('next_alarm')
               var nextAlarmText = document.getElementById('next_alarm_text')
               if (button.value === "unchecked")
               {
                   $.getJSON('/youtubedl/alarm_on', { }, function(data) { nextAlarmText.innerText = data });
                   button.value = "checked"
+                  alarmStatus.hidden = false
+                  alarmSnoozeStatus.hidden = true
+
                   alarmStatusSection.hidden = false
               }
               else
@@ -50,7 +55,6 @@
                   button.value = "unchecked";
                   alarmStatusSection.hidden  = true;
 
-                  var alarmSnoozeStatus = document.getElementById('next_snooze')
                   if (alarmSnoozeStatus.hidden == false)
                   {
                     console.log("alarm snooze off");
@@ -62,10 +66,10 @@
           });
           $("#alarm_snooze_button").click(function (event)
           {
-              var button = document.getElementById('alarm_snooze_button');
               var alarmSnoozeStatus = document.getElementById('next_snooze')
-              alarmSnoozeStatus.hidden  = true;
               var alarmStatus = document.getElementById('next_alarm')
+
+              alarmSnoozeStatus.hidden = true;
               alarmStatus.hidden  = false;
 
               $.getJSON('/youtubedl/alarm_snooze_off', { }, function(data) { });
