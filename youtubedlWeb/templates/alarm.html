@@ -40,7 +40,7 @@
               var nextAlarmText = document.getElementById('next_alarm_text')
               if (button.value === "unchecked")
               {
-                  $.getJSON('/youtubedl/alarm_on', { }, function(data) { });
+                  $.getJSON('/youtubedl/alarm_on', { }, function(data) { nextAlarmText.innerText = data });
                   button.value = "checked"
                   alarmStatusSection.hidden = false
               }
