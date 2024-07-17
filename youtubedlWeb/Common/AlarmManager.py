@@ -93,28 +93,11 @@ class AlarmManager:
                     musicPlaylistName=""
 
         alarmIsOn = "unchecked"
-        nextAlarm = ""
-        try:
-            output = self.subprocess.check_output(SystemdCommand.IS_ACTIVE_ALARM_TIMER, shell=True, text=True)
-            #exception is called when alarm is disabled
-            if "in" in output:
-                alarmIsOn = "unchecked"
-            else:
-                alarmIsOn = "checked"
-                nextAlarm = "The next alarm for:" + self.getTimeOfService(SystemdCommand.STATUS_ALARM_TIMER)
-        except self.subprocess.CalledProcessError as grepexc:
-            logger.info("Exception - alarm is disabled")
-            alarmIsOn = "unchecked"
+        nextAlarm = self.nextAlarmCheck()
+        if len(nextAlarm) > 0:
+            alarmIsOn = "checked"
 
-        nextSnooze = ""
-        try:
-            output = self.subprocess.check_output(SystemdCommand.IS_ACTIVE_ALARM_SNOOZE_TIMER, shell=True, text=True)
-            #exception is called when alarm is disabled
-            if "in" not in output:
-                nextSnooze= "The next snooze alarm for:" + self.getTimeOfService(SystemdCommand.STATUS_ALARM_SNOOZE_TIMER)
-
-        except self.subprocess.CalledProcessError as grepexc:
-            logger.info("Exception - alarm_snooze is disabled")
+        nextSnooze = self.nextSnoozeCheck()
 
         return {AlarmConfigFlask.ALARM_TIME: time,
                 AlarmConfigFlask.THE_NEWEST_SONG:theNewestSongCheckBox,
@@ -142,6 +125,29 @@ class AlarmManager:
         content = f.readlines()
         f.close()
         return content
+
+    def nextSnoozeCheck(self):
+        nextSnooze = ""
+        try:
+            output = self.subprocess.check_output(SystemdCommand.IS_ACTIVE_ALARM_SNOOZE_TIMER, shell=True, text=True)
+            #exception is called when alarm is disabled
+            if "in" not in output:
+                nextSnooze= "The next snooze alarm for:" + self.getTimeOfService(SystemdCommand.STATUS_ALARM_SNOOZE_TIMER)
+
+        except self.subprocess.CalledProcessError as grepexc:
+            logger.info("Exception - alarm_snooze is disabled")
+        return nextSnooze
+
+    def nextAlarmCheck(self):
+        nextAlarm=""
+        try:
+            output = self.subprocess.check_output(SystemdCommand.IS_ACTIVE_ALARM_TIMER, shell=True, text=True)
+            #exception is called when alarm is disabled
+            if "in" not in output:
+                nextAlarm = "The next alarm for:" + self.getTimeOfService(SystemdCommand.STATUS_ALARM_TIMER)
+        except self.subprocess.CalledProcessError as grepexc:
+            logger.info("Exception - alarm is disabled")
+        return nextAlarm
 
     def getTimeOfService(self, systemdService:SystemdCommand):
         return str(self.subprocess.check_output(systemdService + " | grep \"Trigger:\" | cut -d';' -f2- | sed -e \"s/ left//\"", shell=True, text=True))

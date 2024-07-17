@@ -37,6 +37,7 @@
           {
               var button = document.getElementById('enable_alarm_button')
               var alarmStatusSection = document.getElementById('alarm_status')
+              var nextAlarmText = document.getElementById('next_alarm_text')
               if (button.value === "unchecked")
               {
                   $.getJSON('/youtubedl/alarm_on', { }, function(data) { });
@@ -207,7 +208,7 @@
               <div id="next_alarm">
               {% endif %}
                   <br>
-                  <p class="font-monospace">{{ next_alarm }}</p>
+                  <p id="next_alarm_text" class="font-monospace">{{ next_alarm }}</p>
                   <br>
               </div>
               {% if next_snooze|length > 1 %}
@@ -216,7 +217,7 @@
               <div id="next_snooze" hidden="true">
               {% endif %}
                   <br>
-                  <p class="font-monospace">{{ next_snooze }}</p>
+                  <p id="next_snooze_text" class="font-monospace">{{ next_snooze }}</p>
                   <input type="button" id="alarm_snooze_button" value="stop_snooze" />
               </div>
           </div>

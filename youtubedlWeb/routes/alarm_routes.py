@@ -1,5 +1,5 @@
 from youtubedlWeb.Common.AlarmEnums import SystemdCommand, AlarmConfigFlask
-from flask import Blueprint
+from flask import Blueprint, jsonify
 from flask import current_app as app
 
 from flask import render_template, request, flash, send_from_directory
@@ -29,20 +29,21 @@ def alarmOn():
     app.logger.debug("alarm on")
     app.subprocess.run(SystemdCommand.ENABLE_ALARM_TIMER, shell=True)
     app.subprocess.run(SystemdCommand.START_ALARM_TIMER, shell=True)
-    return render_template("alarm.html", **app.alarmManager.loadAlarmConfig())
+    nextAlarm = app.alarmManager.nextAlarmCheck()
+    return jsonify(nextAlarm)
 
 @alarm_bp.route('/alarm_off')
 def alarmOff():
     app.logger.debug('alarm off')
     app.subprocess.run(SystemdCommand.STOP_ALARM_TIMER, shell=True)
     app.subprocess.run(SystemdCommand.DISABLE_ALARM_TIMER, shell=True)
-    return "Nothing"
+    return jsonify()
 
 @alarm_bp.route('/alarm_snooze_off')
 def alarmSnoozeOff():
     app.logger.debug('alarm_snooze_off')
     app.subprocess.run(SystemdCommand.STOP_ALARM_SNOOZE_TIMER, shell=True)
-    return render_template("alarm.html", **app.alarmManager.loadAlarmConfig())
+    return jsonify()
 
 @alarm_bp.route('/alarm.html')
 def alarm():
