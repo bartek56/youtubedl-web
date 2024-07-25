@@ -21,6 +21,17 @@ class DownloadPlaylistsRequest:
     def __init__(self, msg):
         self.downloadPlaylists = DownloadPlaylists(msg["link"], msg["name"])
 
+# ------------------------- downloadFile -------------------------
+class DownloadFile:
+    def __init__(self, hash):
+        self.hash = hash
+
+class DownloadFileRequest:
+    message = "downloadFile"
+
+    def __init__(self, msg):
+        self.downloadFile = DownloadFile(msg["hash"])
+        print(self.downloadFile.hash)
 
 # ------------------------ archiveSong -------------------------------
 class ArchiveSong:

@@ -63,6 +63,32 @@ class DownloadMediaRequest extends Message
     }
 }
 
+// ------------------ downloadFile -------------------
+class DownloadFile
+{
+    constructor(hash)
+    {
+        this.hash = hash
+    }
+}
+
+class DownloadFileRequest extends Message
+{
+    constructor()
+    {
+        super("downloadFile");
+    }
+
+    _setMessage(data)
+    {
+        if (!(data instanceof DownloadFile))
+        {
+            console.error("wrong data for message")
+            return
+        }
+        this.message["hash"] = data.hash
+    }
+}
 
 // ------------------ downloadPlaylists -------------------
 class DownloadPlaylists

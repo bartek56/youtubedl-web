@@ -1,3 +1,11 @@
+var socketManager;
+
+function clickDownload(event, hash) {
+    event.preventDefault();
+    var request = new DownloadFileRequest()
+    request.setMessage(new DownloadFile(hash))
+    socketManager.sendMessage(request)
+}
 
 $(document).ready(function () {
 
@@ -6,7 +14,7 @@ $(document).ready(function () {
     loader.style.display = 'none';
 
     var socket = io.connect();
-    var socketManager = new SocketManager(socket)
+    socketManager = new SocketManager(socket)
 
     var form = document.getElementById("downloadForm");
     form.addEventListener("submit", function (event) {
@@ -38,7 +46,7 @@ $(document).ready(function () {
         request.setMessage(new DownloadMedia(url, downloadType))
         socketManager.sendMessage(request)
 
-        return false;
+        return true;
     });
 
     // single media
@@ -101,8 +109,11 @@ $(document).ready(function () {
         var row = table.rows[index-1];
         row.deleteCell(1);
         var cell = row.insertCell(1);
+        // for web app
         cell.innerHTML = '<a href="/youtubedl/download/' + data.hash + '">V</a>';
-        //cell.innerHTML = '<a href="/download/' + data.hash + '">V</a?>';
+
+        // for desktop app
+        // cell.innerHTML = '<a href="#" onclick="clickDownload(event, \''+ data.hash +'\');"/' + ' ' + '">V</a>';
     });
 
     // a both
@@ -120,8 +131,11 @@ $(document).ready(function () {
         }
         var hash = downloadMedia_Finish.getData()
         var downloadLink = document.getElementById('downloadLink');
+        // for web app
         downloadLink.innerHTML = '<a href="/youtubedl/download/' + hash + '">Download file</a>';
-        //downloadLink.innerHTML = '<a href="/download/' + hash + '">Download file</a>';
+
+        // for desktop app
+        // downloadLink.innerHTML = '<a href="#" onclick="clickDownload(event, \''+ hash +'\');"/' + ' ' + '">Download file</a>';
     });
 
 });
