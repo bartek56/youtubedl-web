@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template, session, send_file, send_from_directory
+from flask import Blueprint, render_template, session, send_file, send_from_directory, jsonify
 from flask import current_app as app
+import shutil
 
 from youtubedlWeb.Common.SocketMessages import PlaylistInfo_response, PlaylistMediaInfo_response
 from youtubedlWeb.Common.SocketMessages import MediaInfo_response, DownloadMedia_finish
@@ -8,6 +9,7 @@ from youtubedlWeb.Common.SocketRequests import DownloadMediaRequest
 import youtubedlWeb.Common.YoutubeManager as YTManager
 import youtubedlWeb.Common.SocketMessages as SocketMessages
 import youtubedlWeb.Common.WebUtils as WebUtils
+import webview
 
 youtubeDwonlaoder_bp = Blueprint('youtubeDownloader', __name__)
 
@@ -22,6 +24,13 @@ def download_file(name):
         return render_template('index.html')
     fileToDownload = session[name]
     fullPath = app.youtubeManager.MUSIC_PATH + "/" + fileToDownload
+    app.logger.debug("Send file to browser")
+    if app.desktop:
+        result = app.window.create_file_dialog(
+            webview.SAVE_DIALOG, directory='/', save_filename=fileToDownload)
+        app.logger.debug("copy file to %s", result[0])
+        shutil.copy2(fullPath, result[0])
+        return render_template('index.html')
     return send_file(fullPath, as_attachment=True)
 
 def register_socketio_youtubeDownlaoder(socketio):

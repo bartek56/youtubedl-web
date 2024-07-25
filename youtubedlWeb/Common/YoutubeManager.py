@@ -125,7 +125,6 @@ class YoutubeManager:
     def getMediaInfo(self, url) -> ResultOfDownload:
 
         ydl_opts = {
-              'format': 'best/best',
               'logger': self.logger,
               'addmetadata': True,
               'ignoreerrors': False,

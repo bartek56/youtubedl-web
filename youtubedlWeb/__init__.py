@@ -28,6 +28,7 @@ def create_app(config=Config):
         import subprocess
 
     app.subprocess = subprocess
+    app.desktop = False
 
     app.mailManager = Mail()
     app.youtubeConfig = YoutubeConfig()
@@ -38,15 +39,17 @@ def create_app(config=Config):
 
     if len(app.logger.handlers) == 1:
         handler = app.logger.handlers[0]
-        if app.debug == True: # pragma: no cover
-            handler.setLevel(logging.DEBUG)
-        else:
-            handler.setLevel(logging.INFO)
         formater = logging.Formatter("%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s")
         handler.setFormatter(formater)
 
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)
+    if app.debug == True: # pragma: no cover
+        app.logger.setLevel(logging.DEBUG)
+    else:
+        app.logger.setLevel(logging.INFO)
+
+    #app.logger.setLevel(logging.DEBUG)
 
     from .routes.main_routes import main_bp
     from .routes.youtubedlPlaylists_routes import youtubePlaylists_bp, register_socketio_youtubePlaylist
