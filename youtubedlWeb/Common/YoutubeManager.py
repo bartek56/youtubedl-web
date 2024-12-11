@@ -1,4 +1,5 @@
 from typing import List
+from datetime import datetime
 import os
 import logging
 import argparse
@@ -541,7 +542,8 @@ class YoutubeManager:
         if hash is not None and len(hash) > 0:
             website = self.ytDomain + hash
 
-        return self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndex, playlistName, artist, album, title, website)
+        dateOfModify = datetime.now().strftime("%Y-%m-%d")
+        return self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndex, playlistName, artist, album, title, website, dateOfModify)
 
     def createDirIfNotExist(self, path):
         if not os.path.exists(path): # pragma: no cover
