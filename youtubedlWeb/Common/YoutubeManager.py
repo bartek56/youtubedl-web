@@ -165,20 +165,17 @@ class YoutubeManager:
     def download_mp3(self, url) -> ResultOfDownload:
         info = "[INFO] start download MP3 from link %s "%(url)
         logger.info(info)
-        hash = self.getMediaHashFromLink(url)
-        contentOfFile = self.openFile(self.MUSIC_PATH, self.mp3DownloadedListFileName)
-        if contentOfFile is not None and hash in contentOfFile:
+        if self._isMusicClipArchived(self.MUSIC_PATH, url):
             # only get information about media, file exists
             logger.debug("clip exists, only get information about MP3")
-            result = self._getMetadataFromYTForMp3(url)
+            result = self._getMetadataFromYTForMp3(url, self.MUSIC_PATH)
         else:
             logger.debug("Download MP3")
             result = self._downloadMp3AndAddMetadata(url)
 
         return result
 
-    def _getMetadataFromYTForMp3(self, url) -> ResultOfDownload:
-        path=self.MUSIC_PATH
+    def _getMetadataFromYTForMp3(self, url, path) -> ResultOfDownload:
 
         ydl_opts = {
               'format': 'bestaudio/best',
@@ -206,6 +203,11 @@ class YoutubeManager:
         logger.debug("Succesfull got information")
         mp3Data = self._get_metadataForMP3(result)
         logger.debug(mp3Data)
+        mp3Data.title = self.metadataManager._removeSheetFromSongName(mp3Data.title)
+        mp3Data.artist  = self.metadataManager._cutLengthAndRemoveDuplicates(mp3Data.artist, self.metadataManager.maxLenghtOfArtist)
+        if len(mp3Data.title) > self.metadataManager.maxLenghtOfTitle:
+            mp3Data.title = self._cutLenght(mp3Data.title, self.metadataManager.maxLenghtOfTitle)
+
         full_path = self.lookingForFile(path, mp3Data.title, mp3Data.artist)
 
         if full_path is None:
@@ -214,6 +216,10 @@ class YoutubeManager:
             return ResultOfDownload(log)
 
         mp3Data.setPath(full_path)
+        #songName = self.metadataManager._analyzeSongname(mp3Data.title, mp3Data.artist)
+        #if songName is not None:
+        #    mp3Data.title = songName.title
+        #    mp3Data.artist = songName.artist
 
         return ResultOfDownload(mp3Data)
 
@@ -422,6 +428,108 @@ class YoutubeManager:
             songCounter+=1
         return ResultOfDownload(songCounter)
 
+    def updatePlaylistInfo(self, playlistDir, playlistName, url) -> ResultOfDownload:
+        path=os.path.join(playlistDir, playlistName)
+        self.createDirIfNotExist(path)
+
+        result = self.getPlaylistInfo(url)
+        if result.IsFailed():
+            return result
+        playlistInfo:PlaylistInfo
+        playlistInfo = result.data()
+        songCounter = 0
+
+        for songData in playlistInfo.listOfMedia:
+            logger.debug(str(songData))
+
+            result = self._getMetadataFromYTForMp3(songData.url, path)
+
+            if result.IsFailed():
+                logger.error("Failed to update song. id: %s", songData.url)
+                continue
+
+            songMetadata:AudioData
+            songMetadata = result.data()
+            logger.debug("title: %s", songMetadata.title)
+            aktualny_timestamp_dostepu = os.path.getatime(songMetadata.path)
+            aktualny_timestamp_modyfikacji = os.path.getmtime(songMetadata.path)
+            aktualny_timestamp_stworzenia = os.path.getctime(songMetadata.path)
+            logger.debug("Timestamp stworzenia: %s", aktualny_timestamp_stworzenia)
+            self.metadataManager.addMetadataToPlaylist(songMetadata.path, songMetadata.title, songMetadata.artist,
+                                                       "YT "+playlistName, self.ytDomain+songMetadata.hash, songData.playlistIndex, songMetadata.album)
+            os.utime(songMetadata.path, (aktualny_timestamp_dostepu, aktualny_timestamp_modyfikacji))
+            songCounter+=1
+        return ResultOfDownload(songCounter)
+
+    def addWebsiteMetadataToSongFromPlaylist(self, playlistDir, playlistName, url) -> ResultOfDownload:
+        path=os.path.join(playlistDir, playlistName)
+        if not os.path.isdir(path):
+            logger.error("Playlist was not downloaded: %s", path)
+
+        result = self.getPlaylistInfo(url)
+        if result.IsFailed():
+            return result
+        playlistInfo:PlaylistInfo
+        playlistInfo = result.data()
+        songCounter = 0
+        songFiles = sorted(os.listdir(path))
+        songFilesMissed = sorted(os.listdir(path))
+
+        missedFiles = []
+        isFile = False
+
+        for media in playlistInfo.listOfMedia:
+            isFile = False
+            logger.debug("Media: %s %s %s", media.playlistIndex, media.url , media.title)
+            media.title = self.metadataManager._removeSheetFromSongName(media.title)
+            logger.debug("Media: %s %s %s", media.playlistIndex, media.url , media.title)
+            for songFile in songFiles:
+                songFilePath = os.path.join(path, songFile)
+                songFileWithoutExt = songFile.replace(".mp3","")
+                if " - " in songFileWithoutExt:
+                    title = songFileWithoutExt.split(" - ")[1]
+                else:
+                    title = songFileWithoutExt
+
+                if title.lower() in media.title.lower() or media.title.lower() in title.lower():
+                    isFile = True
+                    if songFile not in songFilesMissed:
+                        logger.warning("duplacation of song: %s", songFile)
+                    else:
+                        songFilesMissed.remove(songFile)
+
+                    info = self.metadataManager.getMP3Info(songFilePath)
+                    if "website" in info.keys():
+                        logger.debug("File contain website: %s - %s", songFile, info["website"])
+                        continue
+                    urlSplitted = media.url.split("v=")[-1]
+                    website = "https://youtu.be/"+urlSplitted
+
+                    logger.debug("Add new webside %s for song: %s", website, songFile)
+
+                    aktualny_timestamp_dostepu = os.path.getatime(songFilePath)
+                    aktualny_timestamp_modyfikacji = os.path.getmtime(songFilePath)
+                    aktualny_timestamp_stworzenia = os.path.getctime(songFilePath)
+
+                    self.metadataManager.setMetadata(songFilePath, website=website)
+
+                    os.utime(songFilePath, (aktualny_timestamp_dostepu, aktualny_timestamp_modyfikacji))
+
+            if not isFile:
+                logger.error("File was not found: %s, url: %s", media.title, media.url)
+
+                missedFiles.append(media.title)
+
+        logger.info("Files missed from Youtube: [is not local]")
+        for x in missedFiles:
+            logger.info("%s", x)
+
+        logger.info("Files missed local: [exists local, but not in Youtube]")
+        for x in songFilesMissed:
+            logger.info("%s", x)
+
+        return ResultOfDownload(songCounter)
+
     def _addMetadataToPlaylist(self, playlistDir, playlistIndex, playlistName, artist, album, title, hash):
         fileName="%s%s"%(title, ".mp3")
         path=os.path.join(playlistDir, playlistName)
@@ -564,5 +672,8 @@ if __name__ == "__main__": # pragma: no cover
     logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
     logger = logging.getLogger(__name__)
     main()
-    #yt = YoutubeManager()
-    #yt.downloadPlaylistMp3("/tmp/music", "test", "https://www.youtube.com/playlist?list=PL6uhlddQJkfh4YsbxgPE70a6KeFOCDgG_")
+    #yt = YoutubeManager(musicPath="/tmp/music")
+    #yt.downloadPlaylistMp3("/tmp/music", "test2", "https://www.youtube.com/playlist?list=PL6uhlddQJkfig0OO1fsQA9ZbBvH35QViF")
+    #yt.addWebsiteMetadataToSongFromPlaylist("/tmp/music", "Bachata", "https://www.youtube.com/playlist?list=PL6uhlddQJkfgHTfI_P_BaACTGN2Km_4Yk")
+    #set_modification_date_same_as_creation("/tmp/music/test/sanah - najlepszy dzień w moim życiu Tekst.mp3")
+
