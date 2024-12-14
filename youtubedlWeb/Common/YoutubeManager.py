@@ -6,11 +6,12 @@ import argparse
 
 import yt_dlp
 import metadata_mp3
+from metadata_mp3 import Mp3Info
 
-from .YoutubeConfig import YoutubeConfig
-from .YoutubeTypes import ResultOfDownload, YoutubeManagerLogs
-from .YoutubeTypes import AudioData, MediaFromPlaylist, PlaylistInfo, MediaInfo
-from .YoutubeTypes import VideoSettings, VideoData
+from YoutubeConfig import YoutubeConfig
+from YoutubeTypes import ResultOfDownload, YoutubeManagerLogs
+from YoutubeTypes import AudioData, MediaFromPlaylist, PlaylistInfo, MediaInfo
+from YoutubeTypes import VideoSettings, VideoData
 
 logger = logging.getLogger(__name__)
 
@@ -70,8 +71,6 @@ class YoutubeManager:
         self.high4kSettings =     Hight4kFormatSettings()
         self.medium720pSettings = Medium720pFormatSettings()
         self.low360pSettings =    Low360pFormatSettings()
-
-
 
     def _validateYTResult(self, results):
         if results is None:
@@ -429,6 +428,78 @@ class YoutubeManager:
             songCounter+=1
         return ResultOfDownload(songCounter)
 
+    def getSongsOfDir(self, playlistDir):
+        if not os.path.isdir(playlistDir):
+            print("Wrong dir path")
+
+        files = os.listdir(playlistDir)
+        listMp3 = []
+        for file in files:
+            if ".mp3" in file:
+                fullPath = os.path.join(playlistDir, file)
+                audio = self.metadataManager.getMp3Info(fullPath)
+                listMp3.append(audio)
+
+        result = sorted(listMp3, key=lambda x: float(x.trackNumber))
+
+        return result
+
+    def checkPlaylistStatus(self, url, directory):
+        localFiles = self.getSongsOfDir(directory)
+        localFilesTemp = localFiles.copy()
+        if localFiles is None:
+            logger.error("Failed to get songs")
+            return
+        playlistInfoResponse = self.getPlaylistInfo(url)
+        if playlistInfoResponse.IsFailed():
+            logger.error("Failed to get info about playlists")
+            return
+        playlistInfo:PlaylistInfo = playlistInfoResponse.data()
+        ytSongsTemp = playlistInfo.listOfMedia.copy()
+
+        for media in playlistInfo.listOfMedia:
+            for file in localFiles:
+                file:Mp3File
+                logger.debug("file from yt: %s, %s", media.title, media.url)
+                logger.debug("file locally: %s, %s", file.title, file.website)
+                ytHash = media.url.split("?v=")[1]
+                localHash = file.website.split(".be/")[1]
+                if ytHash == localHash:
+                    indexToRemove = self.getIndexOfList2(localFilesTemp, file.trackNumber)
+                    localFilesTemp.pop(indexToRemove)
+
+                    indexToRemove = self.getIndexOfList(ytSongsTemp, file.trackNumber)
+                    ytSongsTemp.pop(indexToRemove)
+                    logger.debug("Song was found, %s %s %s", media.url, media.playlistIndex, media.title)
+
+        if len(localFilesTemp) > 0:
+            logger.info("Files exists in local, but was not found in youtube")
+            for x in localFilesTemp:
+                logger.info("%s", x)
+
+        if len(ytSongsTemp) > 0:
+            logger.info("Files exists in Youtube, but was not found locally")
+            for x in ytSongsTemp:
+                logger.info("%s", x)
+
+    def getIndexOfList(self, list, trackNumber):
+        index = 0
+        for x in list:
+            x:MediaFromPlaylist
+            if int(x.playlistIndex) == int(trackNumber):
+                return index
+            index+=1
+        return None
+
+    def getIndexOfList2(self, list, trackNumber):
+        index = 0
+        for x in list:
+            x:Mp3Info
+            if int(x.trackNumber) == int(trackNumber):
+                return index
+            index+=1
+        return None
+
     def updatePlaylistInfo(self, playlistDir, playlistName, url) -> ResultOfDownload:
         path=os.path.join(playlistDir, playlistName)
         self.createDirIfNotExist(path)
@@ -670,12 +741,14 @@ def main(): # pragma: no cover
         #    yt.updat (args.playlistUpdate)
 
 if __name__ == "__main__": # pragma: no cover
-    #logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.DEBUG)
-    logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
+    logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.DEBUG)
+    #logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
     logger = logging.getLogger(__name__)
-    main()
-    #yt = YoutubeManager(musicPath="/tmp/music")
+    #main()
+    yt = YoutubeManager(musicPath="/tmp/music")
     #yt.downloadPlaylistMp3("/tmp/music", "test2", "https://www.youtube.com/playlist?list=PL6uhlddQJkfig0OO1fsQA9ZbBvH35QViF")
+    #yt.showPlaylistInfo("/tmp/music/test2")
+    yt.checkPlaylistStatus("https://www.youtube.com/playlist?list=PL6uhlddQJkfig0OO1fsQA9ZbBvH35QViF", "/tmp/music/test2")
     #yt.addWebsiteMetadataToSongFromPlaylist("/tmp/music", "Bachata", "https://www.youtube.com/playlist?list=PL6uhlddQJkfgHTfI_P_BaACTGN2Km_4Yk")
     #set_modification_date_same_as_creation("/tmp/music/test/sanah - najlepszy dzień w moim życiu Tekst.mp3")
 
