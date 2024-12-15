@@ -8,10 +8,10 @@ import yt_dlp
 import metadata_mp3
 from metadata_mp3 import Mp3Info
 
-from YoutubeConfig import YoutubeConfig
-from YoutubeTypes import ResultOfDownload, YoutubeManagerLogs
-from YoutubeTypes import AudioData, MediaFromPlaylist, PlaylistInfo, MediaInfo
-from YoutubeTypes import VideoSettings, VideoData
+from .YoutubeConfig import YoutubeConfig
+from .YoutubeTypes import ResultOfDownload, YoutubeManagerLogs
+from .YoutubeTypes import AudioData, MediaFromPlaylist, PlaylistInfo, MediaInfo
+from .YoutubeTypes import VideoSettings, VideoData
 
 logger = logging.getLogger(__name__)
 
@@ -459,7 +459,7 @@ class YoutubeManager:
 
         for media in playlistInfo.listOfMedia:
             for file in localFiles:
-                file:Mp3File
+                file:Mp3Info
                 logger.debug("file from yt: %s, %s", media.title, media.url)
                 logger.debug("file locally: %s, %s", file.title, file.website)
                 ytHash = media.url.split("?v=")[1]
@@ -471,6 +471,10 @@ class YoutubeManager:
                     indexToRemove = self.getIndexOfList(ytSongsTemp, file.trackNumber)
                     ytSongsTemp.pop(indexToRemove)
                     logger.debug("Song was found, %s %s %s", media.url, media.playlistIndex, media.title)
+        countOfLocalFiles = len(localFiles)
+        countOfPlaylistSongs = len(playlistInfo.listOfMedia)
+        if countOfLocalFiles != countOfPlaylistSongs:
+            logger.warning("Locally is %s songs, but in playlist is %s", countOfLocalFiles, countOfPlaylistSongs)
 
         if len(localFilesTemp) > 0:
             logger.info("Files exists in local, but was not found in youtube")
@@ -481,6 +485,9 @@ class YoutubeManager:
             logger.info("Files exists in Youtube, but was not found locally")
             for x in ytSongsTemp:
                 logger.info("%s", x)
+
+        if len(ytSongsTemp) == 0 and len(localFilesTemp) == 0:
+            logger.info("Playlist %s is perfect synchonized!", playlistInfo.playlistName)
 
     def getIndexOfList(self, list, trackNumber):
         index = 0
@@ -683,6 +690,7 @@ class MediaServerDownloader(YoutubeManager):
         for playlist in playlists:
             logger.info("--------------- %s ------------------", playlist.name)
             result = self.downloadPlaylistMp3(self.ytConfig.getPath(), playlist.name, playlist.link)
+            self.checkPlaylistStatus(playlist.link, os.path.join(self.ytConfig.getPath(), playlist.name))
             if result.IsFailed():
                 logger.error("Failed to download playlist %s", playlist.name)
                 continue
@@ -690,6 +698,15 @@ class MediaServerDownloader(YoutubeManager):
             songsCounter += result.data()
         logger.info("[SUMMARY] downloaded %s songs"%(songsCounter))
         return songsCounter
+
+    def checkPlaylistsSync(self):
+        if self.setMusicPath(self.ytConfig.getPath()) is None:
+            logger.error("wrong path for playlists")
+            return
+        playlists = self.ytConfig.getPlaylists()
+        for playlist in playlists:
+            logger.info("--------------- %s ------------------", playlist.name)
+            self.checkPlaylistStatus(playlist.link, os.path.join(self.ytConfig.getPath(), playlist.name))
 
 def main(): # pragma: no cover
     my_parser = argparse.ArgumentParser()
@@ -747,7 +764,9 @@ if __name__ == "__main__": # pragma: no cover
     #main()
     yt = YoutubeManager(musicPath="/tmp/music")
     #yt.downloadPlaylistMp3("/tmp/music", "test2", "https://www.youtube.com/playlist?list=PL6uhlddQJkfig0OO1fsQA9ZbBvH35QViF")
-    #yt.showPlaylistInfo("/tmp/music/test2")
+    result = yt.getSongsOfDir("/tmp/music/test2")
+    for x in result:
+        print(x)
     yt.checkPlaylistStatus("https://www.youtube.com/playlist?list=PL6uhlddQJkfig0OO1fsQA9ZbBvH35QViF", "/tmp/music/test2")
     #yt.addWebsiteMetadataToSongFromPlaylist("/tmp/music", "Bachata", "https://www.youtube.com/playlist?list=PL6uhlddQJkfgHTfI_P_BaACTGN2Km_4Yk")
     #set_modification_date_same_as_creation("/tmp/music/test/sanah - najlepszy dzień w moim życiu Tekst.mp3")
