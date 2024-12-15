@@ -415,7 +415,7 @@ class YoutubeManager:
         for songData in playlistInfo.listOfMedia:
             logger.debug(str(songData))
             if self._isMusicClipArchived(path, songData.url):
-                logger.info("clip \"%s\" from link %s is archived", songData.title, songData.url)
+                logger.debug("clip \"%s\" from link %s is archived", songData.title, songData.url)
                 continue
             logger.debug("start download clip from")
             result = self._download_mp3(songData.url, path)
@@ -434,13 +434,20 @@ class YoutubeManager:
 
         files = os.listdir(playlistDir)
         listMp3 = []
+        isTrackNumber = True
         for file in files:
             if ".mp3" in file:
                 fullPath = os.path.join(playlistDir, file)
                 audio = self.metadataManager.getMp3Info(fullPath)
+                if audio.trackNumber is None:
+                    isTrackNumber = False
+                audio.fileName = file
                 listMp3.append(audio)
 
-        result = sorted(listMp3, key=lambda x: float(x.trackNumber))
+        if isTrackNumber:
+            result = sorted(listMp3, key=lambda x: float(x.trackNumber))
+        else:
+            result = listMp3
 
         return result
 
@@ -457,20 +464,32 @@ class YoutubeManager:
         playlistInfo:PlaylistInfo = playlistInfoResponse.data()
         ytSongsTemp = playlistInfo.listOfMedia.copy()
 
-        for media in playlistInfo.listOfMedia:
-            for file in localFiles:
-                file:Mp3Info
-                logger.debug("file from yt: %s, %s", media.title, media.url)
-                logger.debug("file locally: %s, %s", file.title, file.website)
-                ytHash = media.url.split("?v=")[1]
-                localHash = file.website.split(".be/")[1]
-                if ytHash == localHash:
-                    indexToRemove = self.getIndexOfList2(localFilesTemp, file.trackNumber)
-                    localFilesTemp.pop(indexToRemove)
+        for ytSong in playlistInfo.listOfMedia:
 
-                    indexToRemove = self.getIndexOfList(ytSongsTemp, file.trackNumber)
-                    ytSongsTemp.pop(indexToRemove)
-                    logger.debug("Song was found, %s %s %s", media.url, media.playlistIndex, media.title)
+            ytHash = ytSong.url.split("?v=")[1]
+            for localFile in localFiles:
+                localFile:Mp3Info
+                if localFile.website is None or len(localFile.website) < 2:
+                    logger.debug("Local song: %s dosn't have website link !!!", localFile.fileName)
+                    continue
+                localHash = localFile.website.split(".be/")[1]
+                if ytHash == localHash:
+                    logger.debug("------")
+                    logger.debug("file from yt: %s, %s, %s", ytSong.playlistIndex, ytSong.title, ytSong.url)
+                    logger.debug("file locally: %s, %s, %s, %s", localFile.fileName, localFile.trackNumber, localFile.title, localFile.website)
+
+                    indexToRemove = self.getIndexOfList2(localFilesTemp, localFile.website)
+                    if indexToRemove is None:
+                        logger.error("Local file %s, %s, %s, %s was not found", localFile.fileName, localFile.trackNumber, localFile.title, localFile.website)
+                    else:
+                        localFilesTemp.pop(indexToRemove)
+
+                    indexToRemove = self.getIndexOfList(ytSongsTemp, ytSong.url)
+                    if indexToRemove is None:
+                        logger.error("YT song %s, %s, %s was not found", ytSong.playlistIndex, ytSong.title, ytSong.url)
+                    else:
+                        ytSongsTemp.pop(indexToRemove)
+                    #logger.debug("Song was found, %s %s %s", ytSong.url, ytSong.playlistIndex, ytSong.title)
         countOfLocalFiles = len(localFiles)
         countOfPlaylistSongs = len(playlistInfo.listOfMedia)
         if countOfLocalFiles != countOfPlaylistSongs:
@@ -489,22 +508,24 @@ class YoutubeManager:
         if len(ytSongsTemp) == 0 and len(localFilesTemp) == 0:
             logger.info("Playlist %s is perfect synchonized!", playlistInfo.playlistName)
 
-    def getIndexOfList(self, list, trackNumber):
+    def getIndexOfList(self, list, url):
         index = 0
         for x in list:
             x:MediaFromPlaylist
-            if int(x.playlistIndex) == int(trackNumber):
+            if x.url == url:
                 return index
             index+=1
+        logger.error("Song with url:%s was not found!", url)
         return None
 
-    def getIndexOfList2(self, list, trackNumber):
+    def getIndexOfList2(self, list, website):
         index = 0
         for x in list:
             x:Mp3Info
-            if int(x.trackNumber) == int(trackNumber):
+            if x.website == website:
                 return index
             index+=1
+        logger.error("Song with website:%s was not found!", website)
         return None
 
     def updatePlaylistInfo(self, playlistDir, playlistName, url) -> ResultOfDownload:
@@ -577,8 +598,8 @@ class YoutubeManager:
                     else:
                         songFilesMissed.remove(songFile)
 
-                    info = self.metadataManager.getMP3Info(songFilePath)
-                    if "website" in info.keys():
+                    info = self.metadataManager.getMp3Info(songFilePath)
+                    if info.website is None:
                         logger.debug("File contain website: %s - %s", songFile, info["website"])
                         continue
                     urlSplitted = media.url.split("v=")[-1]
@@ -705,7 +726,7 @@ class MediaServerDownloader(YoutubeManager):
             return
         playlists = self.ytConfig.getPlaylists()
         for playlist in playlists:
-            logger.info("--------------- %s ------------------", playlist.name)
+            logger.info("--------------- %s %s------------------", playlist.name, playlist.link)
             self.checkPlaylistStatus(playlist.link, os.path.join(self.ytConfig.getPath(), playlist.name))
 
 def main(): # pragma: no cover
@@ -758,16 +779,22 @@ def main(): # pragma: no cover
         #    yt.updat (args.playlistUpdate)
 
 if __name__ == "__main__": # pragma: no cover
-    logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.DEBUG)
-    #logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
+    #logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.DEBUG
+#   , filename="/tmp/youtubeLogs", filemode='a')
+    logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
     logger = logging.getLogger(__name__)
-    #main()
-    yt = YoutubeManager(musicPath="/tmp/music")
+    main()
+#    yt = YoutubeManager(musicPath="/mnt/kingston/media/muzyka/Youtube list")
     #yt.downloadPlaylistMp3("/tmp/music", "test2", "https://www.youtube.com/playlist?list=PL6uhlddQJkfig0OO1fsQA9ZbBvH35QViF")
-    result = yt.getSongsOfDir("/tmp/music/test2")
-    for x in result:
-        print(x)
-    yt.checkPlaylistStatus("https://www.youtube.com/playlist?list=PL6uhlddQJkfig0OO1fsQA9ZbBvH35QViF", "/tmp/music/test2")
+    #result = yt.getSongsOfDir("/tmp/music/test2")
+    #for x in result:
+    #    print(x)
+    #yt.checkPlaylistStatus("https://www.youtube.com/playlist?list=PL6uhlddQJkfh6_5dWYpBB9bGVIKctGT2Y", "/tmp/music/muzyka klasyczna")
+    #yt.addWebsiteMetadataToSongFromPlaylist("/tmp/music", "muzyka klasyczna","https://www.youtube.com/playlist?list=PL6uhlddQJkfh6_5dWYpBB9bGVIKctGT2Y" )
+#    yt.checkPlaylistStatus("https://www.youtube.com/playlist?list=PL6uhlddQJkfg4ur-Bk9PCdqguhKoHCfMD", "/mnt/kingston/media/muzyka/Youtube list/muzyka filmo")
     #yt.addWebsiteMetadataToSongFromPlaylist("/tmp/music", "Bachata", "https://www.youtube.com/playlist?list=PL6uhlddQJkfgHTfI_P_BaACTGN2Km_4Yk")
     #set_modification_date_same_as_creation("/tmp/music/test/sanah - najlepszy dzień w moim życiu Tekst.mp3")
+
+    #downloader = MediaServerDownloader("/etc/mediaserver/youtubedl.ini")
+    #downloader.checkPlaylistsSync()
 
