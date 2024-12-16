@@ -470,26 +470,26 @@ class YoutubeManager:
             for localFile in localFiles:
                 localFile:Mp3Info
                 if localFile.website is None or len(localFile.website) < 2:
-                    logger.debug("Local song: %s dosn't have website link !!!", localFile.fileName)
+                    logger.error("Local song: %s doesn't have website link !!!", localFile.fileName)
                     continue
                 localHash = localFile.website.split(".be/")[1]
                 if ytHash == localHash:
                     logger.debug("------")
                     logger.debug("file from yt: %s, %s, %s", ytSong.playlistIndex, ytSong.title, ytSong.url)
-                    logger.debug("file locally: %s, %s, %s, %s", localFile.fileName, localFile.trackNumber, localFile.title, localFile.website)
+                    logger.debug("file locally: %s, %s, %s, %s", localFile.trackNumber, localFile.title, localFile.website, localFile.fileName)
 
                     indexToRemove = self.getIndexOfList2(localFilesTemp, localFile.website)
                     if indexToRemove is None:
-                        logger.error("Local file %s, %s, %s, %s was not found", localFile.fileName, localFile.trackNumber, localFile.title, localFile.website)
+                        logger.error("Local file %s, %s, %s, %s was not found! This song was added twice on the Youtube playlist", localFile.fileName, localFile.trackNumber, localFile.title, localFile.website)
                     else:
                         localFilesTemp.pop(indexToRemove)
 
                     indexToRemove = self.getIndexOfList(ytSongsTemp, ytSong.url)
                     if indexToRemove is None:
-                        logger.error("YT song %s, %s, %s was not found", ytSong.playlistIndex, ytSong.title, ytSong.url)
+                        logger.error("YT song %s, %s, %s was not found! It is duplication locally", ytSong.playlistIndex, ytSong.title, ytSong.url)
                     else:
                         ytSongsTemp.pop(indexToRemove)
-                    #logger.debug("Song was found, %s %s %s", ytSong.url, ytSong.playlistIndex, ytSong.title)
+
         countOfLocalFiles = len(localFiles)
         countOfPlaylistSongs = len(playlistInfo.listOfMedia)
         if countOfLocalFiles != countOfPlaylistSongs:
@@ -579,6 +579,9 @@ class YoutubeManager:
         isFile = False
 
         for media in playlistInfo.listOfMedia:
+
+            if media.title == "Bachata":
+                continue
             isFile = False
             logger.debug("Media: %s %s %s", media.playlistIndex, media.url , media.title)
             media.title = self.metadataManager._removeSheetFromSongName(media.title)
@@ -591,17 +594,17 @@ class YoutubeManager:
                 else:
                     title = songFileWithoutExt
 
-                if title.lower() in media.title.lower() or media.title.lower() in title.lower():
+                if title.lower() in media.title.lower():# or media.title.lower() in title.lower():
                     isFile = True
                     if songFile not in songFilesMissed:
-                        logger.warning("duplacation of song: %s", songFile)
+                        logger.warning("dupliacation of song: %s", songFile)
                     else:
                         songFilesMissed.remove(songFile)
 
-                    info = self.metadataManager.getMp3Info(songFilePath)
-                    if info.website is None:
-                        logger.debug("File contain website: %s - %s", songFile, info["website"])
-                        continue
+                    #info = self.metadataManager.getMp3Info(songFilePath)
+                    #if info.website is None:
+                    #    logger.debug("File contain website: %s - %s", songFile, info["website"])
+                    #    continue
                     urlSplitted = media.url.split("v=")[-1]
                     website = "https://youtu.be/"+urlSplitted
 
@@ -779,22 +782,14 @@ def main(): # pragma: no cover
         #    yt.updat (args.playlistUpdate)
 
 if __name__ == "__main__": # pragma: no cover
-    #logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.DEBUG
-#   , filename="/tmp/youtubeLogs", filemode='a')
+    #logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.INFO, filename="/tmp/youtubeLogs", filemode='w')
     logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
     logger = logging.getLogger(__name__)
     main()
-#    yt = YoutubeManager(musicPath="/mnt/kingston/media/muzyka/Youtube list")
+    #yt = YoutubeManager(musicPath="/mnt/kingston/media/muzyka/Youtube list")
     #yt.downloadPlaylistMp3("/tmp/music", "test2", "https://www.youtube.com/playlist?list=PL6uhlddQJkfig0OO1fsQA9ZbBvH35QViF")
-    #result = yt.getSongsOfDir("/tmp/music/test2")
-    #for x in result:
-    #    print(x)
-    #yt.checkPlaylistStatus("https://www.youtube.com/playlist?list=PL6uhlddQJkfh6_5dWYpBB9bGVIKctGT2Y", "/tmp/music/muzyka klasyczna")
-    #yt.addWebsiteMetadataToSongFromPlaylist("/tmp/music", "muzyka klasyczna","https://www.youtube.com/playlist?list=PL6uhlddQJkfh6_5dWYpBB9bGVIKctGT2Y" )
-#    yt.checkPlaylistStatus("https://www.youtube.com/playlist?list=PL6uhlddQJkfg4ur-Bk9PCdqguhKoHCfMD", "/mnt/kingston/media/muzyka/Youtube list/muzyka filmo")
-    #yt.addWebsiteMetadataToSongFromPlaylist("/tmp/music", "Bachata", "https://www.youtube.com/playlist?list=PL6uhlddQJkfgHTfI_P_BaACTGN2Km_4Yk")
-    #set_modification_date_same_as_creation("/tmp/music/test/sanah - najlepszy dzień w moim życiu Tekst.mp3")
+    #yt.addWebsiteMetadataToSongFromPlaylist("/mnt/kingston/media/muzyka/Youtube list", "Bachata","https://www.youtube.com/playlist?list=PL6uhlddQJkfgHTfI_P_BaACTGN2Km_4Yk" )
+    #yt.checkPlaylistStatus("https://www.youtube.com/playlist?list=PL6uhlddQJkfgHTfI_P_BaACTGN2Km_4Yk", "/mnt/kingston/media/muzyka/Youtube list/Bachata")
 
     #downloader = MediaServerDownloader("/etc/mediaserver/youtubedl.ini")
     #downloader.checkPlaylistsSync()
-
