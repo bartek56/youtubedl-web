@@ -273,7 +273,7 @@ class YoutubeManager:
             mp3Data.title = yt_dlp.utils.sanitize_filename(mp3Data.title)
         mp3Data.artist = yt_dlp.utils.sanitize_filename(mp3Data.artist)
         website = self.ytDomain + mp3Data.hash
-        full_path = self.metadataManager.renameAndAddMetadataToSong(self.MUSIC_PATH, mp3Data.album, mp3Data.artist, mp3Data.title, website)
+        full_path = self.metadataManager.renameAndAddMetadataToSong(self.MUSIC_PATH, mp3Data.album, mp3Data.artist, mp3Data.title, website, self._getActualDate())
 
         if full_path is None:
             log = YoutubeManagerLogs.NOT_FOUND
@@ -395,11 +395,20 @@ class YoutubeManager:
                 songTitle = yt_dlp.utils.sanitize_filename(songTitle)
             artist = yt_dlp.utils.sanitize_filename(artist)
             website = self.ytDomain + hashList[x]
-            self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndexList[x], playlistName, artist, songTitle, website)
+            self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndexList[x], playlistName, artist, songTitle, website, self._getActualDate())
             songCounter+=1
         logger.info("Downloaded %i songs", songCounter)
 
         return ResultOfDownload(songCounter)
+
+    def _getNumberOfDownloadedSongs(self, path):
+        filesInPlaylistDir = os.listdir(path)
+        numberOfDownloadedSongs = 0
+        for x in filesInPlaylistDir:
+            if ".mp3" in x:
+                numberOfDownloadedSongs +=1
+
+        return numberOfDownloadedSongs
 
     def downloadPlaylistMp3(self, playlistDir, playlistName, url) -> ResultOfDownload:
         path=os.path.join(playlistDir, playlistName)
@@ -412,13 +421,7 @@ class YoutubeManager:
         playlistInfo = result.data()
         songCounter = 0
 
-        filesInPlaylistDir = os.listdir(path)
-        mp3FilesInPlaylistDir = []
-        for x in filesInPlaylistDir:
-            if ".mp3" in x:
-                mp3FilesInPlaylistDir.append(x)
-
-        numberOfDownloadedSongsLocally = len(mp3FilesInPlaylistDir)
+        numberOfDownloadedSongsLocally = self._getNumberOfDownloadedSongs(path)
 
         for songData in playlistInfo.listOfMedia:
             logger.debug(str(songData))
@@ -460,7 +463,8 @@ class YoutubeManager:
 
         return result
 
-    def checkPlaylistStatus(self, url, directory):
+    def checkPlaylistStatus(self, playlistDir, playlistName, url):
+        directory=os.path.join(playlistDir, playlistName)
         localFiles = self.getSongsOfDir(directory)
         localFilesTemp = localFiles.copy()
         if localFiles is None:
@@ -570,6 +574,9 @@ class YoutubeManager:
             songCounter+=1
         return ResultOfDownload(songCounter)
 
+    def _getActualDate(self):
+        return datetime.now().strftime("%Y-%m-%d")
+
     def _addMetadataToPlaylist(self, playlistDir, playlistIndex, playlistName, artist, album, title, hash):
         fileName="%s%s"%(title, ".mp3")
         path=os.path.join(playlistDir, playlistName)
@@ -581,8 +588,7 @@ class YoutubeManager:
         if hash is not None and len(hash) > 0:
             website = self.ytDomain + hash
 
-        dateOfModify = datetime.now().strftime("%Y-%m-%d")
-        return self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndex, playlistName, artist, album, title, website, dateOfModify)
+        return self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistIndex, playlistName, artist, album, title, website, self._getActualDate())
 
     def createDirIfNotExist(self, path):
         if not os.path.exists(path): # pragma: no cover
@@ -690,7 +696,7 @@ class MediaServerDownloader(YoutubeManager):
             logger.info("--------------- %s ------------------", playlist.name)
             logger.info("%s", playlist.link)
             result = self.downloadPlaylistMp3(self.ytConfig.getPath(), playlist.name, playlist.link)
-            self.checkPlaylistStatus(playlist.link, os.path.join(self.ytConfig.getPath(), playlist.name))
+            self.checkPlaylistStatus(self.ytConfig.getPath(), playlist.name, playlist.link)
             if result.IsFailed():
                 logger.error("Failed to download playlist %s", playlist.name)
                 continue
@@ -706,7 +712,7 @@ class MediaServerDownloader(YoutubeManager):
         playlists = self.ytConfig.getPlaylists()
         for playlist in playlists:
             logger.info("--------------- %s %s------------------", playlist.name, playlist.link)
-            self.checkPlaylistStatus(playlist.link, os.path.join(self.ytConfig.getPath(), playlist.name))
+            self.checkPlaylistStatus(self.ytConfig.getPath(), playlist.name, playlist.link)
 
     def callForEveryPlaylist(self, func):
         if self.setMusicPath(self.ytConfig.getPath()) is None:
