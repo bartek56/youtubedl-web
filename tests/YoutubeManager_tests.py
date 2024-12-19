@@ -8,6 +8,7 @@ from configparser import ConfigParser
 import yt_dlp
 from yt_dlp import utils
 import metadata_mp3
+from metadata_mp3 import Mp3Info
 import logging
 
 class YouTubeManagerDlTestCase(unittest.TestCase):
@@ -25,6 +26,8 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
 
     artist = "artist_test"
     title  = "title_test"
+    titleLong = "title_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test test_test_test_test_test_test_test_test_test_test_test_test_test"
+    titleLongExpected = "title_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test"
     album  = "album_test"
     playlistName = "test_playlist"
     hash = "abcdefgh"
@@ -38,6 +41,8 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
                                                                      {"playlist_name":"testPlaylist", "playlist_index":"2", "url":"https://www.youtube.com/watch?v=2222", "title":"secondTitle"}]}
     ytMediaInfoResponse = {"original_url":ytLink, "title":"firstTitle", "title":"testTitle", "artist":"testArtist", "album":"testAlbum"}
     ytMp3DownloadResponse ={"title":title, "artist":artist, "album":album, "id":hash}
+    ytMp3LongTitleDownloadResponse ={"title":titleLong, "artist":artist, "album":album, "id":hash}
+    ytMp3LongTitleDownloadResponseExpected ={"title":titleLongExpected, "artist":artist, "album":album, "id":hash}
 
     ytMp3DownloadWithoutArtistResponse = {"title":title, "artist":empty, "album":album, "id":hash}
     ytEmptyPlaylist = {"title": playlistName, "entries":[{}, None]}
@@ -47,6 +52,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
     firstTitle     = "first_title"
     firstArtist    = "first_artist"
     firstAlbum     = "first_album"
+    firstAlbumArtist = "first_album_artist"
     firstUrl = "https://www.youtube.com/watch?v=1111"
     firstHash = "1111"
     firstWebsite = ytDomain+firstHash
@@ -55,6 +61,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
     secondTitle    = "second_title"
     secondArtist   = "second_artist"
     secondAlbum    = "second_album"
+    secondAlbumArtist = "second_album_artist"
     secondUrl = "https://www.youtube.com/watch?v=2222"
     secondHash = "2222"
     secondWebsite = ytDomain+secondHash
@@ -63,6 +70,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
     thirdTitle    = "third_title"
     thirdArtist   = "third_artist"
     thirdAlbum    = "third_album"
+    thirdAlbumArtist = "third_album_artist"
     thirdUrl = "https://www.youtube.com/watch?v=3333"
     thirdHash = "3333"
     thirdWebsite = ytDomain+thirdHash
@@ -71,6 +79,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
     fourthTitle    = "fourth_title"
     fourthArtist   = "fourth_artist"
     fourthAlbum    = "fourth_album"
+    fourthAlbumArtist = "third_album_artist"
     fourthUrl = "https://www.youtube.com/watch?v=4444"
     fourthHash = "4444"
     fourthWebsite = ytDomain+fourthHash
@@ -86,6 +95,14 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
                                                                 {"playlist_name":playlistName, "playlist_index":playlistIndex4, "url":fourthUrl, "title":fourthTitle}
                                                                 ]}
 
+    ytPlaylistInfoResponse3 = {"title": playlistName,"entries":[{"playlist_name":playlistName, "playlist_index":playlistIndex2, "url":secondUrl, "title":secondTitle},
+                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex3, "url":thirdUrl, "title":thirdTitle},
+                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex4, "url":fourthUrl, "title":fourthTitle}
+                                                                ]}
+    ytMediaFromPLaylist1 = MediaFromPlaylist(playlistIndex1, firstUrl, firstTitle)
+    ytMediaFromPLaylist2 = MediaFromPlaylist(playlistIndex2, secondUrl, secondTitle)
+    ytMediaFromPLaylist3 = MediaFromPlaylist(playlistIndex3, thirdUrl, thirdTitle)
+    ytMediaFromPLaylist4 = MediaFromPlaylist(playlistIndex4, fourthUrl, fourthTitle)
 
     ytDownloadMp3PlaylistResponse = {"entries":[
             {'playlist_index': playlistIndex1,"title":firstTitle,  "artist":firstArtist, "album":firstAlbum, "id":firstHash},
@@ -102,6 +119,12 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
     actualDate = "2020-05-05"
     numberOfArchiveSongs = 5
 
+    mp3InfoTrack1 = Mp3Info(str(firstArtist + " - " + firstTitle+".mp3"), firstTitle, firstArtist, firstAlbum, firstAlbumArtist, str(playlistIndex1), firstWebsite, actualDate)
+    mp3InfoTrack2 = Mp3Info(str(secondArtist + " - " + secondTitle+".mp3"), secondTitle, secondArtist, secondAlbum, secondAlbumArtist, str(playlistIndex2), secondWebsite, actualDate)
+    mp3InfoTrack3 = Mp3Info(str(thirdArtist + " - " + thirdTitle+".mp3"), thirdTitle, thirdArtist, thirdAlbum, thirdAlbumArtist, str(playlistIndex3), thirdWebsite, actualDate)
+    mp3InfoTrack4 = Mp3Info(str(fourthArtist + " - " + fourthTitle+".mp3"), fourthTitle, fourthArtist, fourthAlbum, fourthAlbumArtist, str(playlistIndex4), fourthWebsite, actualDate)
+    listOfMp3Info4 = [mp3InfoTrack1, mp3InfoTrack2, mp3InfoTrack3, mp3InfoTrack4]
+
     def setUp(self):
         logging.disable(logging.CRITICAL)
         self.ytManager = YoutubeManager(videoPath=self.videoPath, musicPath=self.musicPath, mp3ArchiveFilename=self.ytMp3ArchiveFilename)
@@ -114,6 +137,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         self.ytManager._getActualDate = mock.MagicMock()
         self.ytManager._getActualDate.configure_mock(return_value=self.actualDate)
         self.ytManager._getNumberOfDownloadedSongs.configure_mock(return_value=self.numberOfArchiveSongs)
+        self.ytManager._getSongsOfDir = mock.MagicMock()
 
     def checkPlaylist(self, playlist:PlaylistInfo, ytResponse):
         playlistName = ytResponse['title']
@@ -153,6 +177,27 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         else:
             self.assertEqual(audioData.album, None)
             self.assertEqual(ytResponse["album"], self.empty)
+
+    def assertMp3Info(self, actual:Mp3Info, expected:Mp3Info):
+        self.assertEqual(actual.fileName, expected.fileName)
+        self.assertEqual(actual.title, expected.title)
+        self.assertEqual(actual.artist, expected.artist)
+        self.assertEqual(actual.albumArtist, expected.albumArtist)
+        self.assertEqual(actual.album, expected.album)
+        self.assertEqual(actual.trackNumber, expected.trackNumber)
+        self.assertEqual(actual.website, expected.website)
+        self.assertEqual(actual.date, expected.date)
+
+    def assertMediaFromPlaylist(self, actual:MediaFromPlaylist, expected:MediaFromPlaylist):
+        self.assertEqual(actual.playlistIndex, expected.playlistIndex)
+        self.assertEqual(actual.title, expected.title)
+        self.assertEqual(actual.url , expected.url)
+
+    def assertMediaFromPlaylistAndMp3Info(self, mediaFromPlaylist:MediaFromPlaylist, mp3Info:Mp3Info):
+        self.assertEqual(mediaFromPlaylist.title, mp3Info.title)
+        hashMp3Info = mp3Info.website.split("/")[-1]
+        hashMediaFromPlaylist = mediaFromPlaylist.url.split("v=")[-1]
+        self.assertEqual(hashMp3Info, hashMediaFromPlaylist)
 
     def checkVideoData(self, data:VideoData, ytResponse, videoResolution):
         self.assertEqual(data.title, ytResponse["title"])
@@ -328,6 +373,68 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         mock_extract_info.assert_called_once_with(self.ytLink, download=False)
         self.ytManager.lookingForFile.assert_called_with(self.musicPath,self.title, self.artist)
         self.assertFalse(result.IsSuccess())
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
+    def test_downloadMP3_onlyMetadata_VeryLongTitle(self, mock_extract_info):
+        mock_extract_info.configure_mock(return_value=self.ytMp3LongTitleDownloadResponse)
+        self.ytManager._isMusicClipArchived.configure_mock(return_value=True)
+
+        result = self.ytManager.download_mp3(self.ytLink)
+
+        mock_extract_info.assert_called_once_with(self.ytLink, download=False)
+        self.ytManager.lookingForFile.assert_called_with(self.musicPath, self.titleLongExpected, self.artist)
+        self.assertTrue(result.IsSuccess())
+        data = result.data()
+        self.checkAudioData(data, self.ytMp3LongTitleDownloadResponseExpected)
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
+    def test_checkPlaylistStatus(self, mock_extract_info):
+        mock_extract_info.configure_mock(return_value=self.ytPlaylistInfoResponse4)
+        self.ytManager._getSongsOfDir.configure_mock(return_value=self.listOfMp3Info4)
+
+        localFilesMissed, ytSongsMissed = self.ytManager.checkPlaylistStatus(self.musicPath+"/"+self.playlistName, self.playlistName, self.ytLink)
+        self.assertEqual(len(localFilesMissed), 0)
+        self.assertEqual(len(ytSongsMissed), 0)
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
+    def test_checkPlaylistStatus_missedLocally(self, mock_extract_info):
+        mock_extract_info.configure_mock(return_value=self.ytPlaylistInfoResponse4)
+        self.ytManager._getSongsOfDir.configure_mock(return_value=[self.mp3InfoTrack2, self.mp3InfoTrack3, self.mp3InfoTrack4])
+
+        localFilesMissed, ytSongsMissed = self.ytManager.checkPlaylistStatus(self.musicPath+"/"+self.playlistName, self.playlistName, self.ytLink)
+        self.assertEqual(len(localFilesMissed), 0)
+        self.assertEqual(len(ytSongsMissed), 1)
+
+        self.assertMediaFromPlaylistAndMp3Info(ytSongsMissed[0], self.mp3InfoTrack1)
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
+    def test_checkPlaylistStatus_missedYt(self, mock_extract_info):
+        mock_extract_info.configure_mock(return_value=self.ytPlaylistInfoResponse3)
+        self.ytManager._getSongsOfDir.configure_mock(return_value=[self.mp3InfoTrack1, self.mp3InfoTrack2, self.mp3InfoTrack3, self.mp3InfoTrack4])
+
+        localFilesMissed, ytSongsMissed = self.ytManager.checkPlaylistStatus(self.musicPath+"/"+self.playlistName, self.playlistName, self.ytLink)
+        self.assertEqual(len(localFilesMissed), 1)
+        self.assertEqual(len(ytSongsMissed), 0)
+
+        self.assertMediaFromPlaylistAndMp3Info(self.ytMediaFromPLaylist1, localFilesMissed[0])
+
+    @mock.patch.object(metadata_mp3.MetadataManager, "setMetadataMp3Info")
+    def test_updateTrackNumber(self, mock_setMetadataMp3Info):
+        self.ytManager._getSongsOfDir.configure_mock(return_value=[self.mp3InfoTrack1, self.mp3InfoTrack2])
+
+        self.ytManager.updateTrackNumber(str(self.musicPath+"/"+self.playlistName),self.ytLink,True)
+
+        mock_setMetadataMp3Info.assert_has_calls([mock.call(str(self.musicPath+"/"+self.playlistName+"/"+self.mp3InfoTrack1.fileName),self.mp3InfoTrack1),
+                                                  mock.call(str(self.musicPath+"/"+self.playlistName+"/"+self.mp3InfoTrack2.fileName),self.mp3InfoTrack2)])
+
+    @mock.patch.object(metadata_mp3.MetadataManager, "setMetadataMp3Info")
+    def test_updateTrackNumber_reverse(self, mock_setMetadataMp3Info):
+        self.ytManager._getSongsOfDir.configure_mock(return_value=[self.mp3InfoTrack2, self.mp3InfoTrack1])
+
+        self.ytManager.updateTrackNumber(str(self.musicPath+"/"+self.playlistName),self.ytLink,True)
+
+        mock_setMetadataMp3Info.assert_has_calls([mock.call(str(self.musicPath+"/"+self.playlistName+"/"+self.mp3InfoTrack1.fileName),self.mp3InfoTrack1),
+                                                  mock.call(str(self.musicPath+"/"+self.playlistName+"/"+self.mp3InfoTrack2.fileName),self.mp3InfoTrack2)])
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToPlaylist")
@@ -722,6 +829,7 @@ class MediaServerDownloaderTestCase(unittest.TestCase):
         self.downloader.ytConfig.initialize("test.ini", CustomConfigParser())
         self.downloader.downloadPlaylistMp3 = MagicMock()
         self.downloader.checkPlaylistStatus = MagicMock()
+        self.downloader.updateTrackNumber = MagicMock()
 
     def test_setMusicPathSuccess(self):
         oldMusicPath = self.downloader.MUSIC_PATH
@@ -795,6 +903,54 @@ class MediaServerDownloaderTestCase(unittest.TestCase):
         self.assertIsNone(result)
         self.downloader.setMusicPath.assert_has_calls([mock.call(CustomConfigParser.path)])
         self.downloader.downloadPlaylistMp3.assert_not_called()
+
+    def test_checkPlaylistsSync(self):
+        self.downloader.setMusicPath = MagicMock()
+        self.downloader.setMusicPath.configure_mock(return_value="/music/path")
+
+        self.downloader.checkPlaylistsSync()
+
+        self.downloader.checkPlaylistStatus.assert_has_calls(
+            [mock.call(CustomConfigParser.path, CustomConfigParser.playlist1Name, CustomConfigParser.playlist1Link),
+             mock.call(CustomConfigParser.path, CustomConfigParser.playlist2Name, CustomConfigParser.playlist2Link)])
+
+    def test_updateTrackNumberAllPlaylists(self):
+        self.downloader.setMusicPath = MagicMock()
+        self.downloader.setMusicPath.configure_mock(return_value="/music/path")
+
+        self.downloader.updateTrackNumberAllPlaylists()
+
+        self.downloader.updateTrackNumber.assert_has_calls(
+            [mock.call(str(CustomConfigParser.path + "/" + CustomConfigParser.playlist1Name), CustomConfigParser.playlist1Link, False),
+             mock.call(str(CustomConfigParser.path + "/" + CustomConfigParser.playlist2Name), CustomConfigParser.playlist2Link, False)])
+
+    def test_updateTrackNumberAllPlaylists_isSave(self):
+        self.downloader.setMusicPath = MagicMock()
+        self.downloader.setMusicPath.configure_mock(return_value="/music/path")
+
+        self.downloader.updateTrackNumberAllPlaylists(isSave=True)
+
+        self.downloader.updateTrackNumber.assert_has_calls(
+            [mock.call(str(CustomConfigParser.path + "/" + CustomConfigParser.playlist1Name), CustomConfigParser.playlist1Link, True),
+             mock.call(str(CustomConfigParser.path + "/" + CustomConfigParser.playlist2Name), CustomConfigParser.playlist2Link, True)])
+
+    def test_updateTrackNumberAllPlaylists_singleNumberOne(self):
+        self.downloader.setMusicPath = MagicMock()
+        self.downloader.setMusicPath.configure_mock(return_value="/music/path")
+
+        self.downloader.updateTrackNumberAllPlaylists(0,isSave=True)
+
+        self.downloader.updateTrackNumber.assert_has_calls(
+            [mock.call(str(CustomConfigParser.path + "/" + CustomConfigParser.playlist1Name), CustomConfigParser.playlist1Link, True)])
+
+    def test_updateTrackNumberAllPlaylists_singleNumberTwo(self):
+        self.downloader.setMusicPath = MagicMock()
+        self.downloader.setMusicPath.configure_mock(return_value="/music/path")
+
+        self.downloader.updateTrackNumberAllPlaylists(1)
+
+        self.downloader.updateTrackNumber.assert_has_calls(
+            [mock.call(str(CustomConfigParser.path + "/" + CustomConfigParser.playlist2Name), CustomConfigParser.playlist2Link, False)])
 
 class ResultOfDownloadTestCase(unittest.TestCase):
     def test_resultSuccess(self):

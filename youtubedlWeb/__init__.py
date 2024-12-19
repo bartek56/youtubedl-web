@@ -53,17 +53,16 @@ def create_app(config=Config):
 
     from .routes.main_routes import main_bp
     from .routes.youtubedlPlaylists_routes import youtubePlaylists_bp, register_socketio_youtubePlaylist
-    from .routes.youtubeDownloader_routes import youtubeDwonlaoder_bp, register_socketio_youtubeDownlaoder, register_socketio_youtubeDownloadFile
+    from .routes.youtubeDownloader_routes import youtubeDownloader_bp, register_socketio_youtubeDownloader
     from .routes.alarm_routes import alarm_bp
     from .routes.mail_routes import mail_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(youtubePlaylists_bp)
-    app.register_blueprint(youtubeDwonlaoder_bp)
+    app.register_blueprint(youtubeDownloader_bp)
     app.register_blueprint(alarm_bp)
     app.register_blueprint(mail_bp)
 
-    register_socketio_youtubeDownlaoder(socketio)
+    register_socketio_youtubeDownloader(socketio)
     register_socketio_youtubePlaylist(socketio)
-    register_socketio_youtubeDownloadFile(socketio)
 
     return app

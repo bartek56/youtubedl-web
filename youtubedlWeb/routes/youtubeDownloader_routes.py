@@ -5,20 +5,21 @@ import shutil
 from youtubedlWeb.Common.SocketMessages import PlaylistInfo_response, PlaylistMediaInfo_response
 from youtubedlWeb.Common.SocketMessages import MediaInfo_response, DownloadMedia_finish
 from youtubedlWeb.Common.SocketRequests import DownloadMediaRequest
-from youtubedlWeb.Common.SocketRequests import DownloadFile, DownloadFileRequest
+from youtubedlWeb.Common.SocketRequests import DownloadFileRequest
 
 import youtubedlWeb.Common.YoutubeManager as YTManager
 import youtubedlWeb.Common.SocketMessages as SocketMessages
 import youtubedlWeb.Common.WebUtils as WebUtils
-import webview
+#TODO do not include for MediaServer
+#import webview
 
-youtubeDwonlaoder_bp = Blueprint('youtubeDownloader', __name__)
+youtubeDownloader_bp = Blueprint('youtubeDownloader', __name__)
 
-@youtubeDwonlaoder_bp.route('/manifest.json')
+@youtubeDownloader_bp.route('/manifest.json')
 def manifestMain():
     return send_from_directory('static', 'youtubedl_manifest.json')
 
-@youtubeDwonlaoder_bp.route('/download/<name>')
+@youtubeDownloader_bp.route('/download/<name>')
 def download_file(name):
     if name not in session.keys():
         app.logger.error("key for download_file doesn't exist !!!!")
@@ -34,7 +35,8 @@ def download_file(name):
         return render_template('index.html')
     return send_file(fullPath, as_attachment=True)
 
-def register_socketio_youtubeDownlaoder(socketio):
+def register_socketio_youtubeDownloader(socketio):
+
     @socketio.on(DownloadMediaRequest.message)
     def downloadMedia(msg):
         response = DownloadMediaRequest(msg).downloadMedia
@@ -45,7 +47,6 @@ def register_socketio_youtubeDownlaoder(socketio):
         else:
             downloadSingle(url, downloadType)
 
-def register_socketio_youtubeDownloadFile(socketio):
     @socketio.on(DownloadFileRequest.message)
     def downloadFile(msg):
         response = DownloadFileRequest(msg).downloadFile

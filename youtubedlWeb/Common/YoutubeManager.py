@@ -206,7 +206,7 @@ class YoutubeManager:
         mp3Data.title = self.metadataManager._removeSheetFromSongName(mp3Data.title)
         mp3Data.artist  = self.metadataManager._cutLengthAndRemoveDuplicates(mp3Data.artist, self.metadataManager.maxLenghtOfArtist)
         if len(mp3Data.title) > self.metadataManager.maxLenghtOfTitle:
-            mp3Data.title = self._cutLenght(mp3Data.title, self.metadataManager.maxLenghtOfTitle)
+            mp3Data.title = self.metadataManager._cutLenght(mp3Data.title, self.metadataManager.maxLenghtOfTitle)
 
         full_path = self.lookingForFile(path, mp3Data.title, mp3Data.artist)
 
@@ -401,7 +401,7 @@ class YoutubeManager:
 
         return ResultOfDownload(songCounter)
 
-    def _getNumberOfDownloadedSongs(self, path):
+    def _getNumberOfDownloadedSongs(self, path): # pragma: no cover
         filesInPlaylistDir = os.listdir(path)
         numberOfDownloadedSongs = 0
         for x in filesInPlaylistDir:
@@ -440,32 +440,26 @@ class YoutubeManager:
             songCounter+=1
         return ResultOfDownload(songCounter)
 
-    def getSongsOfDir(self, playlistDir):
+    def _getSongsOfDir(self, playlistDir): # pragma: no cover
         if not os.path.isdir(playlistDir):
             print("Wrong dir path")
 
         files = os.listdir(playlistDir)
         listMp3 = []
-        isTrackNumber = True
         for file in files:
             if ".mp3" in file:
                 fullPath = os.path.join(playlistDir, file)
                 audio = self.metadataManager.getMp3Info(fullPath)
-                if audio.trackNumber is None:
-                    isTrackNumber = False
                 audio.fileName = file
                 listMp3.append(audio)
 
-        if isTrackNumber:
-            result = sorted(listMp3, key=lambda x: float(x.trackNumber))
-        else:
-            result = listMp3
+        result = sorted(listMp3, key=lambda x: float(x.trackNumber))
 
         return result
 
     def checkPlaylistStatus(self, playlistDir, playlistName, url):
         directory=os.path.join(playlistDir, playlistName)
-        localFiles = self.getSongsOfDir(directory)
+        localFiles = self._getSongsOfDir(directory)
         localFilesTemp = localFiles.copy()
         if localFiles is None:
             logger.error("Failed to get songs")
@@ -491,13 +485,13 @@ class YoutubeManager:
                     logger.debug("file from yt: %s, %s, %s", ytSong.playlistIndex, ytSong.title, ytSong.url)
                     logger.debug("file locally: %s, %s, %s, %s", localFile.trackNumber, localFile.title, localFile.website, localFile.fileName)
 
-                    indexToRemove = self.getIndexOfList2(localFilesTemp, localFile.website)
+                    indexToRemove = self._getIndexOfMp3InfoList(localFilesTemp, localFile.website)
                     if indexToRemove is None:
                         logger.error("Local file %s, %s, %s, %s was not found! This song was added twice on the Youtube playlist", localFile.fileName, localFile.trackNumber, localFile.title, localFile.website)
                     else:
                         localFilesTemp.pop(indexToRemove)
 
-                    indexToRemove = self.getIndexOfList(ytSongsTemp, ytSong.url)
+                    indexToRemove = self._getIndexOfMediaFromPlaylistList(ytSongsTemp, ytSong.url)
                     if indexToRemove is None:
                         logger.error("YT song %s, %s, %s was not found! It is duplication locally", ytSong.playlistIndex, ytSong.title, ytSong.url)
                     else:
@@ -521,7 +515,9 @@ class YoutubeManager:
         if len(ytSongsTemp) == 0 and len(localFilesTemp) == 0:
             logger.info("Playlist %s is perfect synchonized!", playlistInfo.playlistName)
 
-    def getIndexOfList(self, list, url):
+        return (localFilesTemp, ytSongsTemp)
+
+    def _getIndexOfMediaFromPlaylistList(self, list, url):
         index = 0
         for x in list:
             x:MediaFromPlaylist
@@ -531,7 +527,7 @@ class YoutubeManager:
         logger.error("Song with url:%s was not found!", url)
         return None
 
-    def getIndexOfList2(self, list, website):
+    def _getIndexOfMp3InfoList(self, list, website):
         index = 0
         for x in list:
             x:Mp3Info
@@ -541,40 +537,7 @@ class YoutubeManager:
         logger.error("Song with website:%s was not found!", website)
         return None
 
-    def updatePlaylistInfo(self, playlistDir, playlistName, url) -> ResultOfDownload:
-        path=os.path.join(playlistDir, playlistName)
-        self.createDirIfNotExist(path)
-
-        result = self.getPlaylistInfo(url)
-        if result.IsFailed():
-            return result
-        playlistInfo:PlaylistInfo
-        playlistInfo = result.data()
-        songCounter = 0
-
-        for songData in playlistInfo.listOfMedia:
-            logger.debug(str(songData))
-
-            result = self._getMetadataFromYTForMp3(songData.url, path)
-
-            if result.IsFailed():
-                logger.error("Failed to update song. id: %s", songData.url)
-                continue
-
-            songMetadata:AudioData
-            songMetadata = result.data()
-            logger.debug("title: %s", songMetadata.title)
-            aktualny_timestamp_dostepu = os.path.getatime(songMetadata.path)
-            aktualny_timestamp_modyfikacji = os.path.getmtime(songMetadata.path)
-            aktualny_timestamp_stworzenia = os.path.getctime(songMetadata.path)
-            logger.debug("Timestamp stworzenia: %s", aktualny_timestamp_stworzenia)
-            self.metadataManager.addMetadataToPlaylist(songMetadata.path, songMetadata.title, songMetadata.artist,
-                                                       "YT "+playlistName, self.ytDomain+songMetadata.hash, songData.playlistIndex, songMetadata.album)
-            os.utime(songMetadata.path, (aktualny_timestamp_dostepu, aktualny_timestamp_modyfikacji))
-            songCounter+=1
-        return ResultOfDownload(songCounter)
-
-    def _getActualDate(self):
+    def _getActualDate(self): # pragma: no cover
         return datetime.now().strftime("%Y-%m-%d")
 
     def _addMetadataToPlaylist(self, playlistDir, playlistIndex, playlistName, artist, album, title, hash):
@@ -635,35 +598,16 @@ class YoutubeManager:
                     content = file.read()
         return content
 
-    def updateTrackNumberAllPlaylists(self, indexOfPlaylist=None, isSave=False):
-        if self.setMusicPath(self.ytConfig.getPath()) is None:
-            logger.error("wrong path for playlists")
-            return
-        playlists = self.ytConfig.getPlaylists()
-        if indexOfPlaylist is not None:
-            playlist = playlists[indexOfPlaylist]
-            logger.info("--------------- %s ------------------", playlist.name)
-            logger.info(" %s ", playlist.link)
-            playlistDir = os.path.join(self.ytConfig.getPath(), playlist.name)
-            self.updateTrackNumber(playlistDir,playlist.link, isSave)
-        else:
-            for playlist in playlists:
-                playlist = playlists[indexOfPlaylist]
-                logger.info("--------------- %s ------------------", playlist.name)
-                logger.info(" %s ", playlist.link)
-                playlistDir = os.path.join(self.ytConfig.getPath(), playlist.name)
-                self.updateTrackNumber(playlistDir,playlist.link, isSave)
-
     def updateTrackNumber(self, playlistDir, url, isSave=False):
-        songs = self.getSongsOfDir(playlistDir)
+        songs = self._getSongsOfDir(playlistDir)
 
 #        songsSorted = sorted(songs, key=lambda x: (int(x.trackNumber), x.date))
-        songsSorted = sorted(songs, key=lambda x: (x.date, int(x.trackNumber)))
+        songs = sorted(songs, key=lambda x: (x.date, int(x.trackNumber)))
 
         logger.debug("all songs: %i", len(songs))
 
         counter=0
-        for x in songsSorted:
+        for x in songs:
             logger.info(x)
             x:Mp3Info
             x.trackNumber = str(counter+1)
@@ -714,15 +658,23 @@ class MediaServerDownloader(YoutubeManager):
             logger.info("--------------- %s %s------------------", playlist.name, playlist.link)
             self.checkPlaylistStatus(self.ytConfig.getPath(), playlist.name, playlist.link)
 
-    def callForEveryPlaylist(self, func):
+    def updateTrackNumberAllPlaylists(self, indexOfPlaylist=None, isSave=False):
         if self.setMusicPath(self.ytConfig.getPath()) is None:
             logger.error("wrong path for playlists")
             return
         playlists = self.ytConfig.getPlaylists()
-        for playlist in playlists:
+        if indexOfPlaylist is not None:
+            playlist = playlists[indexOfPlaylist]
             logger.info("--------------- %s ------------------", playlist.name)
             logger.info(" %s ", playlist.link)
-            func()
+            playlistDir = os.path.join(self.ytConfig.getPath(), playlist.name)
+            self.updateTrackNumber(playlistDir,playlist.link, isSave)
+        else:
+            for playlist in playlists:
+                logger.info("--------------- %s ------------------", playlist.name)
+                logger.info(" %s ", playlist.link)
+                playlistDir = os.path.join(self.ytConfig.getPath(), playlist.name)
+                self.updateTrackNumber(playlistDir,playlist.link, isSave)
 
 
 def main(): # pragma: no cover
@@ -783,7 +735,6 @@ if __name__ == "__main__": # pragma: no cover
     #yt = YoutubeManager(musicPath="/mnt/kingston/media/muzyka/Youtube list")
     #yt.setDateAccordingToTrackNumber("/tmp/music/techno", "https://www.youtube.com/playlist?list=PL6uhlddQJkfiC8LyEB92IEsBFlbBjxCj0")
     #yt.downloadPlaylistMp3("/tmp/music", "test2", "https://www.youtube.com/playlist?list=PL6uhlddQJkfig0OO1fsQA9ZbBvH35QViF")
-    #yt.addWebsiteMetadataToSongFromPlaylist("/mnt/kingston/media/muzyka/Youtube list", "Bachata","https://www.youtube.com/playlist?list=PL6uhlddQJkfgHTfI_P_BaACTGN2Km_4Yk" )
     #yt.checkPlaylistStatus("https://www.youtube.com/playlist?list=PL6uhlddQJkfgHTfI_P_BaACTGN2Km_4Yk", "/mnt/kingston/media/muzyka/Youtube list/Bachata")
 
     #downloader = MediaServerDownloader("/etc/mediaserver/youtubedl.ini")
