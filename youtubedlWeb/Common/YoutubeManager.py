@@ -223,14 +223,14 @@ class YoutubeManager:
 
         return ResultOfDownload(mp3Data)
 
-    def _download_mp3(self, url, path=MUSIC_PATH) -> ResultOfDownload:
+    def _download_mp3(self, url, path=MUSIC_PATH, titleFormat='%(title)s.%(ext)s') -> ResultOfDownload:
         self.createDirIfNotExist(path)
 
         ydl_opts = {
               'format': 'bestaudio/best',
               'addmetadata': True,
               'logger': self.logger,
-              'outtmpl': path+'/'+'%(title)s.%(ext)s',
+              'outtmpl': path+'/'+titleFormat,
               'download_archive': path+'/'+self.mp3DownloadedListFileName,
               'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
@@ -429,9 +429,26 @@ class YoutubeManager:
                 logger.debug("clip \"%s\" from link %s is archived", songData.title, songData.url)
                 continue
             logger.debug("start download clip from")
-            result = self._download_mp3(songData.url, path)
+            fileToCheck = os.path.join(path, "%s.mp3"%(songData.title))
+            titleFormat='%(title)s.%(ext)s'
+            if os.path.isfile(fileToCheck):
+                logger.warning("File %s was downloaded before", fileToCheck)
+                i=1
+                while not (i>5 or not os.path.isfile(fileToCheck)):
+                    newFilenameWithNumber = "%s (%s).mp3"%(songData.title, str(i))
+                    titleFormat = '%(title)s ('+ str(i)+').%(ext)s'
+                    fileToCheck=os.path.join(path,newFilenameWithNumber)
+                    i+=1
+                #self.metadataManager.showMp3Info(fileToCheck)
+                if os.path.isfile(fileToCheck):
+                    logger.error("File %s exists and new song can not be downloaded!", fileToCheck)
+                    continue
+                else:
+                    logger.info("New version of file: %s", str(i))
+
+            result = self._download_mp3(songData.url, path, titleFormat)
             if result.IsFailed():
-                logger.error("Failed to download song from url")
+                logger.error("Failed to download song from url: %s", songData.url)
                 continue
             songMetadata:AudioData
             songMetadata = result.data()
