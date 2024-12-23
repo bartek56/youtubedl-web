@@ -26,6 +26,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
 
     artist = "artist_test"
     title  = "title_test"
+    fileName = title + ".mp3"
     titleLong = "title_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test test_test_test_test_test_test_test_test_test_test_test_test_test"
     titleLongExpected = "title_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test"
     album  = "album_test"
@@ -33,67 +34,114 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
     hash = "abcdefgh"
     website = ytDomain + hash
 
-    foundMp3File = musicPath+title+".mp3"
+    foundMp3File = musicPath+"/"+fileName
 
     ytMp3ArchiveFilename = "songsArchive.txt"
 
     ytPlaylistInfoResponse2 = {"title": "testPlaylist","entries":[{"playlist_name":"testPlaylist", "playlist_index":"1", "url":"https://www.youtube.com/watch?v=1111", "title":"firstTitle"},
                                                                      {"playlist_name":"testPlaylist", "playlist_index":"2", "url":"https://www.youtube.com/watch?v=2222", "title":"secondTitle"}]}
     ytMediaInfoResponse = {"original_url":ytLink, "title":"firstTitle", "title":"testTitle", "artist":"testArtist", "album":"testAlbum"}
-    ytMp3DownloadResponse ={"title":title, "artist":artist, "album":album, "id":hash}
+    ytMp3DownloadResponse ={"title":title, "artist":artist, "album":album, "id":hash, "requested_downloads":[{'filepath':foundMp3File}]}
     ytMp3LongTitleDownloadResponse ={"title":titleLong, "artist":artist, "album":album, "id":hash}
     ytMp3LongTitleDownloadResponseExpected ={"title":titleLongExpected, "artist":artist, "album":album, "id":hash}
 
-    ytMp3DownloadWithoutArtistResponse = {"title":title, "artist":empty, "album":album, "id":hash}
+    ytMp3DownloadWithoutArtistResponse = {"title":title, "artist":empty, "album":album, "id":hash, "requested_downloads":[{'filepath':foundMp3File}]}
     ytEmptyPlaylist = {"title": playlistName, "entries":[{}, None]}
 
+    playlistPath = musicPath+"/"+playlistName
     numberOfSongs = 4
     playlistIndex1 = 1
     firstTitle     = "first_title"
+    firstFilename  =  firstTitle+".mp3"
     firstArtist    = "first_artist"
     firstAlbum     = "first_album"
     firstAlbumArtist = "first_album_artist"
     firstUrl = "https://www.youtube.com/watch?v=1111"
     firstHash = "1111"
     firstWebsite = ytDomain+firstHash
+    firstFilenameWithPath  = playlistPath + "/" + firstFilename
 
     playlistIndex2 = 2
     secondTitle    = "second_title"
+    secondFilename = secondTitle+ ".mp3"
     secondArtist   = "second_artist"
     secondAlbum    = "second_album"
     secondAlbumArtist = "second_album_artist"
     secondUrl = "https://www.youtube.com/watch?v=2222"
     secondHash = "2222"
     secondWebsite = ytDomain+secondHash
+    secondFilenameWithPath  = playlistPath + "/" + secondFilename
 
     playlistIndex3 = 3
     thirdTitle    = "third_title"
+    thirdFilename = thirdTitle+".mp3"
     thirdArtist   = "third_artist"
     thirdAlbum    = "third_album"
     thirdAlbumArtist = "third_album_artist"
     thirdUrl = "https://www.youtube.com/watch?v=3333"
     thirdHash = "3333"
     thirdWebsite = ytDomain+thirdHash
+    thirdFilenameWithPath  = playlistPath + "/" + thirdFilename
 
     playlistIndex4 = 4
     fourthTitle    = "fourth_title"
+    fourthFilename = fourthTitle+".mp3"
     fourthArtist   = "fourth_artist"
     fourthAlbum    = "fourth_album"
-    fourthAlbumArtist = "third_album_artist"
+    fourthAlbumArtist = "fourth_album_artist"
     fourthUrl = "https://www.youtube.com/watch?v=4444"
     fourthHash = "4444"
     fourthWebsite = ytDomain+fourthHash
+    fourthFilenameWithPath  = playlistPath + "/" + fourthFilename
 
-    ytDownloadMp3Response1 = {"title":firstTitle, "artist":firstArtist, "album":firstAlbum, "id":firstHash}
-    ytDownloadMp3Response2 = {"title":secondTitle, "artist":secondArtist, "album":secondAlbum, "id":secondHash}
-    ytDownloadMp3Response3 = {"title":thirdTitle, "artist":thirdArtist, "album":thirdAlbum, "id":thirdHash}
-    ytDownloadMp3Response3SecondTitle = {"title":secondTitle+ " (1)", "artist":thirdArtist, "album":thirdAlbum, "id":thirdHash}
-    ytDownloadMp3Response4 = {"title":fourthTitle, "artist":fourthArtist, "album":fourthAlbum, "id":fourthHash}
+    playlistIndex5 = 5
+    fifthTitle    = "fifth_title"
+    fifthFilename = fifthTitle+".mp3"
+    fifthArtist  = "fifth_artist"
+    fifthAlbum    = "fifth_album"
+    fifthAlbumArtist = "fifth_album_artist"
+    fifthUrl = "https://www.youtube.com/watch?v=5555"
+    fifthHash = "5555"
+    fifthWebsite = ytDomain+fifthHash
+    fifthFilenameWithPath  = playlistPath + "/" + fifthFilename
+
+    playlistIndex6 = 6
+    sixthTitle    = "sixth_title"
+    sixthFilename = sixthTitle+".mp3"
+    sixthArtist  = "sixth_artist"
+    sixthAlbum    = "sixth_album"
+    sixthAlbumArtist = "sixth_album_artist"
+    sixthUrl = "https://www.youtube.com/watch?v=6666"
+    sixthHash = "6666"
+    sixthWebsite = ytDomain+sixthHash
+    sixthFilenameWithPath  = playlistPath + "/" + sixthFilename
+
+    ytDownloadMp3Response1 = {"title":firstTitle, "artist":firstArtist, "album":firstAlbum, "id":firstHash, "requested_downloads":[{'filepath': firstFilenameWithPath}]}
+    ytDownloadMp3Response2 = {"title":secondTitle, "artist":secondArtist, "album":secondAlbum, "id":secondHash, "requested_downloads":[{'filepath':secondFilenameWithPath}]}
+    ytDownloadMp3Response3 = {"title":thirdTitle, "artist":thirdArtist, "album":thirdAlbum, "id":thirdHash, "requested_downloads":[{'filepath':thirdFilenameWithPath}]}
+    ytDownloadMp3Response3SecondTitle = {"title":secondTitle, "artist":secondArtist, "album":secondAlbum, "id":thirdHash, "requested_downloads":[{'filepath':secondFilenameWithPath.replace(".mp3", " (1).mp3")}]}
+    ytDownloadMp3Response4 = {"title":fourthTitle, "artist":fourthArtist, "album":fourthAlbum, "id":fourthHash, "requested_downloads":[{'filepath':fourthFilenameWithPath}]}
+    ytDownloadMp3Response5 = {"title":fifthTitle, "artist":fifthArtist, "album":fifthAlbum, "id":fifthHash, "requested_downloads":[{'filepath':fifthFilenameWithPath}]}
 
     ytPlaylistInfoResponse4 = {"title": playlistName,"entries":[{"playlist_name":playlistName, "playlist_index":playlistIndex1, "url":firstUrl, "title":firstTitle},
                                                                 {"playlist_name":playlistName, "playlist_index":playlistIndex2, "url":secondUrl, "title":secondTitle},
                                                                 {"playlist_name":playlistName, "playlist_index":playlistIndex3, "url":thirdUrl, "title":thirdTitle},
                                                                 {"playlist_name":playlistName, "playlist_index":playlistIndex4, "url":fourthUrl, "title":fourthTitle}
+                                                                ]}
+
+    ytPlaylistInfoResponse5 = {"title": playlistName,"entries":[{"playlist_name":playlistName, "playlist_index":playlistIndex1, "url":firstUrl, "title":firstTitle},
+                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex2, "url":secondUrl, "title":secondTitle},
+                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex3, "url":thirdUrl, "title":thirdTitle},
+                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex4, "url":fourthUrl, "title":fourthTitle},
+                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex5, "url":fifthUrl, "title":fifthTitle}
+                                                                ]}
+
+    ytPlaylistInfoResponse6 = {"title": playlistName,"entries":[{"playlist_name":playlistName, "playlist_index":playlistIndex1, "url":firstUrl, "title":firstTitle},
+                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex2, "url":secondUrl, "title":secondTitle},
+                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex3, "url":thirdUrl, "title":thirdTitle},
+                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex4, "url":fourthUrl, "title":fourthTitle},
+                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex5, "url":fifthUrl, "title":fifthTitle},
+                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex6, "url":sixthUrl, "title":sixthTitle}
                                                                 ]}
 
     ytPlaylistInfoResponse3 = {"title": playlistName,"entries":[{"playlist_name":playlistName, "playlist_index":playlistIndex2, "url":secondUrl, "title":secondTitle},
@@ -288,7 +336,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         result = self.ytManager.download_mp3(self.ytLink)
 
         mock_extract_info.assert_called_once_with(self.ytLink)
-        mock_metadata.assert_called_with(self.musicPath, self.album, self.artist, self.title, self.website, self.actualDate)
+        mock_metadata.assert_called_with(self.musicPath, self.fileName, self.title, self.artist, self.album, self.website, self.actualDate)
         self.assertTrue(result.IsSuccess())
         self.checkAudioData(result.data(), self.ytMp3DownloadResponse)
 
@@ -300,7 +348,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         result = self.ytManager.download_mp3(self.ytLink)
 
         mock_extract_info.assert_called_once_with(self.ytLink)
-        mock_metadata.assert_called_with(self.musicPath, self.album, self.artist, self.title, self.website, self.actualDate)
+        mock_metadata.assert_called_with(self.musicPath, self.fileName, self.title, self.artist, self.album, self.website, self.actualDate)
         self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
@@ -311,7 +359,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         result = self.ytManager.download_mp3(self.ytLink)
 
         mock_extract_info.assert_called_with(self.ytLink)
-        mock_metadata.assert_called_with(self.musicPath, self.album, self.empty, self.title, self.website, self.actualDate)
+        mock_metadata.assert_called_with(self.musicPath, self.fileName, self.title, self.empty, self.album, self.website, self.actualDate)
         self.assertTrue(result.IsSuccess())
         self.checkAudioData(result.data(), self.ytMp3DownloadWithoutArtistResponse)
 
@@ -460,10 +508,45 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
                                             ])
 
         self.assertEqual(mock_metadata.call_count, self.numberOfSongs)
-        mock_metadata.assert_has_calls([mock.call(self.musicPath, str(self.numberOfArchiveSongs+1), self.playlistName, self.firstArtist, self.firstAlbum, self.firstTitle, self.firstWebsite, self.actualDate),
-                                        mock.call(self.musicPath, str(self.numberOfArchiveSongs+2), self.playlistName, self.secondArtist, self.secondAlbum, self.secondTitle, self.secondWebsite, self.actualDate),
-                                        mock.call(self.musicPath, str(self.numberOfArchiveSongs+3), self.playlistName, self.thirdArtist, self.thirdAlbum, self.thirdTitle, self.thirdWebsite, self.actualDate),
-                                        mock.call(self.musicPath, str(self.numberOfArchiveSongs+4), self.playlistName, self.fourthArtist, self.fourthAlbum, self.fourthTitle, self.fourthWebsite, self.actualDate)])
+        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistName, self.firstFilename,  str(self.numberOfArchiveSongs+1), self.firstTitle,  self.firstArtist,  self.firstAlbum,  self.firstWebsite,  self.actualDate),
+                                        mock.call(self.musicPath, self.playlistName, self.secondFilename, str(self.numberOfArchiveSongs+2), self.secondTitle, self.secondArtist, self.secondAlbum, self.secondWebsite, self.actualDate),
+                                        mock.call(self.musicPath, self.playlistName, self.thirdFilename,  str(self.numberOfArchiveSongs+3), self.thirdTitle,  self.thirdArtist,  self.thirdAlbum,  self.thirdWebsite,  self.actualDate),
+                                        mock.call(self.musicPath, self.playlistName, self.fourthFilename, str(self.numberOfArchiveSongs+4), self.fourthTitle, self.fourthArtist, self.fourthAlbum, self.fourthWebsite, self.actualDate)])
+
+        self.assertTrue(result.IsSuccess())
+        self.assertEqual(result.data(), self.numberOfSongs)
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
+    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToPlaylist")
+    @mock.patch.object(yt_dlp.utils, "sanitize_filename")
+    def test_downloadMP3Playlist(self, mock_sanitize, mock_metadata:mock.MagicMock, mock_extract_info:mock.MagicMock):
+        mock_extract_info.configure_mock(side_effect=[self.ytPlaylistInfoResponse4, self.ytDownloadMp3Response1,
+                                                      self.ytDownloadMp3Response2, self.ytDownloadMp3Response3, self.ytDownloadMp3Response4])
+
+        mock_sanitize.configure_mock(side_effect=[self.firstTitle,  self.firstArtist,
+                                                  self.secondTitle, self.secondArtist,
+                                                  self.thirdTitle,  self.thirdArtist,
+                                                  self.fourthTitle, self.fourthArtist])
+
+        result = self.ytManager.downloadPlaylistMp3(self.musicPath, self.playlistName, self.ytLink)
+
+
+        self.assertEqual(self.ytManager.createDirIfNotExist.call_count, 5)
+        self.ytManager.createDirIfNotExist.assert_called_with(self.musicPath+"/"+self.playlistName)
+        self.assertEqual(mock_extract_info.call_count, 5)
+        mock_extract_info.assert_has_calls([mock.call(self.ytLink, download=False),
+                                            mock.call(self.firstUrl),
+                                            mock.call(self.secondUrl),
+                                            mock.call(self.thirdUrl),
+                                            mock.call(self.fourthUrl),
+                                            ])
+        self.assertEqual(mock_sanitize.call_count, 8)
+
+        self.assertEqual(mock_metadata.call_count, self.numberOfSongs)
+        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistName, self.firstFilename,  str(self.numberOfArchiveSongs+1), self.firstTitle,  self.firstArtist,  self.firstAlbum,  self.firstWebsite,  self.actualDate),
+                                        mock.call(self.musicPath, self.playlistName, self.secondFilename, str(self.numberOfArchiveSongs+2), self.secondTitle, self.secondArtist, self.secondAlbum, self.secondWebsite, self.actualDate),
+                                        mock.call(self.musicPath, self.playlistName, self.thirdFilename,  str(self.numberOfArchiveSongs+3), self.thirdTitle,  self.thirdArtist,  self.thirdAlbum,  self.thirdWebsite,  self.actualDate),
+                                        mock.call(self.musicPath, self.playlistName, self.fourthFilename, str(self.numberOfArchiveSongs+4), self.fourthTitle, self.fourthArtist, self.fourthAlbum, self.fourthWebsite, self.actualDate)])
 
         self.assertTrue(result.IsSuccess())
         self.assertEqual(result.data(), self.numberOfSongs)
@@ -476,7 +559,11 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         mock_ydl_instance.extract_info.side_effect=[self.ytPlaylistInfoResponse4, self.ytDownloadMp3Response1,
                                                     self.ytDownloadMp3Response2, self.ytDownloadMp3Response3SecondTitle, self.ytDownloadMp3Response4]  # Zwracana wartość
 
-        mock_isFile.configure_mock(side_effect=[False, False, True, True, False, False, False])
+        mock_isFile.configure_mock(side_effect=[False,
+                                                False,
+                                                True, True, False, # third song with the same title
+                                                False,
+                                                False])
         self.ytManager._addMetadataToPlaylist = mock.MagicMock()
 
 
@@ -506,13 +593,190 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         ])
 
         self.assertEqual(self.ytManager._addMetadataToPlaylist.call_count, self.numberOfSongs)
-        self.ytManager._addMetadataToPlaylist.assert_has_calls([mock.call(self.musicPath, str(self.numberOfArchiveSongs+1), self.playlistName, self.firstArtist, self.firstAlbum, self.firstTitle, self.firstHash),
-                                        mock.call(self.musicPath, str(self.numberOfArchiveSongs+2), self.playlistName, self.secondArtist, self.secondAlbum, self.secondTitle, self.secondHash),
-                                        mock.call(self.musicPath, str(self.numberOfArchiveSongs+3), self.playlistName, self.thirdArtist, self.thirdAlbum, self.secondTitle+" (1)", self.thirdHash),
-                                        mock.call(self.musicPath, str(self.numberOfArchiveSongs+4), self.playlistName, self.fourthArtist, self.fourthAlbum, self.fourthTitle, self.fourthHash)])
+        self.ytManager._addMetadataToPlaylist.assert_has_calls([
+            mock.call(self.musicPath, self.playlistName, self.firstFilename,  str(self.numberOfArchiveSongs+1), self.firstTitle,        self.firstArtist,  self.firstAlbum,  self.firstHash),
+            mock.call(self.musicPath, self.playlistName, self.secondFilename, str(self.numberOfArchiveSongs+2), self.secondTitle,       self.secondArtist, self.secondAlbum, self.secondHash),
+            mock.call(self.musicPath, self.playlistName, self.secondFilename.replace(".mp3", " (1).mp3"),  str(self.numberOfArchiveSongs+3), self.secondTitle,       self.secondArtist, self.secondAlbum,  self.thirdHash),
+            mock.call(self.musicPath, self.playlistName, self.fourthFilename, str(self.numberOfArchiveSongs+4), self.fourthTitle,       self.fourthArtist, self.fourthAlbum, self.fourthHash)])
 
         self.assertTrue(result.IsSuccess())
         self.assertEqual(result.data(), self.numberOfSongs)
+
+    @mock.patch("yt_dlp.YoutubeDL")
+    @mock.patch("os.path.isfile")
+    def test_downloadMP3Playlist_theSameTitleFiveTimes(self, mock_isFile:mock.MagicMock, mock_yt:mock.MagicMock):
+        mock_ydl_instance = MagicMock()
+        mock_yt.return_value = mock_ydl_instance
+        mock_ydl_instance.extract_info.side_effect=[self.ytPlaylistInfoResponse5]
+        sideEffectOfIsFileMock = [True, True, False, False,
+                                  True, True, True,  False, False,
+                                  True, True, True,  True,  False, False,
+                                  True, True, True,  True,  True,  False, False,
+                                  True, True, True,  True,  True,  True, False
+                                  ]
+        mock_isFile.configure_mock(side_effect=sideEffectOfIsFileMock)
+        self.ytManager._download_mp3 = mock.MagicMock()
+        ytResultSong1 = ResultOfDownload(AudioData(str(self.musicPath+"/"+self.playlistName+"/"+
+                                                   self.firstTitle+" (1).mp3"),
+                                                   self.firstTitle,
+                                                   self.firstHash,
+                                                   self.firstArtist,
+                                                   self.firstAlbumArtist))
+        ytResultSong2 = ResultOfDownload(AudioData(str(self.musicPath+"/"+self.playlistName+"/"+
+                                                   self.secondTitle+" (2).mp3"),
+                                                   self.secondTitle,
+                                                   self.secondHash,
+                                                   self.secondArtist,
+                                                   self.secondAlbumArtist))
+        ytResultSong3 = ResultOfDownload(AudioData(str(self.musicPath+"/"+self.playlistName+"/"+
+                                                   self.thirdTitle+" (3).mp3"),
+                                                   self.thirdTitle,
+                                                   self.thirdHash,
+                                                   self.thirdArtist,
+                                                   self.thirdAlbumArtist))
+        ytResultSong4 = ResultOfDownload(AudioData(str(self.musicPath+"/"+self.playlistName+"/"+
+                                                   self.fourthTitle+" (4).mp3"),
+                                                   self.fourthTitle,
+                                                   self.fourthHash,
+                                                   self.fourthArtist,
+                                                   self.fourthAlbumArtist))
+
+        ytResultSong5 = ResultOfDownload(AudioData(str(self.musicPath+"/"+self.playlistName+"/"+
+                                                   self.fifthTitle+" (5).mp3"),
+                                                   self.fifthTitle,
+                                                   self.fifthHash,
+                                                   self.fifthArtist,
+                                                   self.fifthAlbumArtist))
+        self.ytManager._download_mp3.configure_mock(side_effect=[ytResultSong1, ytResultSong2, ytResultSong3, ytResultSong4, ytResultSong5])
+        self.ytManager._addMetadataToPlaylist = mock.MagicMock()
+
+
+        result = self.ytManager.downloadPlaylistMp3(self.musicPath, self.playlistName, self.ytLink)
+
+
+        self.assertEqual(self.ytManager.createDirIfNotExist.call_count, 1)
+        self.ytManager.createDirIfNotExist.assert_called_with(self.musicPath+"/"+self.playlistName)
+        self.assertEqual(mock_isFile.call_count, len(sideEffectOfIsFileMock))
+        self.ytManager._download_mp3.assert_has_calls([
+            mock.call(self.firstUrl,  self.musicPath+"/"+self.playlistName, '%(title)s (1).%(ext)s'),
+            mock.call(self.secondUrl, self.musicPath+"/"+self.playlistName, '%(title)s (2).%(ext)s'),
+            mock.call(self.thirdUrl,  self.musicPath+"/"+self.playlistName, '%(title)s (3).%(ext)s'),
+            mock.call(self.fourthUrl, self.musicPath+"/"+self.playlistName, '%(title)s (4).%(ext)s'),
+            mock.call(self.fifthUrl,  self.musicPath+"/"+self.playlistName, '%(title)s (5).%(ext)s')
+        ])
+
+        mock_yt.assert_has_calls([mock.call(self.getPlaylistInfoRequest)])
+
+        self.assertEqual(mock_yt.call_count, 1)
+        self.assertEqual(mock_ydl_instance.extract_info.call_count, 1)
+        mock_ydl_instance.extract_info.assert_has_calls([
+            mock.call(self.ytLink, download=False)
+        ])
+
+        self.assertEqual(self.ytManager._addMetadataToPlaylist.call_count, 5)
+
+        self.ytManager._addMetadataToPlaylist.assert_has_calls([
+            mock.call(self.musicPath, self.playlistName, self.firstFilename.replace(".mp3", " (1).mp3"),  str(self.numberOfArchiveSongs+1), self.firstTitle,  self.firstArtist,  self.firstAlbumArtist,  self.firstHash),
+            mock.call(self.musicPath, self.playlistName, self.secondFilename.replace(".mp3", " (2).mp3"), str(self.numberOfArchiveSongs+2), self.secondTitle, self.secondArtist, self.secondAlbumArtist, self.secondHash),
+            mock.call(self.musicPath, self.playlistName, self.thirdFilename.replace(".mp3", " (3).mp3"),  str(self.numberOfArchiveSongs+3), self.thirdTitle,  self.thirdArtist,  self.thirdAlbumArtist,  self.thirdHash),
+            mock.call(self.musicPath, self.playlistName, self.fourthFilename.replace(".mp3", " (4).mp3"), str(self.numberOfArchiveSongs+4), self.fourthTitle, self.fourthArtist, self.fourthAlbumArtist, self.fourthHash),
+            mock.call(self.musicPath, self.playlistName, self.fifthFilename.replace(".mp3", " (5).mp3"),  str(self.numberOfArchiveSongs+5), self.fifthTitle,  self.fifthArtist,  self.fifthAlbumArtist,  self.fifthHash)
+            ])
+
+        self.assertTrue(result.IsSuccess())
+        self.assertEqual(result.data(), 5)
+
+    @mock.patch("yt_dlp.YoutubeDL")
+    @mock.patch("os.path.isfile")
+    def test_downloadMP3Playlist_theSameTitleSixTimes(self, mock_isFile:mock.MagicMock, mock_yt:mock.MagicMock):
+        mock_ydl_instance = MagicMock()
+        mock_yt.return_value = mock_ydl_instance
+        mock_ydl_instance.extract_info.side_effect=[self.ytPlaylistInfoResponse6]
+        sideEffectOfIsFile = [True, True, False, False,
+                                  True, True, True,  False, False,
+                                  True, True, True,  True,  False, False,
+                                  True, True, True,  True,  True,  False, False,
+                                  True, True, True,  True,  True,  True, False,
+                                  True, True, True,  True,  True,  True, True
+                              ]
+        mock_isFile.configure_mock(side_effect=sideEffectOfIsFile)
+        self.ytManager._download_mp3 = mock.MagicMock()
+        ytResultSong1 = ResultOfDownload(AudioData(str(self.musicPath+"/"+self.playlistName+"/"+
+                                                   self.firstTitle+" (1).mp3"),
+                                                   self.firstTitle,
+                                                   self.firstHash,
+                                                   self.firstArtist,
+                                                   self.firstAlbumArtist))
+        ytResultSong2 = ResultOfDownload(AudioData(str(self.musicPath+"/"+self.playlistName+"/"+
+                                                   self.secondTitle+" (2).mp3"),
+                                                   self.secondTitle,
+                                                   self.secondHash,
+                                                   self.secondArtist,
+                                                   self.secondAlbumArtist))
+        ytResultSong3 = ResultOfDownload(AudioData(str(self.musicPath+"/"+self.playlistName+"/"+
+                                                   self.thirdTitle+" (3).mp3"),
+                                                   self.thirdTitle,
+                                                   self.thirdHash,
+                                                   self.thirdArtist,
+                                                   self.thirdAlbumArtist))
+        ytResultSong4 = ResultOfDownload(AudioData(str(self.musicPath+"/"+self.playlistName+"/"+
+                                                   self.fourthTitle+" (4).mp3"),
+                                                   self.fourthTitle,
+                                                   self.fourthHash,
+                                                   self.fourthArtist,
+                                                   self.fourthAlbumArtist))
+        ytResultSong5 = ResultOfDownload(AudioData(str(self.musicPath+"/"+self.playlistName+"/"+
+                                                   self.fifthTitle+" (5).mp3"),
+                                                   self.fifthTitle,
+                                                   self.fifthHash,
+                                                   self.fifthArtist,
+                                                   self.fifthAlbumArtist))
+        ytResultSong6 = ResultOfDownload(AudioData(str(self.musicPath+"/"+self.playlistName+"/"+
+                                                   self.sixthTitle+" (6).mp3"),
+                                                   self.sixthTitle,
+                                                   self.sixthHash,
+                                                   self.sixthArtist,
+                                                   self.sixthAlbumArtist))
+
+        self.ytManager._download_mp3.configure_mock(side_effect=[ytResultSong1, ytResultSong2, ytResultSong3, ytResultSong4, ytResultSong5, ytResultSong6])
+        self.ytManager._addMetadataToPlaylist = mock.MagicMock()
+
+
+        result = self.ytManager.downloadPlaylistMp3(self.musicPath, self.playlistName, self.ytLink)
+
+
+        self.assertEqual(self.ytManager.createDirIfNotExist.call_count, 1)
+        self.ytManager.createDirIfNotExist.assert_called_with(self.musicPath+"/"+self.playlistName)
+
+        self.assertEqual(mock_isFile.call_count, len(sideEffectOfIsFile))
+        self.ytManager._download_mp3.assert_has_calls([
+            mock.call(self.firstUrl,  self.musicPath+"/"+self.playlistName, '%(title)s (1).%(ext)s'),
+            mock.call(self.secondUrl, self.musicPath+"/"+self.playlistName, '%(title)s (2).%(ext)s'),
+            mock.call(self.thirdUrl,  self.musicPath+"/"+self.playlistName, '%(title)s (3).%(ext)s'),
+            mock.call(self.fourthUrl, self.musicPath+"/"+self.playlistName, '%(title)s (4).%(ext)s'),
+            mock.call(self.fifthUrl,  self.musicPath+"/"+self.playlistName, '%(title)s (5).%(ext)s')
+        ])
+
+        mock_yt.assert_has_calls([mock.call(self.getPlaylistInfoRequest)])
+
+        self.assertEqual(mock_yt.call_count, 1)
+        self.assertEqual(mock_ydl_instance.extract_info.call_count, 1)
+        mock_ydl_instance.extract_info.assert_has_calls([
+            mock.call(self.ytLink, download=False)
+        ])
+
+        self.assertEqual(self.ytManager._addMetadataToPlaylist.call_count, 5)
+
+        self.ytManager._addMetadataToPlaylist.assert_has_calls([
+            mock.call(self.musicPath, self.playlistName, self.firstFilename.replace(".mp3", " (1).mp3"),  str(self.numberOfArchiveSongs+1), self.firstTitle,  self.firstArtist,  self.firstAlbumArtist,  self.firstHash),
+            mock.call(self.musicPath, self.playlistName, self.secondFilename.replace(".mp3", " (2).mp3"), str(self.numberOfArchiveSongs+2), self.secondTitle, self.secondArtist, self.secondAlbumArtist, self.secondHash),
+            mock.call(self.musicPath, self.playlistName, self.thirdFilename.replace(".mp3", " (3).mp3"),  str(self.numberOfArchiveSongs+3), self.thirdTitle,  self.thirdArtist,  self.thirdAlbumArtist,  self.thirdHash),
+            mock.call(self.musicPath, self.playlistName, self.fourthFilename.replace(".mp3", " (4).mp3"), str(self.numberOfArchiveSongs+4), self.fourthTitle, self.fourthArtist, self.fourthAlbumArtist, self.fourthHash),
+            mock.call(self.musicPath, self.playlistName, self.fifthFilename.replace(".mp3", " (5).mp3"),  str(self.numberOfArchiveSongs+5), self.fifthTitle,  self.fifthArtist,  self.fifthAlbumArtist,  self.fifthHash)
+            ])
+
+        self.assertTrue(result.IsSuccess())
+        self.assertEqual(result.data(), 5)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToPlaylist")
@@ -533,7 +797,8 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
                                             ])
 
         self.assertEqual(mock_metadata.call_count, 1)
-        mock_metadata.assert_called_once_with(self.musicPath, str(self.numberOfArchiveSongs+1), self.playlistName, self.fourthArtist, self.fourthAlbum, self.fourthTitle, self.fourthWebsite, self.actualDate)
+        mock_metadata.assert_called_once_with(self.musicPath, self.playlistName, self.fourthFilename, str(self.numberOfArchiveSongs+1),
+                                              self.fourthTitle, self.fourthArtist, self.fourthAlbum, self.fourthWebsite, self.actualDate)
 
         self.assertTrue(result.IsSuccess())
         self.assertEqual(result.data(), 1)
@@ -559,9 +824,9 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
                                             ])
 
         self.assertEqual(mock_metadata.call_count, self.numberOfSongs-1)
-        mock_metadata.assert_has_calls([mock.call(self.musicPath, str(self.numberOfArchiveSongs+1), self.playlistName, self.firstArtist, self.firstAlbum, self.firstTitle, self.firstWebsite, self.actualDate),
-                                        mock.call(self.musicPath, str(self.numberOfArchiveSongs+2), self.playlistName, self.secondArtist, self.secondAlbum, self.secondTitle, self.secondWebsite, self.actualDate),
-                                        mock.call(self.musicPath, str(self.numberOfArchiveSongs+3), self.playlistName, self.fourthArtist,  self.fourthAlbum, self.fourthTitle, self.fourthWebsite, self.actualDate)])
+        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistName, self.firstFilename,  str(self.numberOfArchiveSongs+1),  self.firstTitle,  self.firstArtist,  self.firstAlbum,  self.firstWebsite,  self.actualDate),
+                                        mock.call(self.musicPath, self.playlistName, self.secondFilename, str(self.numberOfArchiveSongs+2),  self.secondTitle, self.secondArtist, self.secondAlbum, self.secondWebsite, self.actualDate),
+                                        mock.call(self.musicPath, self.playlistName, self.fourthFilename, str(self.numberOfArchiveSongs+3),  self.fourthTitle, self.fourthArtist, self.fourthAlbum, self.fourthWebsite, self.actualDate)])
 
         self.assertTrue(result.IsSuccess())
         self.assertEqual(result.data(), self.numberOfSongs-1)
@@ -589,10 +854,10 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         mock_extract_info.assert_called_once_with(self.ytLink)
         self.assertEqual(mock_metadata.call_count, self.numberOfSongs)
 
-        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistIndex1, self.playlistName, self.firstArtist,  self.firstTitle,  self.firstWebsite, self.actualDate),
-                                        mock.call(self.musicPath, self.playlistIndex2, self.playlistName, self.empty,        self.secondTitle, self.secondWebsite, self.actualDate),
-                                        mock.call(self.musicPath, self.playlistIndex3, self.playlistName, self.thirdArtist,  self.thirdTitle,  self.thirdWebsite, self.actualDate),
-                                        mock.call(self.musicPath, self.playlistIndex4, self.playlistName, self.fourthArtist, self.fourthTitle, self.fourthWebsite, self.actualDate)])
+        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistName, self.firstFilename,  self.playlistIndex1, self.firstTitle,  self.firstArtist,  self.firstAlbum,  self.firstWebsite,  self.actualDate),
+                                        mock.call(self.musicPath, self.playlistName, self.secondFilename, self.playlistIndex2, self.secondTitle, self.empty,        self.secondAlbum, self.secondWebsite, self.actualDate),
+                                        mock.call(self.musicPath, self.playlistName, self.thirdFilename,  self.playlistIndex3, self.thirdTitle,  self.thirdArtist,  self.thirdAlbum,  self.thirdWebsite,  self.actualDate),
+                                        mock.call(self.musicPath, self.playlistName, self.fourthFilename, self.playlistIndex4, self.fourthTitle, self.fourthArtist, self.fourthAlbum, self.fourthWebsite, self.actualDate)])
 
         self.assertTrue(result.IsSuccess())
         self.assertEqual(result.data(), self.numberOfSongs)
