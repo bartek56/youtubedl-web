@@ -426,7 +426,6 @@ class YoutubeManager:
         return self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistName, fileName, playlistIndex,
                                                                    title, artist, album, website, self._getActualDate())
 
-
     def _getSongsOfDir(self, playlistDir): # pragma: no cover
         if not os.path.isdir(playlistDir):
             print("Wrong dir path")
@@ -523,12 +522,6 @@ class MediaServerDownloader(YoutubeManager):
         self.ytConfig = YoutubeConfig()
         self.ytConfig.initialize(configFile)
 
-    def _isDirForPlaylists(self): # pragma: no cover
-        if not os.path.isdir(self.ytConfig.getPath()):
-            logger.error("wrong path for playlists")
-            return False
-        return True
-
     def download_playlists(self):
         if not self._isDirForPlaylists():
             logger.error("wrong path for playlists")
@@ -547,33 +540,6 @@ class MediaServerDownloader(YoutubeManager):
             songsCounter += result.data()
         logger.info("[SUMMARY] downloaded %s songs"%(songsCounter))
         return songsCounter
-
-    def checkPlaylistsSync(self):
-        if self.setMusicPath(self.ytConfig.getPath()) is None:
-            logger.error("wrong path for playlists")
-            return
-        playlists = self.ytConfig.getPlaylists()
-        for playlist in playlists:
-            logger.info("--------------- %s %s------------------", playlist.name, playlist.link)
-            self.checkPlaylistStatus(self.ytConfig.getPath(), playlist.name, playlist.link)
-
-    def updateTrackNumberAllPlaylists(self, indexOfPlaylist=None, isSave=False):
-        if self.setMusicPath(self.ytConfig.getPath()) is None:
-            logger.error("wrong path for playlists")
-            return
-        playlists = self.ytConfig.getPlaylists()
-        if indexOfPlaylist is not None:
-            playlist = playlists[indexOfPlaylist]
-            logger.info("--------------- %s ------------------", playlist.name)
-            logger.info(" %s ", playlist.link)
-            playlistDir = os.path.join(self.ytConfig.getPath(), playlist.name)
-            self.updateTrackNumber(playlistDir,playlist.link, isSave)
-        else:
-            for playlist in playlists:
-                logger.info("--------------- %s ------------------", playlist.name)
-                logger.info(" %s ", playlist.link)
-                playlistDir = os.path.join(self.ytConfig.getPath(), playlist.name)
-                self.updateTrackNumber(playlistDir,playlist.link, isSave)
 
     def downloadPlaylistMp3(self, playlistDir, playlistName, url) -> ResultOfDownload:
         path=os.path.join(playlistDir, playlistName)
@@ -621,25 +587,6 @@ class MediaServerDownloader(YoutubeManager):
             self.addMetadataToPlaylist(playlistDir, playlistName, songMetadata.path.split("/")[-1], str(numberOfDownloadedSongsLocally), songMetadata.title, songMetadata.artist, songMetadata.album, songMetadata.hash)
             songCounter+=1
         return ResultOfDownload(songCounter)
-
-    def updateTrackNumber(self, playlistDir, url, isSave=False):
-        songs = self._getSongsOfDir(playlistDir)
-
-#        songsSorted = sorted(songs, key=lambda x: (int(x.trackNumber), x.date))
-        songs = sorted(songs, key=lambda x: (x.date, int(x.trackNumber)))
-
-        logger.debug("all songs: %i", len(songs))
-
-        counter=0
-        for x in songs:
-            logger.info(x)
-            x:Mp3Info
-            x.trackNumber = str(counter+1)
-            counter+=1
-            if isSave:
-                self.metadataManager.setMetadataMp3Info(os.path.join(playlistDir, x.fileName), x)
-            logger.info(x)
-            logger.info("------------------------------")
 
     def checkPlaylistStatus(self, playlistDir, playlistName, url):
         directory=os.path.join(playlistDir, playlistName)
@@ -701,6 +648,52 @@ class MediaServerDownloader(YoutubeManager):
 
         return (localFilesTemp, ytSongsTemp)
 
+    def checkPlaylistsSync(self):
+        if self.setMusicPath(self.ytConfig.getPath()) is None:
+            logger.error("wrong path for playlists")
+            return
+        playlists = self.ytConfig.getPlaylists()
+        for playlist in playlists:
+            logger.info("--------------- %s %s------------------", playlist.name, playlist.link)
+            self.checkPlaylistStatus(self.ytConfig.getPath(), playlist.name, playlist.link)
+
+    def updateTrackNumberAllPlaylists(self, indexOfPlaylist=None, isSave=False):
+        if self.setMusicPath(self.ytConfig.getPath()) is None:
+            logger.error("wrong path for playlists")
+            return
+        playlists = self.ytConfig.getPlaylists()
+        if indexOfPlaylist is not None:
+            playlist = playlists[indexOfPlaylist]
+            logger.info("--------------- %s ------------------", playlist.name)
+            logger.info(" %s ", playlist.link)
+            playlistDir = os.path.join(self.ytConfig.getPath(), playlist.name)
+            self.updateTrackNumber(playlistDir,playlist.link, isSave)
+        else:
+            for playlist in playlists:
+                logger.info("--------------- %s ------------------", playlist.name)
+                logger.info(" %s ", playlist.link)
+                playlistDir = os.path.join(self.ytConfig.getPath(), playlist.name)
+                self.updateTrackNumber(playlistDir,playlist.link, isSave)
+
+    def updateTrackNumber(self, playlistDir, url, isSave=False):
+        songs = self._getSongsOfDir(playlistDir)
+
+#        songsSorted = sorted(songs, key=lambda x: (int(x.trackNumber), x.date))
+        songs = sorted(songs, key=lambda x: (x.date, int(x.trackNumber)))
+
+        logger.debug("all songs: %i", len(songs))
+
+        counter=0
+        for x in songs:
+            logger.info(x)
+            x:Mp3Info
+            x.trackNumber = str(counter+1)
+            counter+=1
+            if isSave:
+                self.metadataManager.setMetadataMp3Info(os.path.join(playlistDir, x.fileName), x)
+            logger.info(x)
+            logger.info("------------------------------")
+
     def _getNumberOfDownloadedSongs(self, path): # pragma: no cover
         filesInPlaylistDir = os.listdir(path)
         numberOfDownloadedSongs = 0
@@ -709,6 +702,12 @@ class MediaServerDownloader(YoutubeManager):
                 numberOfDownloadedSongs +=1
 
         return numberOfDownloadedSongs
+
+    def _isDirForPlaylists(self): # pragma: no cover
+        if not os.path.isdir(self.ytConfig.getPath()):
+            logger.error("wrong path for playlists")
+            return False
+        return True
 
 
 def main(): # pragma: no cover
