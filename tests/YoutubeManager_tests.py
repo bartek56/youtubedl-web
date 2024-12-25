@@ -221,6 +221,7 @@ class YoutubeTestParams():
     hash = "abcdefgh"
     website = ytDomain + hash
 
+    empty  = ""
 
     artist = "artist_test"
     title  = "title_test"
@@ -297,17 +298,13 @@ class YoutubeTestParams():
 
 
 class YouTubeManagerDlTestCase(unittest.TestCase, YoutubeTestParams):
-    musicPath = "/media/music"
     videoPath = "/media/video"
 
-    empty  = ""
 
     exceptionMessage = "failed download"
     exceptionErrorExpected = "download failed: "+exceptionMessage
 
-    ytDomain = "https://youtu.be/"
-
-    foundMp3File = musicPath+"/"+YoutubeTestParams.fileName
+    foundMp3File = YoutubeTestParams.musicPath+"/"+YoutubeTestParams.fileName
 
     ytMp3ArchiveFilename = "songsArchive.txt"
 
@@ -315,7 +312,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase, YoutubeTestParams):
                                                                      {"playlist_name":"testPlaylist", "playlist_index":"2", "url":"https://www.youtube.com/watch?v=2222", "title":"secondTitle"}]}
     ytMediaInfoResponse = {"original_url":YoutubeTestParams.ytLink, "title":"firstTitle", "title":"testTitle", "artist":"testArtist", "album":"testAlbum"}
     ytMp3DownloadResponse ={"title":YoutubeTestParams.title, "artist":YoutubeTestParams.artist, "album":YoutubeTestParams.album, "id":YoutubeTestParams.hash, "requested_downloads":[{'filepath':foundMp3File}]}
-    ytMp3DownloadWithoutArtistResponse = {"title":YoutubeTestParams.title, "artist":empty, "album":YoutubeTestParams.album, "id":YoutubeTestParams.hash, "requested_downloads":[{'filepath':foundMp3File}]}
+    ytMp3DownloadWithoutArtistResponse = {"title":YoutubeTestParams.title, "artist":YoutubeTestParams.empty, "album":YoutubeTestParams.album, "id":YoutubeTestParams.hash, "requested_downloads":[{'filepath':foundMp3File}]}
     ytEmptyPlaylist = {"title": YoutubeTestParams.playlistName, "entries":[{}, None]}
 
     numberOfSongs = 4
@@ -721,9 +718,6 @@ class YouTubeManagerDlTestCase(unittest.TestCase, YoutubeTestParams):
 
 
 class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
-    videoPath = "/media/video"
-
-    empty  = ""
 
     numberOfSongs = 4
     ytDownloadMp3Response1 = {"title":YoutubeTestParams.firstTitle, "artist":YoutubeTestParams.firstArtist, "album":YoutubeTestParams.firstAlbum, "id":YoutubeTestParams.firstHash, "requested_downloads":[{'filepath': YoutubeTestParams.firstFilenameWithPath}]}
