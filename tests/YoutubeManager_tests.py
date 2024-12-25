@@ -207,45 +207,28 @@ class ResultOfDownloadTestCase(unittest.TestCase):
         self.assertEqual(result.error(), error)
 
 
-class YouTubeManagerDlTestCase(unittest.TestCase):
-    musicPath = "/media/music"
-    videoPath = "/media/video"
+class YoutubeTestParams():
+    actualDate = "2020-05-05"
 
-    empty  = ""
-
-    exceptionMessage = "failed download"
-    exceptionErrorExpected = "download failed: "+exceptionMessage
-
-    ytLink      = "https://www.youtube.com/watch?v=yqq3p-brlyc"
-    ytMediaHash = "yqq3p-brlyc"
     ytDomain = "https://youtu.be/"
+
+    musicPath = "/media/music"
+
+    playlistName = "test_playlist"
+
+    playlistPath = musicPath+"/"+playlistName
+
+    hash = "abcdefgh"
+    website = ytDomain + hash
+
 
     artist = "artist_test"
     title  = "title_test"
     fileName = title + ".mp3"
-    titleLong = "title_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test test_test_test_test_test_test_test_test_test_test_test_test_test"
-    titleLongExpected = "title_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test"
     album  = "album_test"
-    playlistName = "test_playlist"
-    hash = "abcdefgh"
-    website = ytDomain + hash
 
-    foundMp3File = musicPath+"/"+fileName
+    ytLink      = "https://www.youtube.com/watch?v=yqq3p-brlyc"
 
-    ytMp3ArchiveFilename = "songsArchive.txt"
-
-    ytPlaylistInfoResponse2 = {"title": "testPlaylist","entries":[{"playlist_name":"testPlaylist", "playlist_index":"1", "url":"https://www.youtube.com/watch?v=1111", "title":"firstTitle"},
-                                                                     {"playlist_name":"testPlaylist", "playlist_index":"2", "url":"https://www.youtube.com/watch?v=2222", "title":"secondTitle"}]}
-    ytMediaInfoResponse = {"original_url":ytLink, "title":"firstTitle", "title":"testTitle", "artist":"testArtist", "album":"testAlbum"}
-    ytMp3DownloadResponse ={"title":title, "artist":artist, "album":album, "id":hash, "requested_downloads":[{'filepath':foundMp3File}]}
-    ytMp3LongTitleDownloadResponse ={"title":titleLong, "artist":artist, "album":album, "id":hash}
-    ytMp3LongTitleDownloadResponseExpected ={"title":titleLongExpected, "artist":artist, "album":album, "id":hash}
-
-    ytMp3DownloadWithoutArtistResponse = {"title":title, "artist":empty, "album":album, "id":hash, "requested_downloads":[{'filepath':foundMp3File}]}
-    ytEmptyPlaylist = {"title": playlistName, "entries":[{}, None]}
-
-    playlistPath = musicPath+"/"+playlistName
-    numberOfSongs = 4
     playlistIndex1 = 1
     firstTitle     = "first_title"
     firstFilename  =  firstTitle+".mp3"
@@ -312,66 +295,36 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
     sixthWebsite = ytDomain+sixthHash
     sixthFilenameWithPath  = playlistPath + "/" + sixthFilename
 
-    ytDownloadMp3Response1 = {"title":firstTitle, "artist":firstArtist, "album":firstAlbum, "id":firstHash, "requested_downloads":[{'filepath': firstFilenameWithPath}]}
-    ytDownloadMp3Response2 = {"title":secondTitle, "artist":secondArtist, "album":secondAlbum, "id":secondHash, "requested_downloads":[{'filepath':secondFilenameWithPath}]}
-    ytDownloadMp3Response3 = {"title":thirdTitle, "artist":thirdArtist, "album":thirdAlbum, "id":thirdHash, "requested_downloads":[{'filepath':thirdFilenameWithPath}]}
-    ytDownloadMp3Response3SecondTitle = {"title":secondTitle, "artist":secondArtist, "album":secondAlbum, "id":thirdHash, "requested_downloads":[{'filepath':secondFilenameWithPath.replace(".mp3", " (1).mp3")}]}
-    ytDownloadMp3Response4 = {"title":fourthTitle, "artist":fourthArtist, "album":fourthAlbum, "id":fourthHash, "requested_downloads":[{'filepath':fourthFilenameWithPath}]}
-    ytDownloadMp3Response5 = {"title":fifthTitle, "artist":fifthArtist, "album":fifthAlbum, "id":fifthHash, "requested_downloads":[{'filepath':fifthFilenameWithPath}]}
 
-    ytPlaylistInfoResponse4 = {"title": playlistName,"entries":[{"playlist_name":playlistName, "playlist_index":playlistIndex1, "url":firstUrl, "title":firstTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex2, "url":secondUrl, "title":secondTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex3, "url":thirdUrl, "title":thirdTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex4, "url":fourthUrl, "title":fourthTitle}
-                                                                ]}
+class YouTubeManagerDlTestCase(unittest.TestCase, YoutubeTestParams):
+    musicPath = "/media/music"
+    videoPath = "/media/video"
 
-    ytPlaylistInfoResponse5 = {"title": playlistName,"entries":[{"playlist_name":playlistName, "playlist_index":playlistIndex1, "url":firstUrl, "title":firstTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex2, "url":secondUrl, "title":secondTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex3, "url":thirdUrl, "title":thirdTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex4, "url":fourthUrl, "title":fourthTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex5, "url":fifthUrl, "title":fifthTitle}
-                                                                ]}
+    empty  = ""
 
-    ytPlaylistInfoResponse6 = {"title": playlistName,"entries":[{"playlist_name":playlistName, "playlist_index":playlistIndex1, "url":firstUrl, "title":firstTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex2, "url":secondUrl, "title":secondTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex3, "url":thirdUrl, "title":thirdTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex4, "url":fourthUrl, "title":fourthTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex5, "url":fifthUrl, "title":fifthTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex6, "url":sixthUrl, "title":sixthTitle}
-                                                                ]}
+    exceptionMessage = "failed download"
+    exceptionErrorExpected = "download failed: "+exceptionMessage
 
-    ytPlaylistInfoResponse3 = {"title": playlistName,"entries":[{"playlist_name":playlistName, "playlist_index":playlistIndex2, "url":secondUrl, "title":secondTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex3, "url":thirdUrl, "title":thirdTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex4, "url":fourthUrl, "title":fourthTitle}
-                                                                ]}
-    ytMediaFromPLaylist1 = MediaFromPlaylist(playlistIndex1, firstUrl, firstTitle)
-    ytMediaFromPLaylist2 = MediaFromPlaylist(playlistIndex2, secondUrl, secondTitle)
-    ytMediaFromPLaylist3 = MediaFromPlaylist(playlistIndex3, thirdUrl, thirdTitle)
-    ytMediaFromPLaylist4 = MediaFromPlaylist(playlistIndex4, fourthUrl, fourthTitle)
+    ytDomain = "https://youtu.be/"
 
-    ytDownloadMp3PlaylistResponse = {"entries":[
-            {'playlist_index': playlistIndex1,"title":firstTitle,  "artist":firstArtist, "album":firstAlbum, "id":firstHash},
-            {'playlist_index': playlistIndex2,"title":secondTitle, "album":secondAlbum, "id":secondHash},
-            {'playlist_index': playlistIndex3,"title":thirdTitle,  "artist":thirdArtist, "album":thirdAlbum, "id":thirdHash},
-            {'playlist_index': playlistIndex4,"title":fourthTitle, "artist":fourthArtist, "album":fourthAlbum, "id":fourthHash}]}
+    foundMp3File = musicPath+"/"+YoutubeTestParams.fileName
 
+    ytMp3ArchiveFilename = "songsArchive.txt"
+
+    ytPlaylistInfoResponse2 = {"title": "testPlaylist","entries":[{"playlist_name":"testPlaylist", "playlist_index":"1", "url":"https://www.youtube.com/watch?v=1111", "title":"firstTitle"},
+                                                                     {"playlist_name":"testPlaylist", "playlist_index":"2", "url":"https://www.youtube.com/watch?v=2222", "title":"secondTitle"}]}
+    ytMediaInfoResponse = {"original_url":YoutubeTestParams.ytLink, "title":"firstTitle", "title":"testTitle", "artist":"testArtist", "album":"testAlbum"}
+    ytMp3DownloadResponse ={"title":YoutubeTestParams.title, "artist":YoutubeTestParams.artist, "album":YoutubeTestParams.album, "id":YoutubeTestParams.hash, "requested_downloads":[{'filepath':foundMp3File}]}
+    ytMp3DownloadWithoutArtistResponse = {"title":YoutubeTestParams.title, "artist":empty, "album":YoutubeTestParams.album, "id":YoutubeTestParams.hash, "requested_downloads":[{'filepath':foundMp3File}]}
+    ytEmptyPlaylist = {"title": YoutubeTestParams.playlistName, "entries":[{}, None]}
+
+    numberOfSongs = 4
     extMp4 = "mp4"
     resolution360p = "360p"
     resolution720p = "720p"
     resolution4k   = "4k"
-    ytDownloadVideoResponse={"title":title, "artist":artist, "ext":extMp4}
+    ytDownloadVideoResponse={"title":YoutubeTestParams.title, "artist":YoutubeTestParams.artist, "ext":extMp4}
 
-    actualDate = "2020-05-05"
-    numberOfArchiveSongs = 5
-
-    mp3InfoTrack1 = Mp3Info(str(firstArtist + " - " + firstTitle+".mp3"), firstTitle, firstArtist, firstAlbum, firstAlbumArtist, str(playlistIndex1), firstWebsite, actualDate)
-    mp3InfoTrack2 = Mp3Info(str(secondArtist + " - " + secondTitle+".mp3"), secondTitle, secondArtist, secondAlbum, secondAlbumArtist, str(playlistIndex2), secondWebsite, actualDate)
-    mp3InfoTrack3 = Mp3Info(str(thirdArtist + " - " + thirdTitle+".mp3"), thirdTitle, thirdArtist, thirdAlbum, thirdAlbumArtist, str(playlistIndex3), thirdWebsite, actualDate)
-    mp3InfoTrack4 = Mp3Info(str(fourthArtist + " - " + fourthTitle+".mp3"), fourthTitle, fourthArtist, fourthAlbum, fourthAlbumArtist, str(playlistIndex4), fourthWebsite, actualDate)
-    listOfMp3Info4 = [mp3InfoTrack1, mp3InfoTrack2, mp3InfoTrack3, mp3InfoTrack4]
-
-    extractRequest = {'format': 'bestaudio/best', 'addmetadata': True, 'logger': None, 'outtmpl': '/media/music/test_playlist/%(title)s.%(ext)s', 'download_archive': '/media/music/test_playlist/songsArchive.txt', 'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '192'}], 'ignoreerrors': False, 'continue': True, 'no-overwrites': True, 'noplaylist': True, 'quiet': True}
-    getPlaylistInfoRequest={'format': 'best/best', 'logger': None, 'extract_flat': 'in_playlist', 'addmetadata': True, 'ignoreerrors': False, 'quiet': True}
     def setUp(self):
         logging.disable(logging.CRITICAL)
         self.ytManager = YoutubeManager(videoPath=self.videoPath, musicPath=self.musicPath, mp3ArchiveFilename=self.ytMp3ArchiveFilename)
@@ -380,10 +333,8 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         self.ytManager._lookingForFile = mock.MagicMock()
         self.ytManager.isMusicClipArchived = mock.MagicMock()
         self.ytManager.isMusicClipArchived.configure_mock(return_value=False)
-        self.ytManager._getNumberOfDownloadedSongs = mock.MagicMock()
         self.ytManager._getActualDate = mock.MagicMock()
         self.ytManager._getActualDate.configure_mock(return_value=self.actualDate)
-        self.ytManager._getNumberOfDownloadedSongs.configure_mock(return_value=self.numberOfArchiveSongs)
         self.ytManager._getSongsOfDir = mock.MagicMock()
 
     def checkPlaylist(self, playlist:PlaylistInfo, ytResponse):
@@ -623,21 +574,33 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     def test_downloadMP3_onlyMetadata_VeryLongTitle(self, mock_extract_info):
-        mock_extract_info.configure_mock(return_value=self.ytMp3LongTitleDownloadResponse)
+        titleLong = "title_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test test_test_test_test_test_test_test_test_test_test_test_test_test"
+        titleLongExpected = "title_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test"
+        ytMp3LongTitleDownloadResponse ={"title":titleLong, "artist":self.artist, "album":self.album, "id":self.hash}
+        ytMp3LongTitleDownloadResponseExpected ={"title":titleLongExpected, "artist":self.artist, "album":self.album, "id":self.hash}
+
+        mock_extract_info.configure_mock(return_value=ytMp3LongTitleDownloadResponse)
         self.ytManager.isMusicClipArchived.configure_mock(return_value=True)
 
         result = self.ytManager.download_mp3(self.ytLink)
 
         mock_extract_info.assert_called_once_with(self.ytLink, download=False)
-        self.ytManager._lookingForFile.assert_called_with(self.musicPath, self.titleLongExpected, self.artist)
+        self.ytManager._lookingForFile.assert_called_with(self.musicPath, titleLongExpected, self.artist)
         self.assertTrue(result.IsSuccess())
         data = result.data()
-        self.checkAudioData(data, self.ytMp3LongTitleDownloadResponseExpected)
+        self.checkAudioData(data, ytMp3LongTitleDownloadResponseExpected)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToPlaylist")
     def test_downloadMP3PlaylistFast(self, mock_metadata:mock.MagicMock, mock_extract_info:mock.MagicMock):
-        mock_extract_info.configure_mock(return_value=self.ytDownloadMp3PlaylistResponse)
+        ytDownloadMp3PlaylistResponse = {"entries":[
+            {'playlist_index': self.playlistIndex1,"title":self.firstTitle,  "artist":self.firstArtist, "album":self.firstAlbum, "id":self.firstHash},
+            {'playlist_index': self.playlistIndex2,"title":self.secondTitle, "album": self.secondAlbum, "id":self.secondHash},
+            {'playlist_index': self.playlistIndex3,"title":self.thirdTitle,  "artist":self.thirdArtist, "album":self.thirdAlbum, "id":self.thirdHash},
+            {'playlist_index': self.playlistIndex4,"title":self.fourthTitle, "artist":self.fourthArtist, "album":self.fourthAlbum, "id":self.fourthHash}]}
+
+
+        mock_extract_info.configure_mock(return_value=ytDownloadMp3PlaylistResponse)
 
         result = self.ytManager.downloadPlaylistMp3Fast(self.musicPath, self.playlistName, self.ytLink)
 
@@ -757,167 +720,29 @@ class YouTubeManagerDlTestCase(unittest.TestCase):
         self.assertEqual(result.error(), self.exceptionErrorExpected)
 
 
-class MediaServerDownloaderTestCase(unittest.TestCase):
-    musicPath = "/media/music"
+class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
     videoPath = "/media/video"
 
     empty  = ""
 
-    exceptionMessage = "failed download"
-    exceptionErrorExpected = "download failed: "+exceptionMessage
-
-    ytLink      = "https://www.youtube.com/watch?v=yqq3p-brlyc"
-    ytMediaHash = "yqq3p-brlyc"
-    ytDomain = "https://youtu.be/"
-
-    artist = "artist_test"
-    title  = "title_test"
-    fileName = title + ".mp3"
-    titleLong = "title_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test test_test_test_test_test_test_test_test_test_test_test_test_test"
-    titleLongExpected = "title_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test"
-    album  = "album_test"
-    playlistName = "test_playlist"
-    hash = "abcdefgh"
-    website = ytDomain + hash
-
-    foundMp3File = musicPath+"/"+fileName
-
-    ytMp3ArchiveFilename = "songsArchive.txt"
-
-    ytPlaylistInfoResponse2 = {"title": "testPlaylist","entries":[{"playlist_name":"testPlaylist", "playlist_index":"1", "url":"https://www.youtube.com/watch?v=1111", "title":"firstTitle"},
-                                                                     {"playlist_name":"testPlaylist", "playlist_index":"2", "url":"https://www.youtube.com/watch?v=2222", "title":"secondTitle"}]}
-    ytMediaInfoResponse = {"original_url":ytLink, "title":"firstTitle", "title":"testTitle", "artist":"testArtist", "album":"testAlbum"}
-    ytMp3DownloadResponse ={"title":title, "artist":artist, "album":album, "id":hash, "requested_downloads":[{'filepath':foundMp3File}]}
-    ytMp3LongTitleDownloadResponse ={"title":titleLong, "artist":artist, "album":album, "id":hash}
-    ytMp3LongTitleDownloadResponseExpected ={"title":titleLongExpected, "artist":artist, "album":album, "id":hash}
-
-    ytMp3DownloadWithoutArtistResponse = {"title":title, "artist":empty, "album":album, "id":hash, "requested_downloads":[{'filepath':foundMp3File}]}
-    ytEmptyPlaylist = {"title": playlistName, "entries":[{}, None]}
-
-    playlistPath = musicPath+"/"+playlistName
     numberOfSongs = 4
-    playlistIndex1 = 1
-    firstTitle     = "first_title"
-    firstFilename  =  firstTitle+".mp3"
-    firstArtist    = "first_artist"
-    firstAlbum     = "first_album"
-    firstAlbumArtist = "first_album_artist"
-    firstUrl = "https://www.youtube.com/watch?v=1111"
-    firstHash = "1111"
-    firstWebsite = ytDomain+firstHash
-    firstFilenameWithPath  = playlistPath + "/" + firstFilename
+    ytDownloadMp3Response1 = {"title":YoutubeTestParams.firstTitle, "artist":YoutubeTestParams.firstArtist, "album":YoutubeTestParams.firstAlbum, "id":YoutubeTestParams.firstHash, "requested_downloads":[{'filepath': YoutubeTestParams.firstFilenameWithPath}]}
+    ytDownloadMp3Response2 = {"title":YoutubeTestParams.secondTitle, "artist":YoutubeTestParams.secondArtist, "album":YoutubeTestParams.secondAlbum, "id":YoutubeTestParams.secondHash, "requested_downloads":[{'filepath':YoutubeTestParams.secondFilenameWithPath}]}
+    ytDownloadMp3Response3 = {"title":YoutubeTestParams.thirdTitle, "artist":YoutubeTestParams.thirdArtist, "album":YoutubeTestParams.thirdAlbum, "id":YoutubeTestParams.thirdHash, "requested_downloads":[{'filepath':YoutubeTestParams.thirdFilenameWithPath}]}
+    ytDownloadMp3Response4 = {"title":YoutubeTestParams.fourthTitle, "artist":YoutubeTestParams.fourthArtist, "album":YoutubeTestParams.fourthAlbum, "id":YoutubeTestParams.fourthHash, "requested_downloads":[{'filepath':YoutubeTestParams.fourthFilenameWithPath}]}
 
-    playlistIndex2 = 2
-    secondTitle    = "second_title"
-    secondFilename = secondTitle+ ".mp3"
-    secondArtist   = "second_artist"
-    secondAlbum    = "second_album"
-    secondAlbumArtist = "second_album_artist"
-    secondUrl = "https://www.youtube.com/watch?v=2222"
-    secondHash = "2222"
-    secondWebsite = ytDomain+secondHash
-    secondFilenameWithPath  = playlistPath + "/" + secondFilename
-
-    playlistIndex3 = 3
-    thirdTitle    = "third_title"
-    thirdFilename = thirdTitle+".mp3"
-    thirdArtist   = "third_artist"
-    thirdAlbum    = "third_album"
-    thirdAlbumArtist = "third_album_artist"
-    thirdUrl = "https://www.youtube.com/watch?v=3333"
-    thirdHash = "3333"
-    thirdWebsite = ytDomain+thirdHash
-    thirdFilenameWithPath  = playlistPath + "/" + thirdFilename
-
-    playlistIndex4 = 4
-    fourthTitle    = "fourth_title"
-    fourthFilename = fourthTitle+".mp3"
-    fourthArtist   = "fourth_artist"
-    fourthAlbum    = "fourth_album"
-    fourthAlbumArtist = "fourth_album_artist"
-    fourthUrl = "https://www.youtube.com/watch?v=4444"
-    fourthHash = "4444"
-    fourthWebsite = ytDomain+fourthHash
-    fourthFilenameWithPath  = playlistPath + "/" + fourthFilename
-
-    playlistIndex5 = 5
-    fifthTitle    = "fifth_title"
-    fifthFilename = fifthTitle+".mp3"
-    fifthArtist  = "fifth_artist"
-    fifthAlbum    = "fifth_album"
-    fifthAlbumArtist = "fifth_album_artist"
-    fifthUrl = "https://www.youtube.com/watch?v=5555"
-    fifthHash = "5555"
-    fifthWebsite = ytDomain+fifthHash
-    fifthFilenameWithPath  = playlistPath + "/" + fifthFilename
-
-    playlistIndex6 = 6
-    sixthTitle    = "sixth_title"
-    sixthFilename = sixthTitle+".mp3"
-    sixthArtist  = "sixth_artist"
-    sixthAlbum    = "sixth_album"
-    sixthAlbumArtist = "sixth_album_artist"
-    sixthUrl = "https://www.youtube.com/watch?v=6666"
-    sixthHash = "6666"
-    sixthWebsite = ytDomain+sixthHash
-    sixthFilenameWithPath  = playlistPath + "/" + sixthFilename
-
-    ytDownloadMp3Response1 = {"title":firstTitle, "artist":firstArtist, "album":firstAlbum, "id":firstHash, "requested_downloads":[{'filepath': firstFilenameWithPath}]}
-    ytDownloadMp3Response2 = {"title":secondTitle, "artist":secondArtist, "album":secondAlbum, "id":secondHash, "requested_downloads":[{'filepath':secondFilenameWithPath}]}
-    ytDownloadMp3Response3 = {"title":thirdTitle, "artist":thirdArtist, "album":thirdAlbum, "id":thirdHash, "requested_downloads":[{'filepath':thirdFilenameWithPath}]}
-    ytDownloadMp3Response3SecondTitle = {"title":secondTitle, "artist":secondArtist, "album":secondAlbum, "id":thirdHash, "requested_downloads":[{'filepath':secondFilenameWithPath.replace(".mp3", " (1).mp3")}]}
-    ytDownloadMp3Response4 = {"title":fourthTitle, "artist":fourthArtist, "album":fourthAlbum, "id":fourthHash, "requested_downloads":[{'filepath':fourthFilenameWithPath}]}
-    ytDownloadMp3Response5 = {"title":fifthTitle, "artist":fifthArtist, "album":fifthAlbum, "id":fifthHash, "requested_downloads":[{'filepath':fifthFilenameWithPath}]}
-
-    ytPlaylistInfoResponse4 = {"title": playlistName,"entries":[{"playlist_name":playlistName, "playlist_index":playlistIndex1, "url":firstUrl, "title":firstTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex2, "url":secondUrl, "title":secondTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex3, "url":thirdUrl, "title":thirdTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex4, "url":fourthUrl, "title":fourthTitle}
+    ytPlaylistInfoResponse4 = {"title": YoutubeTestParams.playlistName,"entries":[{"playlist_name":YoutubeTestParams.playlistName, "playlist_index":YoutubeTestParams.playlistIndex1, "url":YoutubeTestParams.firstUrl, "title":YoutubeTestParams.firstTitle},
+                                                                {"playlist_name":YoutubeTestParams.playlistName, "playlist_index":YoutubeTestParams.playlistIndex2, "url":YoutubeTestParams.secondUrl, "title":YoutubeTestParams.secondTitle},
+                                                                {"playlist_name":YoutubeTestParams.playlistName, "playlist_index":YoutubeTestParams.playlistIndex3, "url":YoutubeTestParams.thirdUrl, "title":YoutubeTestParams.thirdTitle},
+                                                                {"playlist_name":YoutubeTestParams.playlistName, "playlist_index":YoutubeTestParams.playlistIndex4, "url":YoutubeTestParams.fourthUrl, "title":YoutubeTestParams.fourthTitle}
                                                                 ]}
 
-    ytPlaylistInfoResponse5 = {"title": playlistName,"entries":[{"playlist_name":playlistName, "playlist_index":playlistIndex1, "url":firstUrl, "title":firstTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex2, "url":secondUrl, "title":secondTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex3, "url":thirdUrl, "title":thirdTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex4, "url":fourthUrl, "title":fourthTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex5, "url":fifthUrl, "title":fifthTitle}
-                                                                ]}
-
-    ytPlaylistInfoResponse6 = {"title": playlistName,"entries":[{"playlist_name":playlistName, "playlist_index":playlistIndex1, "url":firstUrl, "title":firstTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex2, "url":secondUrl, "title":secondTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex3, "url":thirdUrl, "title":thirdTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex4, "url":fourthUrl, "title":fourthTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex5, "url":fifthUrl, "title":fifthTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex6, "url":sixthUrl, "title":sixthTitle}
-                                                                ]}
-
-    ytPlaylistInfoResponse3 = {"title": playlistName,"entries":[{"playlist_name":playlistName, "playlist_index":playlistIndex2, "url":secondUrl, "title":secondTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex3, "url":thirdUrl, "title":thirdTitle},
-                                                                {"playlist_name":playlistName, "playlist_index":playlistIndex4, "url":fourthUrl, "title":fourthTitle}
-                                                                ]}
-    ytMediaFromPLaylist1 = MediaFromPlaylist(playlistIndex1, firstUrl, firstTitle)
-    ytMediaFromPLaylist2 = MediaFromPlaylist(playlistIndex2, secondUrl, secondTitle)
-    ytMediaFromPLaylist3 = MediaFromPlaylist(playlistIndex3, thirdUrl, thirdTitle)
-    ytMediaFromPLaylist4 = MediaFromPlaylist(playlistIndex4, fourthUrl, fourthTitle)
-
-    ytDownloadMp3PlaylistResponse = {"entries":[
-            {'playlist_index': playlistIndex1,"title":firstTitle,  "artist":firstArtist, "album":firstAlbum, "id":firstHash},
-            {'playlist_index': playlistIndex2,"title":secondTitle, "album":secondAlbum, "id":secondHash},
-            {'playlist_index': playlistIndex3,"title":thirdTitle,  "artist":thirdArtist, "album":thirdAlbum, "id":thirdHash},
-            {'playlist_index': playlistIndex4,"title":fourthTitle, "artist":fourthArtist, "album":fourthAlbum, "id":fourthHash}]}
-
-    extMp4 = "mp4"
-    resolution360p = "360p"
-    resolution720p = "720p"
-    resolution4k   = "4k"
-    ytDownloadVideoResponse={"title":title, "artist":artist, "ext":extMp4}
-
-    actualDate = "2020-05-05"
     numberOfArchiveSongs = 5
 
-    mp3InfoTrack1 = Mp3Info(str(firstArtist + " - " + firstTitle+".mp3"), firstTitle, firstArtist, firstAlbum, firstAlbumArtist, str(playlistIndex1), firstWebsite, actualDate)
-    mp3InfoTrack2 = Mp3Info(str(secondArtist + " - " + secondTitle+".mp3"), secondTitle, secondArtist, secondAlbum, secondAlbumArtist, str(playlistIndex2), secondWebsite, actualDate)
-    mp3InfoTrack3 = Mp3Info(str(thirdArtist + " - " + thirdTitle+".mp3"), thirdTitle, thirdArtist, thirdAlbum, thirdAlbumArtist, str(playlistIndex3), thirdWebsite, actualDate)
-    mp3InfoTrack4 = Mp3Info(str(fourthArtist + " - " + fourthTitle+".mp3"), fourthTitle, fourthArtist, fourthAlbum, fourthAlbumArtist, str(playlistIndex4), fourthWebsite, actualDate)
+    mp3InfoTrack1 = Mp3Info(str(YoutubeTestParams.firstArtist + " - " + YoutubeTestParams.firstTitle+".mp3"), YoutubeTestParams.firstTitle, YoutubeTestParams.firstArtist, YoutubeTestParams.firstAlbum, YoutubeTestParams.firstAlbumArtist, str(YoutubeTestParams.playlistIndex1), YoutubeTestParams.firstWebsite, YoutubeTestParams.actualDate)
+    mp3InfoTrack2 = Mp3Info(str(YoutubeTestParams.secondArtist + " - " + YoutubeTestParams.secondTitle+".mp3"), YoutubeTestParams.secondTitle, YoutubeTestParams.secondArtist, YoutubeTestParams.secondAlbum, YoutubeTestParams.secondAlbumArtist, str(YoutubeTestParams.playlistIndex2), YoutubeTestParams.secondWebsite, YoutubeTestParams.actualDate)
+    mp3InfoTrack3 = Mp3Info(str(YoutubeTestParams.thirdArtist + " - " + YoutubeTestParams.thirdTitle+".mp3"), YoutubeTestParams.thirdTitle, YoutubeTestParams.thirdArtist, YoutubeTestParams.thirdAlbum, YoutubeTestParams.thirdAlbumArtist, str(YoutubeTestParams.playlistIndex3), YoutubeTestParams.thirdWebsite, YoutubeTestParams.actualDate)
+    mp3InfoTrack4 = Mp3Info(str(YoutubeTestParams.fourthArtist + " - " + YoutubeTestParams.fourthTitle+".mp3"), YoutubeTestParams.fourthTitle, YoutubeTestParams.fourthArtist, YoutubeTestParams.fourthAlbum, YoutubeTestParams.fourthAlbumArtist, str(YoutubeTestParams.playlistIndex4), YoutubeTestParams.fourthWebsite, YoutubeTestParams.actualDate)
     listOfMp3Info4 = [mp3InfoTrack1, mp3InfoTrack2, mp3InfoTrack3, mp3InfoTrack4]
 
     extractRequest = {'format': 'bestaudio/best', 'addmetadata': True, 'logger': None, 'outtmpl': '/media/music/test_playlist/%(title)s.%(ext)s', 'download_archive': '/media/music/test_playlist/downloaded_songs.txt', 'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '192'}], 'ignoreerrors': False, 'continue': True, 'no-overwrites': True, 'noplaylist': True, 'quiet': True}
@@ -1019,14 +844,21 @@ class MediaServerDownloaderTestCase(unittest.TestCase):
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     def test_checkPlaylistStatus_missedYt(self, mock_extract_info):
-        mock_extract_info.configure_mock(return_value=self.ytPlaylistInfoResponse3)
+        ytPlaylistInfoResponse3 = {"title": self.playlistName,"entries":[{"playlist_name":self.playlistName, "playlist_index":self.playlistIndex2, "url":self.secondUrl, "title":self.secondTitle},
+                                                                         {"playlist_name":self.playlistName, "playlist_index":self.playlistIndex3, "url":self.thirdUrl, "title":self.thirdTitle},
+                                                                         {"playlist_name":self.playlistName, "playlist_index":self.playlistIndex4, "url":self.fourthUrl, "title":self.fourthTitle}
+                                                                         ]}
+
+        mock_extract_info.configure_mock(return_value=ytPlaylistInfoResponse3)
         self.ytManager._getSongsOfDir.configure_mock(return_value=[self.mp3InfoTrack1, self.mp3InfoTrack2, self.mp3InfoTrack3, self.mp3InfoTrack4])
 
         localFilesMissed, ytSongsMissed = self.ytManager.checkPlaylistStatus(self.musicPath+"/"+self.playlistName, self.playlistName, self.ytLink)
         self.assertEqual(len(localFilesMissed), 1)
         self.assertEqual(len(ytSongsMissed), 0)
 
-        self.assertMediaFromPlaylistAndMp3Info(self.ytMediaFromPLaylist1, localFilesMissed[0])
+
+        ytMediaFromPLaylist1 = MediaFromPlaylist(self.playlistIndex1, self.firstUrl, self.firstTitle)
+        self.assertMediaFromPlaylistAndMp3Info(ytMediaFromPLaylist1, localFilesMissed[0])
 
     @mock.patch.object(metadata_mp3.MetadataManager, "setMetadataMp3Info")
     def test_updateTrackNumber(self, mock_setMetadataMp3Info):
@@ -1115,8 +947,10 @@ class MediaServerDownloaderTestCase(unittest.TestCase):
     def test_downloadMP3Playlist_theSameTitle(self, mock_isFile:mock.MagicMock, mock_yt:mock.MagicMock):
         mock_ydl_instance = MagicMock()
         mock_yt.return_value = mock_ydl_instance
+
+        ytDownloadMp3Response3SecondTitle = {"title":self.secondTitle, "artist":self.secondArtist, "album":self.secondAlbum, "id":self.thirdHash, "requested_downloads":[{'filepath':self.secondFilenameWithPath.replace(".mp3", " (1).mp3")}]}
         mock_ydl_instance.extract_info.side_effect=[self.ytPlaylistInfoResponse4, self.ytDownloadMp3Response1,
-                                                    self.ytDownloadMp3Response2, self.ytDownloadMp3Response3SecondTitle, self.ytDownloadMp3Response4]  # Zwracana wartość
+                                                    self.ytDownloadMp3Response2, ytDownloadMp3Response3SecondTitle, self.ytDownloadMp3Response4]  # Zwracana wartość
 
         mock_isFile.configure_mock(side_effect=[False,
                                                 False,
@@ -1167,7 +1001,14 @@ class MediaServerDownloaderTestCase(unittest.TestCase):
     def test_downloadMP3Playlist_theSameTitleFiveTimes(self, mock_isFile:mock.MagicMock, mock_yt:mock.MagicMock):
         mock_ydl_instance = MagicMock()
         mock_yt.return_value = mock_ydl_instance
-        mock_ydl_instance.extract_info.side_effect=[self.ytPlaylistInfoResponse5]
+        ytPlaylistInfoResponse5 = {"title": self.playlistName,"entries":[{"playlist_name":self.playlistName, "playlist_index":self.playlistIndex1, "url":self.firstUrl, "title":self.firstTitle},
+                                                                {"playlist_name":self.playlistName, "playlist_index":self.playlistIndex2, "url":self.secondUrl, "title":self.secondTitle},
+                                                                {"playlist_name":self.playlistName, "playlist_index":self.playlistIndex3, "url":self.thirdUrl, "title":self.thirdTitle},
+                                                                {"playlist_name":self.playlistName, "playlist_index":self.playlistIndex4, "url":self.fourthUrl, "title":self.fourthTitle},
+                                                                {"playlist_name":self.playlistName, "playlist_index":self.playlistIndex5, "url":self.fifthUrl, "title":self.fifthTitle}
+                                                                ]}
+
+        mock_ydl_instance.extract_info.side_effect=[ytPlaylistInfoResponse5]
         sideEffectOfIsFileMock = [True, True, False, False,
                                   True, True, True,  False, False,
                                   True, True, True,  True,  False, False,
@@ -1251,7 +1092,16 @@ class MediaServerDownloaderTestCase(unittest.TestCase):
     def test_downloadMP3Playlist_theSameTitleSixTimes(self, mock_isFile:mock.MagicMock, mock_yt:mock.MagicMock):
         mock_ydl_instance = MagicMock()
         mock_yt.return_value = mock_ydl_instance
-        mock_ydl_instance.extract_info.side_effect=[self.ytPlaylistInfoResponse6]
+        ytPlaylistInfoResponse6 = {"title": self.playlistName,"entries":[{"playlist_name":self.playlistName, "playlist_index":self.playlistIndex1, "url":self.firstUrl, "title":self.firstTitle},
+                                                                {"playlist_name":self.playlistName, "playlist_index":self.playlistIndex2, "url":self.secondUrl, "title":self.secondTitle},
+                                                                {"playlist_name":self.playlistName, "playlist_index":self.playlistIndex3, "url":self.thirdUrl, "title":self.thirdTitle},
+                                                                {"playlist_name":self.playlistName, "playlist_index":self.playlistIndex4, "url":self.fourthUrl, "title":self.fourthTitle},
+                                                                {"playlist_name":self.playlistName, "playlist_index":self.playlistIndex5, "url":self.fifthUrl, "title":self.fifthTitle},
+                                                                {"playlist_name":self.playlistName, "playlist_index":self.playlistIndex6, "url":self.sixthUrl, "title":self.sixthTitle}
+                                                                ]}
+
+
+        mock_ydl_instance.extract_info.side_effect=[ytPlaylistInfoResponse6]
         sideEffectOfIsFile = [True, True, False, False,
                                   True, True, True,  False, False,
                                   True, True, True,  True,  False, False,
