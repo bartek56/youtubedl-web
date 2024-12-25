@@ -261,10 +261,10 @@ class FlaskQuickDownloadPlaylists(unittest.TestCase, FlaskToolsForUT):
 
 
     @mock.patch.object(YoutubeManager, 'getPlaylistInfo')
-    @mock.patch.object(YoutubeManager, 'createDirIfNotExist')
-    @mock.patch.object(YoutubeManager, '_isMusicClipArchived')
+    @mock.patch.object(YoutubeManager, '_createDirIfNotExist')
+    @mock.patch.object(YoutubeManager, 'isMusicClipArchived')
     @mock.patch.object(YoutubeManager, '_download_mp3')
-    @mock.patch.object(YoutubeManager, '_addMetadataToPlaylist')
+    @mock.patch.object(YoutubeManager, 'addMetadataToPlaylist')
     @mock.patch.object(YoutubeConfig, 'getPlaylists')
     @mock.patch.object(YoutubeConfig, 'getPath')
     def test_downloadTwoPlaylistsOneSongABoth(self,

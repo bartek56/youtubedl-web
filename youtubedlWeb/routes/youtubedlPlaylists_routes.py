@@ -129,11 +129,11 @@ def register_socketio_youtubePlaylist(socketio):
 
 def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia):
     path=os.path.join(playlistsDir, playlistName)
-    app.youtubeManager.createDirIfNotExist(path)
+    app.youtubeManager._createDirIfNotExist(path)
     songCounter = 0
     for songData in listOfMedia:
         app.logger.debug(str(songData))
-        if app.youtubeManager._isMusicClipArchived(path, songData.url):
+        if app.youtubeManager.isMusicClipArchived(path, songData.url):
             app.logger.info("clip \"%s\" from link %s is archived", songData.title, songData.url)
             continue
         app.logger.debug("start download clip from")
@@ -146,7 +146,7 @@ def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia):
             continue
         songCounter+=1
         songMetadata = result.data()
-        filenameFullPath = app.youtubeManager._addMetadataToPlaylist(playlistsDir, songData.playlistIndex, playlistName,
+        filenameFullPath = app.youtubeManager.addMetadataToPlaylist(playlistsDir, songData.playlistIndex, playlistName,
                                                                  songMetadata.artist, songMetadata.album, songMetadata.title, songMetadata.hash)
         filename = filenameFullPath.split("/")[-1]
         randomHash = WebUtils.getRandomString()
