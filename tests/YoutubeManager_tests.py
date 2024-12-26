@@ -614,6 +614,32 @@ class YouTubeManagerDlTestCase(unittest.TestCase, YoutubeTestParams):
         self.assertEqual(result.data(), self.numberOfSongs)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
+    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToPlaylist")
+    def test_downloadMP3PlaylistFast_OneSongWithoutAlbum(self, mock_metadata:mock.MagicMock, mock_extract_info:mock.MagicMock):
+        ytDownloadMp3PlaylistResponse = {"entries":[
+            {'playlist_index': self.playlistIndex1,"title":self.firstTitle,  "artist":self.firstArtist, "album":self.firstAlbum, "id":self.firstHash},
+            {'playlist_index': self.playlistIndex2,"title":self.secondTitle, "artist":self.secondArtist, "album":"", "id":self.secondHash},
+            {'playlist_index': self.playlistIndex3,"title":self.thirdTitle,  "artist":self.thirdArtist, "album":self.thirdAlbum, "id":self.thirdHash},
+            {'playlist_index': self.playlistIndex4,"title":self.fourthTitle, "artist":self.fourthArtist, "album":self.fourthAlbum, "id":self.fourthHash}]}
+
+
+        mock_extract_info.configure_mock(return_value=ytDownloadMp3PlaylistResponse)
+
+        result = self.ytManager.downloadPlaylistMp3Fast(self.musicPath, self.playlistName, self.ytLink)
+
+        self.ytManager._createDirIfNotExist.assert_called_once_with(self.musicPath+"/"+self.playlistName)
+        mock_extract_info.assert_called_once_with(self.ytLink)
+        self.assertEqual(mock_metadata.call_count, self.numberOfSongs)
+
+        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistName, self.firstFilename,  self.playlistIndex1, self.firstTitle,  self.firstArtist,  self.firstAlbum,  self.firstWebsite,  self.actualDate),
+                                        mock.call(self.musicPath, self.playlistName, self.secondFilename, self.playlistIndex2, self.secondTitle, self.secondArtist, self.empty,       self.secondWebsite, self.actualDate),
+                                        mock.call(self.musicPath, self.playlistName, self.thirdFilename,  self.playlistIndex3, self.thirdTitle,  self.thirdArtist,  self.thirdAlbum,  self.thirdWebsite,  self.actualDate),
+                                        mock.call(self.musicPath, self.playlistName, self.fourthFilename, self.playlistIndex4, self.fourthTitle, self.fourthArtist, self.fourthAlbum, self.fourthWebsite, self.actualDate)])
+
+        self.assertTrue(result.IsSuccess())
+        self.assertEqual(result.data(), self.numberOfSongs)
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     def test_downloadMP3PlaylistFastEmptyResult(self, mock_extract_info):
         mock_extract_info.configure_mock(return_value=None)
 
@@ -1316,8 +1342,8 @@ class MediaServerDownloaderPlaylistsTestCase(unittest.TestCase):
         self.downloader.downloadPlaylistMp3.assert_not_called()
 
     def test_checkPlaylistsSync(self):
-        self.downloader.setMusicPath = MagicMock()
-        self.downloader.setMusicPath.configure_mock(return_value="/music/path")
+        self.downloader._isDirForPlaylists = MagicMock()
+        self.downloader._isDirForPlaylists.configure_mock(return_value=True)
 
         self.downloader.checkPlaylistsSync()
 
@@ -1325,9 +1351,17 @@ class MediaServerDownloaderPlaylistsTestCase(unittest.TestCase):
             [mock.call(CustomConfigParser.path, CustomConfigParser.playlist1Name, CustomConfigParser.playlist1Link),
              mock.call(CustomConfigParser.path, CustomConfigParser.playlist2Name, CustomConfigParser.playlist2Link)])
 
+    def test_checkPlaylistsSync(self):
+        self.downloader._isDirForPlaylists = MagicMock()
+        self.downloader._isDirForPlaylists.configure_mock(return_value=False)
+
+        self.downloader.checkPlaylistsSync()
+
+        self.assertEqual(self.downloader.checkPlaylistStatus.call_count, 0)
+
     def test_updateTrackNumberAllPlaylists(self):
-        self.downloader.setMusicPath = MagicMock()
-        self.downloader.setMusicPath.configure_mock(return_value="/music/path")
+        self.downloader._isDirForPlaylists = MagicMock()
+        self.downloader._isDirForPlaylists.configure_mock(return_value=True)
 
         self.downloader.updateTrackNumberAllPlaylists()
 
@@ -1336,8 +1370,8 @@ class MediaServerDownloaderPlaylistsTestCase(unittest.TestCase):
              mock.call(str(CustomConfigParser.path + "/" + CustomConfigParser.playlist2Name), CustomConfigParser.playlist2Link, False)])
 
     def test_updateTrackNumberAllPlaylists_isSave(self):
-        self.downloader.setMusicPath = MagicMock()
-        self.downloader.setMusicPath.configure_mock(return_value="/music/path")
+        self.downloader._isDirForPlaylists = MagicMock()
+        self.downloader._isDirForPlaylists.configure_mock(return_value=True)
 
         self.downloader.updateTrackNumberAllPlaylists(isSave=True)
 
@@ -1346,8 +1380,8 @@ class MediaServerDownloaderPlaylistsTestCase(unittest.TestCase):
              mock.call(str(CustomConfigParser.path + "/" + CustomConfigParser.playlist2Name), CustomConfigParser.playlist2Link, True)])
 
     def test_updateTrackNumberAllPlaylists_singleNumberOne(self):
-        self.downloader.setMusicPath = MagicMock()
-        self.downloader.setMusicPath.configure_mock(return_value="/music/path")
+        self.downloader._isDirForPlaylists = MagicMock()
+        self.downloader._isDirForPlaylists.configure_mock(return_value=True)
 
         self.downloader.updateTrackNumberAllPlaylists(0,isSave=True)
 
@@ -1355,14 +1389,21 @@ class MediaServerDownloaderPlaylistsTestCase(unittest.TestCase):
             [mock.call(str(CustomConfigParser.path + "/" + CustomConfigParser.playlist1Name), CustomConfigParser.playlist1Link, True)])
 
     def test_updateTrackNumberAllPlaylists_singleNumberTwo(self):
-        self.downloader.setMusicPath = MagicMock()
-        self.downloader.setMusicPath.configure_mock(return_value="/music/path")
+        self.downloader._isDirForPlaylists = MagicMock()
+        self.downloader._isDirForPlaylists.configure_mock(return_value=True)
 
         self.downloader.updateTrackNumberAllPlaylists(1)
 
         self.downloader.updateTrackNumber.assert_has_calls(
             [mock.call(str(CustomConfigParser.path + "/" + CustomConfigParser.playlist2Name), CustomConfigParser.playlist2Link, False)])
 
+    def test_updateTrackNumberAllPlaylists_wrongPath(self):
+        self.downloader._isDirForPlaylists = MagicMock()
+        self.downloader._isDirForPlaylists.configure_mock(return_value=False)
+
+        self.downloader.updateTrackNumberAllPlaylists()
+
+        self.assertEqual(self.downloader.updateTrackNumber.call_count, 0)
 
 if __name__ == "__main__":
     unittest.main()

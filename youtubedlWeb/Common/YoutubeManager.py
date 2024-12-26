@@ -649,7 +649,7 @@ class MediaServerDownloader(YoutubeManager):
         return (localFilesTemp, ytSongsTemp)
 
     def checkPlaylistsSync(self):
-        if self.setMusicPath(self.ytConfig.getPath()) is None:
+        if not self._isDirForPlaylists(self.ytConfig.getPath()):
             logger.error("wrong path for playlists")
             return
         playlists = self.ytConfig.getPlaylists()
@@ -658,7 +658,7 @@ class MediaServerDownloader(YoutubeManager):
             self.checkPlaylistStatus(self.ytConfig.getPath(), playlist.name, playlist.link)
 
     def updateTrackNumberAllPlaylists(self, indexOfPlaylist=None, isSave=False):
-        if self.setMusicPath(self.ytConfig.getPath()) is None:
+        if not self._isDirForPlaylists(self.ytConfig.getPath()):
             logger.error("wrong path for playlists")
             return
         playlists = self.ytConfig.getPlaylists()
