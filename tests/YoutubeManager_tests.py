@@ -618,7 +618,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase, YoutubeTestParams):
     def test_downloadMP3PlaylistFast_OneSongWithoutAlbum(self, mock_metadata:mock.MagicMock, mock_extract_info:mock.MagicMock):
         ytDownloadMp3PlaylistResponse = {"entries":[
             {'playlist_index': self.playlistIndex1,"title":self.firstTitle,  "artist":self.firstArtist, "album":self.firstAlbum, "id":self.firstHash},
-            {'playlist_index': self.playlistIndex2,"title":self.secondTitle, "artist":self.secondArtist, "album":"", "id":self.secondHash},
+            {'playlist_index': self.playlistIndex2,"title":self.secondTitle, "artist":self.secondArtist, "id":self.secondHash},
             {'playlist_index': self.playlistIndex3,"title":self.thirdTitle,  "artist":self.thirdArtist, "album":self.thirdAlbum, "id":self.thirdHash},
             {'playlist_index': self.playlistIndex4,"title":self.fourthTitle, "artist":self.fourthArtist, "album":self.fourthAlbum, "id":self.fourthHash}]}
 
@@ -1351,7 +1351,7 @@ class MediaServerDownloaderPlaylistsTestCase(unittest.TestCase):
             [mock.call(CustomConfigParser.path, CustomConfigParser.playlist1Name, CustomConfigParser.playlist1Link),
              mock.call(CustomConfigParser.path, CustomConfigParser.playlist2Name, CustomConfigParser.playlist2Link)])
 
-    def test_checkPlaylistsSync(self):
+    def test_checkPlaylistsSync_wrongPath(self):
         self.downloader._isDirForPlaylists = MagicMock()
         self.downloader._isDirForPlaylists.configure_mock(return_value=False)
 
