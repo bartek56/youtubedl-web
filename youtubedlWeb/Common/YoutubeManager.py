@@ -564,18 +564,10 @@ class MediaServerDownloader(YoutubeManager):
             titleFormat='%(title)s.%(ext)s'
             if os.path.isfile(fileToCheck):
                 logger.warning("File %s was downloaded before", fileToCheck)
-                i=1
-                while not (i>5 or not os.path.isfile(fileToCheck)):
-                    newFilenameWithNumber = "%s (%s).mp3"%(songData.title, str(i))
-                    titleFormat = '%(title)s ('+ str(i)+').%(ext)s'
-                    fileToCheck=os.path.join(path,newFilenameWithNumber)
-                    i+=1
-                #self.metadataManager.showMp3Info(fileToCheck)
-                if os.path.isfile(fileToCheck):
+                titleFormat = self._changeTitleTemplate(path, songData)
+                if titleFormat is None:
                     logger.error("File %s exists and new song can not be downloaded!", fileToCheck)
                     continue
-                else:
-                    logger.info("New version of file: %s", str(i))
 
             result = self._download_mp3(songData.url, path, titleFormat)
             if result.IsFailed():
@@ -693,6 +685,22 @@ class MediaServerDownloader(YoutubeManager):
                 self.metadataManager.setMetadataMp3Info(os.path.join(playlistDir, x.fileName), x)
             logger.info(x)
             logger.info("------------------------------")
+
+    def _changeTitleTemplate(self, path, songData):
+        fileToCheck = os.path.join(path, "%s.mp3"%(songData.title))
+        i=1
+        titleFormat = '%(title)s.%(ext)s'
+        while not (i>5 or not os.path.isfile(fileToCheck)):
+            newFilenameWithNumber = "%s (%s).mp3"%(songData.title, str(i))
+            titleFormat = '%(title)s ('+ str(i)+').%(ext)s'
+            fileToCheck=os.path.join(path,newFilenameWithNumber)
+            i+=1
+        #self.metadataManager.showMp3Info(fileToCheck)
+        if os.path.isfile(fileToCheck):
+            logger.error("File %s exists!", fileToCheck)
+            return
+        logger.info("New version of file: %s", str(i))
+        return titleFormat
 
     def _getNumberOfDownloadedSongs(self, path): # pragma: no cover
         filesInPlaylistDir = os.listdir(path)

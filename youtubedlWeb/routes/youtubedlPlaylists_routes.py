@@ -139,6 +139,7 @@ def downloadSongsFromPlaylist(playlistsDir, playlistName, listOfMedia):
         app.logger.debug("start download clip from")
         DownloadMediaFromPlaylist_start().sendMessage(PlaylistMediaInfo(songData.playlistIndex, songData.title, ""))
 
+        #TODO rename template request if song was duplicated
         result = app.youtubeManager._download_mp3(songData.url, path)
         if result.IsFailed():
             app.logger.error("Failed to download song from url")
