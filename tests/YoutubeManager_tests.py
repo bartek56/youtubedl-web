@@ -5,6 +5,7 @@ from youtubedlWeb.Common.YoutubeManager import YoutubeManager, MediaServerDownlo
 from youtubedlWeb.Common.YoutubeConfig import YoutubeConfig
 from youtubedlWeb.Common.YoutubeTypes import PlaylistInfo, MediaFromPlaylist, MediaInfo, AudioData, VideoData, ResultOfDownload
 from configparser import ConfigParser
+from datetime import datetime, timedelta
 import yt_dlp
 from yt_dlp import utils
 import metadata_mp3
@@ -184,6 +185,27 @@ class YouTubeManagerConfigTestCase(unittest.TestCase):
         self.assertEqual(mock_save.call_count, 0)
         self.assertEqual(removeSectionMock.call_count, 0)
 
+class YoutubeDownloaderUtilsTestCase(unittest.TestCase):
+    def setUp(self):
+        logging.disable(logging.CRITICAL)
+        self.ytManager = YoutubeManager()
+
+    def test_verifyActualDateTime(self):
+        now = datetime.now().strftime("%Y-%m-%d")
+
+        self.assertEqual(self.ytManager._getDateTimeNowStr(), now)
+
+class MediaServerDownloaderUtilsTestCase(unittest.TestCase):
+    def setUp(self):
+        logging.disable(logging.CRITICAL)
+        self.ytManager = MediaServerDownloader("test.ini")
+
+    def test_verifyActualDateTime(self):
+        now = datetime.now()
+
+        yesterday = now - timedelta(days=1)
+        yesterdayStr = yesterday.strftime("%Y-%m-%d")
+        self.assertEqual(self.ytManager._getDateTimeNowStr(), yesterdayStr)
 
 class ResultOfDownloadTestCase(unittest.TestCase):
     def test_resultSuccess(self):
@@ -330,8 +352,8 @@ class YouTubeManagerDlTestCase(unittest.TestCase, YoutubeTestParams):
         self.ytManager._lookingForFile = mock.MagicMock()
         self.ytManager.isMusicClipArchived = mock.MagicMock()
         self.ytManager.isMusicClipArchived.configure_mock(return_value=False)
-        self.ytManager._getActualDate = mock.MagicMock()
-        self.ytManager._getActualDate.configure_mock(return_value=self.actualDate)
+        self.ytManager._getDateTimeNowStr = mock.MagicMock()
+        self.ytManager._getDateTimeNowStr.configure_mock(return_value=self.actualDate)
         self.ytManager._getSongsOfDir = mock.MagicMock()
 
     def checkPlaylist(self, playlist:PlaylistInfo, ytResponse):
@@ -777,8 +799,8 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
         self.ytManager.isMusicClipArchived = mock.MagicMock()
         self.ytManager.isMusicClipArchived.configure_mock(return_value=False)
         self.ytManager._getNumberOfDownloadedSongs = mock.MagicMock()
-        self.ytManager._getActualDate = mock.MagicMock()
-        self.ytManager._getActualDate.configure_mock(return_value=self.actualDate)
+        self.ytManager._getDateTimeNowStr = mock.MagicMock()
+        self.ytManager._getDateTimeNowStr.configure_mock(return_value=self.actualDate)
         self.ytManager._getNumberOfDownloadedSongs.configure_mock(return_value=self.numberOfArchiveSongs)
         self.ytManager._getSongsOfDir = mock.MagicMock()
 

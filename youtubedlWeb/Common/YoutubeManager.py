@@ -1,5 +1,5 @@
 from typing import List
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import logging
 import argparse
@@ -253,7 +253,7 @@ class YoutubeManager:
         mp3Data.artist = yt_dlp.utils.sanitize_filename(mp3Data.artist)
         website = self.ytDomain + mp3Data.hash
         full_path = self.metadataManager.renameAndAddMetadataToSong(self.MUSIC_PATH, fileName,
-                                                                    mp3Data.title, mp3Data.artist, mp3Data.album, website, self._getActualDate())
+                                                                    mp3Data.title, mp3Data.artist, mp3Data.album, website, self._getDateTimeNowStr())
 
         if full_path is None:
             log = YoutubeManagerLogs.NOT_FOUND
@@ -393,7 +393,7 @@ class YoutubeManager:
             artist = yt_dlp.utils.sanitize_filename(artist)
             website = self.ytDomain + hashList[x]
             self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistName, fileName, playlistIndexList[x],
-                                                                songTitle, artist, album, website, self._getActualDate())
+                                                                songTitle, artist, album, website, self._getDateTimeNowStr())
 
             songCounter+=1
         logger.info("Downloaded %i songs", songCounter)
@@ -424,7 +424,7 @@ class YoutubeManager:
             website = self.ytDomain + hash
 
         return self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistName, fileName, playlistIndex,
-                                                                   title, artist, album, website, self._getActualDate())
+                                                                   title, artist, album, website, self._getDateTimeNowStr())
 
     def _getSongsOfDir(self, playlistDir): # pragma: no cover
         if not os.path.isdir(playlistDir):
@@ -466,7 +466,7 @@ class YoutubeManager:
         logger.error("Song with website:%s was not found!", website)
         return None
 
-    def _getActualDate(self): # pragma: no cover
+    def _getDateTimeNowStr(self):
         return datetime.now().strftime("%Y-%m-%d")
 
     def _createDirIfNotExist(self, path):
@@ -701,6 +701,11 @@ class MediaServerDownloader(YoutubeManager):
             return
         logger.info("New version of file: %s", str(i))
         return titleFormat
+
+    def _getDateTimeNowStr(self):
+        now = datetime.now()
+        yesterday = now - timedelta(days=1)
+        return yesterday.strftime("%Y-%m-%d")
 
     def _getNumberOfDownloadedSongs(self, path): # pragma: no cover
         filesInPlaylistDir = os.listdir(path)
