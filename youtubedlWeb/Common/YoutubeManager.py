@@ -758,7 +758,6 @@ def main(): # pragma: no cover
         if numberOfDownloadedSongs > 0:
             playlistsCreator = PlaylistsManager(yt.ytConfig.getPath())
             listDir = [name for name in os.listdir(yt.ytConfig.getPath()) if os.path.isdir(os.path.join(yt.ytConfig.getPath(), name))]
-            print(listDir)
             for x in listDir:
                 playlistsCreator.createPlaylistForMediaserver([x], x)
             playlistsCreator.createTopOfMusic(100)

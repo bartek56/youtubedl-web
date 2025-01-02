@@ -135,6 +135,7 @@ class PlaylistsManager:
             for fileName in filesList:
                 audio = MP3(fileName)
                 time = int(round(audio.info.length))
+                fileName = fileName.replace(self.dir, ".")
                 songName = fileName.replace(".mp3","")
                 textFile+="#EXTINF:%s,%s\r\n"%(time,songName)
                 textFile+="%s\r\n"%(fileName)
@@ -194,6 +195,7 @@ class PlaylistsManager:
             for fileName in top100:
                 audio = MP3(fileName)
                 time = int(round(audio.info.length))
+                fileName = fileName.replace(self.dir, ".")
                 songName = fileName.replace(".mp3","")
                 textFile+="#EXTINF:%s,%s\r\n"%(time,songName)
                 textFile+="%s\r\n"%(fileName)
