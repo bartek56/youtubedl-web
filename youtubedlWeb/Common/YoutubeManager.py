@@ -12,6 +12,7 @@ from .YoutubeConfig import YoutubeConfig
 from .YoutubeTypes import ResultOfDownload, YoutubeManagerLogs
 from .YoutubeTypes import AudioData, MediaFromPlaylist, PlaylistInfo, MediaInfo
 from .YoutubeTypes import VideoSettings, VideoData
+from .PlaylistsManager import PlaylistsManager
 
 logger = logging.getLogger(__name__)
 
@@ -753,7 +754,14 @@ def main(): # pragma: no cover
             logger.error("configuration file %s doesn't exists", args.configFile)
             exit()
         yt = MediaServerDownloader(args.configFile)
-        yt.download_playlists()
+        numberOfDownloadedSongs = yt.download_playlists()
+        if numberOfDownloadedSongs > 0:
+            playlistsCreator = PlaylistsManager(yt.ytConfig.getPath())
+            listDir = [name for name in os.listdir(yt.ytConfig.getPath()) if os.path.isdir(os.path.join(yt.ytConfig.getPath(), name))]
+            print(listDir)
+            for x in listDir:
+                playlistsCreator.createPlaylistForMediaserver([x], x)
+            playlistsCreator.createTopOfMusic(100)
     else:
         yt = YoutubeManager()
         if args.mode is not None and args.playlistUpdate is not None:
