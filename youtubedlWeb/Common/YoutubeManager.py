@@ -1,4 +1,3 @@
-from typing import List
 from datetime import datetime, timedelta
 import os
 import logging
@@ -757,9 +756,7 @@ def main(): # pragma: no cover
         numberOfDownloadedSongs = yt.download_playlists()
         if numberOfDownloadedSongs > 0:
             playlistsCreator = PlaylistsManager(yt.ytConfig.getPath())
-            listDir = [name for name in os.listdir(yt.ytConfig.getPath()) if os.path.isdir(os.path.join(yt.ytConfig.getPath(), name))]
-            for x in listDir:
-                playlistsCreator.createPlaylistForMediaserver(x)
+            playlistsCreator.createPlaylists()
             playlistsCreator.createTopOfMusic(100)
     else:
         yt = YoutubeManager()
