@@ -759,7 +759,7 @@ def main(): # pragma: no cover
             playlistsCreator = PlaylistsManager(yt.ytConfig.getPath())
             listDir = [name for name in os.listdir(yt.ytConfig.getPath()) if os.path.isdir(os.path.join(yt.ytConfig.getPath(), name))]
             for x in listDir:
-                playlistsCreator.createPlaylistForMediaserver([x], x)
+                playlistsCreator.createPlaylistForMediaserver(x)
             playlistsCreator.createTopOfMusic(100)
     else:
         yt = YoutubeManager()
