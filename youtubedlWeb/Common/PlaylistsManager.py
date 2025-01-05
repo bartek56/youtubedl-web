@@ -110,7 +110,7 @@ class PlaylistsManager:
             self.createPlaylist(i)
 
 # -------------------------------------------------------------------------
-    def collectAndGenerateGroupOfPlaylists(self, folders:list):
+    def collectAndGenerateGroupOfPlaylists(self, folders:list, limitOfSongs=None):
         songs = self.collectSongsFromDirs(folders)
 
         songs = sorted(songs, key= lambda f: (
@@ -118,15 +118,20 @@ class PlaylistsManager:
                 self.get_tracknumber(os.path.join(self.dir, f))
                 ), reverse=True)
 
+        if limitOfSongs is not None:
+            songs = songs[:limitOfSongs]
+
         textFile = self.generateHeaderOfM3u()
         textFile += self.generateM3UList(songs)
         return textFile
 
-    def createGroupOfPlaylists(self, playlistName:str, folders:list):
+    def createGroupOfPlaylists(self, playlistName:str, folders:list, limitOfSongs=None):
 
-        textFile = self.collectAndGenerateGroupOfPlaylists(folders)
+        textFile = self.collectAndGenerateGroupOfPlaylists(folders, limitOfSongs)
         if self.isCrLfNeeded:
             textFile.replace("\n", "\r\n")
+        if limitOfSongs is not None:
+            playlistName = playlistName+" "+str(limitOfSongs)+" hits"
 
         playlistFile = "%s.m3u"%(playlistName)
         self.saveToFile(playlistFile, textFile)
