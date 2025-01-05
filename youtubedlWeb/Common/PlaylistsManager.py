@@ -186,6 +186,7 @@ def main(argv):
             isMediaserver = True
             print("MediaServer")
     path = os.path.abspath(os.getcwd())
+
     if isMediaserver:
         manager = PlaylistsManager(path)
         manager.createPlaylists()

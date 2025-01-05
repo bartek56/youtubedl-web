@@ -758,6 +758,15 @@ def main(): # pragma: no cover
             playlistsCreator = PlaylistsManager(yt.ytConfig.getPath())
             playlistsCreator.createPlaylists()
             playlistsCreator.createTopOfMusic(100)
+
+            folders=["imprezka","techno","Rock-Electronic","relaks","stare hity"]
+            playlistsCreator.createGroupOfPlaylists("trening", folders)
+
+            folders=["relaks","chillout","spokojne-sad","cafe","positive chill","polskie hity","muzyka filmowa"]
+            playlistsCreator.createGroupOfPlaylists("praca", folders)
+
+            folders=["Bachata","Bachata Dominikana","Kizomba","latino","Semba"]
+            playlistsCreator.createGroupOfPlaylists("taniec", folders)
     else:
         yt = YoutubeManager()
         if args.mode is not None and args.playlistUpdate is not None:
