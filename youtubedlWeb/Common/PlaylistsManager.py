@@ -8,8 +8,9 @@ from mutagen.mp3 import MP3
 
 class PlaylistsManager:
 
-    def __init__(self, playlistsDir):
+    def __init__(self, playlistsDir, isCrLfNeeded=False):
         self.dir = playlistsDir
+        self.isCrLfNeeded = isCrLfNeeded
 
     def saveToFile(self, fileName, text):
         f = codecs.open(os.path.join(self.dir, fileName),"wb","utf-8")
@@ -83,10 +84,9 @@ class PlaylistsManager:
     def collectAndGenerateM3UList(self, path:str):
 
         filesNameWithPath = self.collectSongs(path)
-
+        # one kind of playlist so sort only by track number
         filesNameWithPath = sorted(filesNameWithPath, key= lambda f: (
-                self.get_tracknumber(os.path.join(self.dir, f)),
-                self.get_date(os.path.join(self.dir, f))
+                self.get_tracknumber(os.path.join(self.dir, f))
                 ), reverse=True)
 
         textFile = self.generateM3UList(filesNameWithPath)
@@ -97,6 +97,9 @@ class PlaylistsManager:
     def createPlaylist(self, dirName):
         textFile = self.generateHeaderOfM3u()
         textFile += self.collectAndGenerateM3UList(dirName)
+
+        if self.isCrLfNeeded:
+            textFile.replace("\n", "\r\n")
 
         playlistFile = "%s.m3u"%(dirName)
         self.saveToFile(playlistFile, textFile)
@@ -119,17 +122,12 @@ class PlaylistsManager:
         textFile += self.generateM3UList(songs)
         return textFile
 
-    def createGroupOfPlaylistsForGarmin(self, playlistName:str, folders:list):
+    def createGroupOfPlaylists(self, playlistName:str, folders:list):
 
         textFile = self.collectAndGenerateGroupOfPlaylists(folders)
+        if self.isCrLfNeeded:
+            textFile.replace("\n", "\r\n")
 
-        playlistFile = "%s.m3u"%(playlistName)
-        self.saveToFile(playlistFile, textFile)
-
-    def createGroupOfPlaylistsForSandisk(self, playlistName:str, folders:list):
-        textFile = self.collectAndGenerateGroupOfPlaylists(folders)
-
-        textFile.replace("\n", "\r\n")
         playlistFile = "%s.m3u"%(playlistName)
         self.saveToFile(playlistFile, textFile)
 
@@ -144,7 +142,9 @@ class PlaylistsManager:
                         mp3_files.append(fileNameWithPath.replace(self.dir+"/", ""))
 
 
-            mp3_files = sorted(mp3_files, key= lambda f: (self.get_date(os.path.join(self.dir, f))),
+            mp3_files = sorted(mp3_files, key= lambda f: (self.get_date(os.path.join(self.dir, f)),
+                                                          self.get_tracknumber(os.path.join(self.dir, f))
+                                                          ),
                                reverse=True)
 
             textFile = self.generateHeaderOfM3u()
@@ -152,20 +152,14 @@ class PlaylistsManager:
 
             return textFile
 
-    def createTopOfMusic(self, numberOfSongs):
+    def createTopOfMusic(self, numberOfSongs, isCrLfNeeded=False):
             textFile = self.generateTopOfM3UList(numberOfSongs)
-
+            if isCrLfNeeded:
+                textFile.replace("\n", "\r\n")
             playlistFile = "%s Top.m3u"%(str(numberOfSongs))
 
             self.saveToFile(playlistFile, textFile)
 
-    def createTopOfMusicSandisk(self, numberOfSongs):
-            textFile = self.generateTopOfM3UList(numberOfSongs)
-
-            playlistFile = "%s Top.m3u"%(str(numberOfSongs))
-            textFile.replace("\n", "\r\n")
-
-            self.saveToFile(playlistFile, textFile)
 
 def main(argv):
     isSandisk = False
@@ -192,34 +186,47 @@ def main(argv):
             isMediaserver = True
             print("MediaServer")
     path = os.path.abspath(os.getcwd())
-    manager = PlaylistsManager(path)
     if isMediaserver:
-        listDir = [name for name in os.listdir(".") if os.path.isdir(os.path.join(".", name))]
-        for x in listDir:
-            manager.createPlaylist(x)
+        manager = PlaylistsManager(path)
+        manager.createPlaylists()
+
+        folders=["imprezka","techno","Rock-Electronic","relaks","stare hity"]
+        manager.createGroupOfPlaylists("trening", folders)
+
+        folders=["relaks","chillout","spokojne-sad","cafe","chillout"]
+        manager.createGroupOfPlaylists("praca", folders)
+
+        folders=["Bachata","Bachata Dominikana","Kizomba","latino","Semba"]
+        manager.createGroupOfPlaylists("taniec", folders)
+
         manager.createTopOfMusic(100)
 
     if isSandisk:
+        manager = PlaylistsManager(path, isCrLfNeeded=True)
+        manager.createPlaylists()
+
         folders=["Bachata","Kizomba","Semba","salsa"]
-        manager.createGroupOfPlaylistsForSandisk("taniec", folders)
+        manager.createGroupOfPlaylists("taniec", folders)
 
-        folders=["imprezka","techno","Rock-Electronic", "relaks"]
-        manager.createGroupOfPlaylistsForSandisk("trening", folders)
+        folders=["imprezka","techno","Rock-Electronic","relaks"]
+        manager.createGroupOfPlaylists("trening", folders)
 
-        folders=["relaks", "chillout", "spokojne-sad", "Rock-Electronic"]
-        manager.createGroupOfPlaylistsForSandisk("praca", folders)
+        folders=["relaks","chillout","spokojne-sad","Rock-Electronic"]
+        manager.createGroupOfPlaylists("praca", folders)
 
-        manager.createTopOfMusicSandisk(30)
-        manager.createTopOfMusicSandisk(100)
-        manager.createTopOfMusicSandisk(200)
+        manager.createTopOfMusic(30)
+        manager.createTopOfMusic(100)
+        manager.createTopOfMusic(200)
 
     if isGarmin:
+        manager = PlaylistsManager(path)
         manager.createPlaylists()
-        folders=["imprezka","techno","Rock-Electronic", "relaks"]
-        manager.createGroupOfPlaylistsForGarmin("trening", folders)
 
-        folders=["relaks", "chillout", "spokojne-sad"]
-        manager.createGroupOfPlaylistsForGarmin("praca", folders)
+        folders=["imprezka","techno","Rock-Electronic", "relaks"]
+        manager.createGroupOfPlaylists("trening", folders)
+
+        folders=["relaks","chillout","spokojne-sad"]
+        manager.createGroupOfPlaylists("praca", folders)
 
         manager.createTopOfMusic(30)
 
