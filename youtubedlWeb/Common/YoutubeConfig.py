@@ -1,13 +1,19 @@
 import configparser
+import os
+import logging
 from typing import List
 
 from .YoutubeTypes import PlaylistConfig
+
+logger = logging.getLogger(__name__)
 
 class YoutubeConfig:
     def __init__(self):
         pass
 
     def initialize(self, configFile, parser = configparser.ConfigParser()):
+        if not os.path.isfile(configFile):
+            logger.error("Config file \"%s\" doesn't exist", configFile)
         self.CONFIG_FILE = configFile
         self.config = parser
 

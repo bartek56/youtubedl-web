@@ -667,6 +667,14 @@ class MediaServerDownloader(YoutubeManager):
                 playlistDir = os.path.join(self.ytConfig.getPath(), playlist.name)
                 self.updateTrackNumber(playlistDir,playlist.link, isSave)
 
+    def updateMetadataForPlaylists(self):
+        playlists = self.ytConfig.getPlaylists()
+        for playlist in playlists:
+            logger.info("--------------- %s ------------------", playlist.name)
+            logger.info(" %s ", playlist.link)
+            playlistDir = os.path.join(self.ytConfig.getPath(), playlist.name)
+            self.metadataManager.updateMetadata(playlistDir, "YT "+playlist.name)
+
     def updateTrackNumber(self, playlistDir, url, isSave=False):
         songs = self._getSongsOfDir(playlistDir)
 
@@ -768,10 +776,10 @@ def main(): # pragma: no cover
             folders=["Bachata","Bachata Dominikana","Kizomba","latino","Semba"]
             playlistsCreator.createGroupOfPlaylists("taniec", folders)
     else:
-        yt = YoutubeManager()
         if args.mode is not None and args.playlistUpdate is not None:
             my_parser.error("choose only one purpose")
         if args.mode is not None:
+            yt = YoutubeManager()
             if args.link is None:
                 my_parser.error("-l (--link) is require")
             if args.mode == '360':
@@ -782,8 +790,9 @@ def main(): # pragma: no cover
                 yt.download_4k(args.link)
             elif args.mode == "mp3":
                 yt.download_mp3(args.link)
-        #if args.playlistUpdate is not None:
-        #    yt.updat (args.playlistUpdate)
+        if args.playlistUpdate is not None:
+            yt = MediaServerDownloader(args.playlistUpdate)
+            yt.updateMetadataForPlaylists()
 
 if __name__ == "__main__": # pragma: no cover
     #logging.basicConfig(format="%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s", level=logging.DEBUG, filename="/tmp/youtubeLogs", filemode='w')
