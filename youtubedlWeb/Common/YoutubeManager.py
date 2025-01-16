@@ -272,16 +272,16 @@ class YoutubeManager:
               'logger': self.logger,
               'outtmpl': path+'/'+titleFormat,
               'download_archive': path+'/'+self.mp3DownloadedListFileName,
-              'postprocessors': [{
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': 'mp3',
-                    'preferredquality': '192',
-                 }],
               'ignoreerrors': False,
               'continue': True,
               'no-overwrites': True,
               'noplaylist': True,
-              'quiet': self.quietSetting
+              'quiet': self.quietSetting,
+              'postprocessors': [{
+                    'key': 'FFmpegExtractAudio',
+                    'preferredcodec': 'mp3',
+                    'preferredquality': '192',
+                 }]
               }
 
         try:
@@ -428,7 +428,8 @@ class YoutubeManager:
 
     def _getSongsOfDir(self, playlistDir): # pragma: no cover
         if not os.path.isdir(playlistDir):
-            print("Wrong dir path")
+            logger.error("Wrong dir path: %s", playlistDir)
+            return
 
         files = os.listdir(playlistDir)
         listMp3 = []
@@ -576,7 +577,8 @@ class MediaServerDownloader(YoutubeManager):
             songMetadata:AudioData
             songMetadata = result.data()
             numberOfDownloadedSongsLocally+=1
-            self.addMetadataToPlaylist(playlistDir, playlistName, songMetadata.path.split("/")[-1], str(numberOfDownloadedSongsLocally), songMetadata.title, songMetadata.artist, songMetadata.album, songMetadata.hash)
+            filenameWithPath = self.addMetadataToPlaylist(playlistDir, playlistName, songMetadata.path.split("/")[-1], str(numberOfDownloadedSongsLocally), songMetadata.title, songMetadata.artist, songMetadata.album, songMetadata.hash)
+            self.metadataManager.addCoverOfYtMp3(filenameWithPath, songMetadata.hash)
             songCounter+=1
         return ResultOfDownload(songCounter)
 
@@ -694,6 +696,30 @@ class MediaServerDownloader(YoutubeManager):
             logger.info(x)
             logger.info("------------------------------")
 
+    def addCoversToPlaylistSongs(self, playlistDir):
+        playlistsPath = self.ytConfig.getPath()
+        playlistFullPath = os.path.join(playlistsPath,playlistDir)
+        songs = self._getSongsOfDir(playlistFullPath)
+        if not songs:
+            return
+        for song in songs:
+            song:Mp3Info
+            if song.website is None:
+                logger.warning("Song %s doesn't contain website", song.fileName)
+                continue
+            hash = song.website.split("/")[-1]
+            self.metadataManager.addCoverOfYtMp3(os.path.join(playlistFullPath, song.fileName), hash)
+
+    def removeCoversToPlaylistSongs(self, playlistDir):
+        playlistsPath = self.ytConfig.getPath()
+        playlistFullPath = os.path.join(playlistsPath,playlistDir)
+        songs = self._getSongsOfDir(playlistFullPath)
+        if not songs:
+            return
+        for song in songs:
+            song:Mp3Info
+            self.metadataManager.removeCoverOfMp3(os.path.join(playlistFullPath, song.fileName))
+
     def _changeTitleTemplate(self, path, songData):
         fileToCheck = os.path.join(path, "%s.mp3"%(songData.title))
         i=1
@@ -806,4 +832,6 @@ if __name__ == "__main__": # pragma: no cover
     #yt.checkPlaylistStatus("https://www.youtube.com/playlist?list=PL6uhlddQJkfgHTfI_P_BaACTGN2Km_4Yk", "/mnt/kingston/media/muzyka/Youtube list/Bachata")
 
     #downloader = MediaServerDownloader("/etc/mediaserver/youtubedl.ini")
+    #downloader.addCoversToPlaylistSongs("easyTest")
+    #downloader.removeCoversToPlaylistSongs("easyTest")
     #downloader.setDateAccordingToTrackNumberAllPlaylists(6, False)

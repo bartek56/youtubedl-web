@@ -5,6 +5,7 @@ import getopt
 import codecs
 from mutagen.easyid3 import EasyID3
 from mutagen.mp3 import MP3
+import metadata_mp3
 
 class PlaylistsManager:
 
@@ -110,6 +111,15 @@ class PlaylistsManager:
             self.createPlaylist(i)
 
 # -------------------------------------------------------------------------
+    def removeCovers(self):
+        metadataMng = metadata_mp3.MetadataManager()
+        folders = [f for f in os.listdir(self.dir) if os.path.isdir(os.path.join(self.dir, f))]
+        for folder in folders:
+            files = [g for g in os.listdir(os.path.join(self.dir, folder)) if os.path.isfile(os.path.join(self.dir, g))]
+            for file in files:
+                metadataMng.removeCoverOfMp3(os.path.join(self.dir, folder, file))
+
+# -------------------------------------------------------------------------
     def collectAndGenerateGroupOfPlaylists(self, folders:list, limitOfSongs=None):
         songs = self.collectSongsFromDirs(folders)
 
@@ -209,6 +219,7 @@ def main(argv):
 
     if isSandisk:
         manager = PlaylistsManager(path, isCrLfNeeded=True)
+        manager.removeCovers()
         manager.createPlaylists()
 
         folders=["Bachata","Kizomba","Semba","salsa"]
@@ -226,6 +237,7 @@ def main(argv):
 
     if isGarmin:
         manager = PlaylistsManager(path)
+        manager.removeCovers()
         manager.createPlaylists()
 
         folders=["imprezka","techno","Rock-Electronic", "relaks"]
@@ -238,4 +250,5 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    pass
+    #main(sys.argv[1:])
