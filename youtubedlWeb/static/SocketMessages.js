@@ -76,13 +76,14 @@ class MessageBase
 // ----------------- MediaInfo_response --------------------
 class MediaInfo
 {
-    constructor(title, artist){
+    constructor(title, artist, hash){
         this.title = title;
         this.artist = artist;
+        this.hash = hash;
     }
 }
 
-// data: {"artist", "title"}
+// data: {"artist", "title", "hash"}
 class MediaInfo_response extends MessageBase{
     static Message = "getMediaInfo_response"
     constructor(msg)
@@ -92,7 +93,7 @@ class MediaInfo_response extends MessageBase{
 
     _getData()
     {
-        this.mediaInfo = new MediaInfo(this.data["title"], this.data["artist"])
+        this.mediaInfo = new MediaInfo(this.data["title"], this.data["artist"], this.data["hash"])
         return this.mediaInfo
     }
 }

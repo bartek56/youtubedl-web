@@ -65,8 +65,14 @@ $(document).ready(function () {
         var row = table.insertRow();
         var cell1 = row.insertCell();
         cell1.innerHTML = mediaInfoHtml;
-        var cell2 = row.insertCell();
-        cell2.innerHTML = " ";
+
+        var row2 = table.insertRow();
+        var cell2 = row2.insertCell();
+        var link = "https://youtu.be/" + mediaInfo.hash
+        var image = "https://i.ytimg.com/vi/"+mediaInfo.hash+"/mqdefault.jpg"
+        cell2.innerHTML = " <a href=\""+link+"\"> \
+                                <img src=\""+image+"\" alt=\"Image Description\"> \
+                            </a>"
     });
 
     // playlist

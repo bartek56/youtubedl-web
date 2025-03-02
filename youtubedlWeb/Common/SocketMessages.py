@@ -42,9 +42,10 @@ class Message:
 
 # ------------------ MediaInfo_response -----------------------------------
 class MediaInfo:
-    def __init__(self, title:str=None, artist:str=None):
+    def __init__(self, title:str, artist:str, hash:str):
         self.title = title
         self.artist = artist
+        self.hash = hash
 
 # data: {"artist", "title"}
 class MediaInfo_response(Message):
@@ -60,6 +61,7 @@ class MediaInfo_response(Message):
         else:
             self.data["artist"] = " "
         self.data["title"] = mediaInfo.title
+        self.data["hash"] = mediaInfo.hash
 
 
 # ------------------- downloadMedia_finish -------------------------------

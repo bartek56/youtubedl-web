@@ -84,6 +84,7 @@ class FlaskQuickDownload(unittest.TestCase, FlaskToolsForUT):
     path = "/tmp/" + title+".mp3"
     downloadDir = "/home/music"
     url = "https://www.youtube.com/watch?v=1Pl-FT0VCNs"
+    hash = "1Pl-FT0VCNs"
 
     playlistsPath = "/home/music/youtube playlists"
     playlistName = "playlistNameTest"
@@ -122,7 +123,7 @@ class FlaskQuickDownload(unittest.TestCase, FlaskToolsForUT):
     @mock.patch.object(YoutubeManager, 'getMediaInfo')
     @mock.patch('youtubedlWeb.Common.WebUtils.getRandomString')
     def test_downloadMp3(self, mock_getRandomString:MagicMock, mock_getMediaInfo:MagicMock, mock_downloadMp3:MagicMock):
-        mock_getMediaInfo.configure_mock(return_value=ResultOfDownload(YTManager.MediaInfo(self.title,self.artist,self.album,self.url)))
+        mock_getMediaInfo.configure_mock(return_value=ResultOfDownload(YTManager.MediaInfo(self.title,self.artist,self.album, self.url)))
         mock_downloadMp3.configure_mock(return_value=ResultOfDownload(YTManager.AudioData(self.path, self.title, self.artist, self.album)))
         mock_getRandomString.configure_mock(return_value=self.randomString)
 
@@ -139,7 +140,7 @@ class FlaskQuickDownload(unittest.TestCase, FlaskToolsForUT):
         self.assertEqual(len(received), 2)
 
         self.assertEqual(self.getNameOfMessage(received, 0), SocketMessages.MediaInfo_response().message)
-        self.checkMediaInfo_response(self.getDataFromMessage(received, 0), MediaInfo(self.title, self.artist))
+        self.checkMediaInfo_response(self.getDataFromMessage(received, 0), MediaInfo(self.title, self.artist, self.hash))
 
         self.assertEqual(self.getNameOfMessage(received, 1), SocketMessages.DownloadMedia_finish().message)
         self.assertEqual(self.getDataFromMessage(received, 1), self.randomString)
@@ -219,7 +220,7 @@ class FlaskQuickDownload(unittest.TestCase, FlaskToolsForUT):
 
         # getMediaInfo_response
         self.assertEqual(self.getNameOfMessage(received, 0), SocketMessages.MediaInfo_response().message)
-        self.checkMediaInfo_response(self.getDataFromMessage(received, 0), MediaInfo(self.title, self.artist))
+        self.checkMediaInfo_response(self.getDataFromMessage(received, 0), MediaInfo(self.title, self.artist, self.hash))
 
         # DownloadMedia_finish
         self.assertEqual(self.getNameOfMessage(received, 1), SocketMessages.DownloadMedia_finish().message)

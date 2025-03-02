@@ -1,3 +1,4 @@
+from typing import List
 from flask import Blueprint, render_template, session, send_file, send_from_directory
 from flask import current_app as app
 import shutil
@@ -6,6 +7,7 @@ from youtubedlWeb.Common.SocketMessages import PlaylistInfo_response, PlaylistMe
 from youtubedlWeb.Common.SocketMessages import MediaInfo_response, DownloadMedia_finish
 from youtubedlWeb.Common.SocketRequests import DownloadMediaRequest
 from youtubedlWeb.Common.SocketRequests import DownloadFileRequest
+from youtubedlWeb.Common.YoutubeTypes import MediaFromPlaylist
 
 import youtubedlWeb.Common.YoutubeManager as YTManager
 import youtubedlWeb.Common.SocketMessages as SocketMessages
@@ -76,10 +78,13 @@ def downloadPlaylist(url, downloadType):
         playlistName = ytData.playlistName
         PlaylistInfo_response().sendMessage(SocketMessages.PlaylistInfo(playlistName, ytData.listOfMedia))
         downloadedFiles = downloadSongsFromList(ytData.listOfMedia, downloadType)
-        zipFileName = WebUtils.compressToZip(downloadedFiles, playlistName)
-        randomHash = WebUtils.getRandomString()
-        session[randomHash] = zipFileName
-        DownloadMedia_finish().sendMessage(randomHash)
+        if len(downloadedFiles)>0:
+            zipFileName = WebUtils.compressToZip(downloadedFiles, playlistName)
+            randomHash = WebUtils.getRandomString()
+            session[randomHash] = zipFileName
+            DownloadMedia_finish().sendMessage(randomHash)
+        else:
+            DownloadMedia_finish().sendError("Failed to download playlist")
 
 def downloadSingle(url, downloadType):
         result = app.youtubeManager.getMediaInfo(url)
@@ -89,7 +94,8 @@ def downloadSingle(url, downloadType):
             return
         mediaInfo:YTManager.MediaInfo = result.data()
 
-        MediaInfo_response().sendMessage(SocketMessages.MediaInfo(mediaInfo.title, mediaInfo.artist))
+        hash = mediaInfo.url.split("?v=")[1]
+        MediaInfo_response().sendMessage(SocketMessages.MediaInfo(mediaInfo.title, mediaInfo.artist, hash))
         result2 = downloadMediaOfType(url, downloadType)
 
         if result2.IsFailed():
@@ -103,7 +109,7 @@ def downloadSingle(url, downloadType):
         session[randomHash] = filename
         DownloadMedia_finish().sendMessage(randomHash)
 
-def downloadSongsFromList(listOfMedia, downloadType):
+def downloadSongsFromList(listOfMedia:List[MediaFromPlaylist], downloadType):
     downloadedFiles = []
     index = 0
     numberOfDownloadedSongs = 0
