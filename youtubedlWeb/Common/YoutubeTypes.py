@@ -89,11 +89,12 @@ class YoutubeClipData:
         return str
 
 class AudioData(YoutubeClipData):
-    def __init__(self, path:str=None, title:str=None, hash:str=None, artist:str=None, album:str=None):
+    def __init__(self, path:str=None, title:str=None, hash:str=None, artist:str=None, album:str=None, year:str=None):
         super().__init__(path, title)
         self.hash = hash
         self.artist = artist
         self.album = album
+        self.year = year
 
     def __str__(self): # pragma: no cover
         str = ""
@@ -115,6 +116,10 @@ class AudioData(YoutubeClipData):
             if len(str) > 0:
                 str += " "
             str += "hash: %s"%(self.hash)
+        if self.year is not None:
+            if len(str) > 0:
+                str += " "
+            str += "year: %s"%(self.year)
 
         return str
 

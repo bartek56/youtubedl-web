@@ -307,6 +307,7 @@ class YoutubeManager:
         artist = ""
         album = ""
         hash = ""
+        year = ""
         filePath = None
 
         if "title" in data:
@@ -319,8 +320,10 @@ class YoutubeManager:
             hash = data['id']
         if "requested_downloads" in data:
             filePath = data["requested_downloads"][0]['filepath']
+        if "release_year" in data:
+            year = data["release_year"]
 
-        return AudioData(path=filePath ,title=songTitle, hash=hash, artist=artist, album=album)
+        return AudioData(path=filePath,title=songTitle, hash=hash, artist=artist, album=album, year=year)
 
     def downloadPlaylistMp3Fast(self, playlistDir, playlistName, url) -> ResultOfDownload:
         path=os.path.join(playlistDir, playlistName)
@@ -392,8 +395,8 @@ class YoutubeManager:
 
             artist = yt_dlp.utils.sanitize_filename(artist)
             website = self.ytDomain + hashList[x]
-            self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistName, fileName, playlistIndexList[x],
-                                                                songTitle, artist, album, website, self._getDateTimeNowStr())
+            self.metadataManager.renameAndAddMetadataToPlaylist(os.path.join(playlistDir,playlistName), fileName, playlistIndexList[x],
+                                                                songTitle, artist, album, "YT "+playlistName, website, self._getDateTimeNowStr())
 
             songCounter+=1
         logger.info("Downloaded %i songs", songCounter)
@@ -415,16 +418,20 @@ class YoutubeManager:
                 return False
         return True
 
-    def addMetadataToPlaylist(self, playlistDir, playlistName, fileName, playlistIndex, title, artist, album, hash):
-        path=os.path.join(playlistDir, playlistName)
+    def addMetadataToPlaylist(self, playlistDir, playlistName, fileName, playlistIndex, title, artist, album, hash, year=None):
         title = yt_dlp.utils.sanitize_filename(title)
         artist = yt_dlp.utils.sanitize_filename(artist)
         website = ""
         if hash is not None and len(hash) > 0:
             website = self.ytDomain + hash
+        album_date = ""
+        if year is not None and len(year) > 0:
+            album_date = year
+        else:
+            album_date = self._getDateTimeNowStr()
 
-        return self.metadataManager.renameAndAddMetadataToPlaylist(playlistDir, playlistName, fileName, playlistIndex,
-                                                                   title, artist, album, website, self._getDateTimeNowStr())
+        return self.metadataManager.renameAndAddMetadataToPlaylist(os.path.join(playlistDir, playlistName), fileName, playlistIndex,
+                                                                   title, artist, album, "", website, album_date)
 
     def _getSongsOfDir(self, playlistDir): # pragma: no cover
         if not os.path.isdir(playlistDir):

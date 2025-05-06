@@ -115,9 +115,10 @@ class PlaylistsManager:
         metadataMng = metadata_mp3.MetadataManager()
         folders = [f for f in os.listdir(self.dir) if os.path.isdir(os.path.join(self.dir, f))]
         for folder in folders:
-            files = [g for g in os.listdir(os.path.join(self.dir, folder)) if os.path.isfile(os.path.join(self.dir, g))]
+            files = [g for g in os.listdir(os.path.join(self.dir, folder)) if os.path.isfile(os.path.join(self.dir, folder, g))]
             for file in files:
-                metadataMng.removeCoverOfMp3(os.path.join(self.dir, folder, file))
+                if ".mp3" in file:
+                    metadataMng.removeCoverOfMp3(os.path.join(self.dir, folder, file))
 
 # -------------------------------------------------------------------------
     def collectAndGenerateGroupOfPlaylists(self, folders:list, limitOfSongs=None):
