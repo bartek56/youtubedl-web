@@ -143,7 +143,7 @@ def downloadMp3SongsFromList(listOfMedia:List[MediaFromPlaylist], downloadType):
         PlaylistMediaInfo_response().sendMessage(SocketMessages.PlaylistMediaInfo(x.playlistIndex, filename, randomHash))
     if numberOfDownloadedSongs == 0:
         DownloadMedia_finish().sendError("Failed to download playlist")
-        return
+        return downloadedFiles
     return downloadedFiles
 
 def downloadVideoSongsFromList(listOfMedia:List[MediaFromPlaylist], downloadType):

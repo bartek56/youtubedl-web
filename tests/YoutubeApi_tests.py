@@ -20,6 +20,7 @@ class FlaskToolsForUT:
     playlistUrl = "https://www.youtube.com/playlist?list=PL6uhlddQJkfh4YsbxgPE70a6KeFOCDgG_"
 
     playlistsPath = "/home/music/youtube playlists"
+    quickDownloadPath = "/tmp/quick_download"
 
     playlist1Name = "playlist1"
     playlist2Name = "playlist2"
@@ -39,6 +40,9 @@ class FlaskToolsForUT:
     songAlbum1FromPlaylist = "album1"
     songAlbum2FromPlaylist = "album2"
     songAlbum3FromPlaylist = "album3"
+    songYear1FromPlaylist = "2001"
+    songYear2FromPlaylist = "2002"
+    songYear3FromPlaylist = "2003"
 
     songTitleAndArtist1FromPlaylist = songArtist1FromPlaylist +" - "+ songTitle1FromPlaylist
     songTitleAndArtist2FromPlaylist = songArtist2FromPlaylist +" - "+ songTitle2FromPlaylist
@@ -47,6 +51,14 @@ class FlaskToolsForUT:
     songTitleAndArtist1FromPlaylistFilename = songTitleAndArtist1FromPlaylist + ".mp3"
     songTitleAndArtist2FromPlaylistFilename = songTitleAndArtist2FromPlaylist + ".mp3"
     songTitleAndArtist3FromPlaylistFilename = songTitleAndArtist3FromPlaylist + ".mp3"
+
+    song1Filename = songTitle1FromPlaylist+".mp3"
+    song2Filename = songTitle2FromPlaylist+".mp3"
+    song3Filename = songTitle3FromPlaylist+".mp3"
+
+    song1FromPlaylistPath = quickDownloadPath+"/"+song1Filename
+    song2FromPlaylistPath = quickDownloadPath+"/"+song2Filename
+    song3FromPlaylistPath = quickDownloadPath+"/"+song3Filename
 
     url1FromPlaylist = "https:/www.youtube.com/watch?v=11111"
     url2FromPlaylist = "https:/www.youtube.com/watch?v=22222"
@@ -146,19 +158,21 @@ class FlaskQuickDownload(unittest.TestCase, FlaskToolsForUT):
         self.assertEqual(self.getDataFromMessage(received, 1), self.randomString)
 
 
-    @mock.patch.object(YoutubeManager, 'download_mp3')
+    @mock.patch.object(YoutubeManager, '_download_mp3')
+    @mock.patch.object(YoutubeManager, 'addMetadataToPlaylist')
     @mock.patch.object(YoutubeManager, 'getPlaylistInfo')
     @mock.patch('youtubedlWeb.Common.WebUtils.getRandomString')
     @mock.patch('youtubedlWeb.Common.WebUtils.compressToZip')
-    def test_downloadMp3Playlist(self, mock_zip:MagicMock, mock_getRandomString:MagicMock, mock_getPlaylistInfo:MagicMock, mock_downloadMp3:MagicMock):
+    def test_downloadMp3Playlist(self, mock_zip:MagicMock, mock_getRandomString:MagicMock, mock_getPlaylistInfo:MagicMock, mock_addMetadataToPlaylist:MagicMock, mock_downloadMp3:MagicMock):
         mock_getPlaylistInfo.configure_mock(return_value = ResultOfDownload(
             YTManager.PlaylistInfo(self.playlistName,
                                    [YTManager.MediaFromPlaylist(self.index1FromPlaylist, self.url1FromPlaylist, self.songTitle1FromPlaylist),
                                     YTManager.MediaFromPlaylist(self.index2FromPlaylist, self.url2FromPlaylist, self.songTitle2FromPlaylist),
                                     YTManager.MediaFromPlaylist(self.index3FromPlaylist, self.url3FromPlaylist, self.songTitle3FromPlaylist)])))
-        mock_downloadMp3.configure_mock(side_effect=[ResultOfDownload(YTManager.AudioData(self.downloadDir+'/'+self.songTitle1FromPlaylist+'.'+self.extMp3, self.songTitle1FromPlaylist, self.songArtist1FromPlaylist, self.songAlbum1FromPlaylist)),
-                                                     ResultOfDownload(YTManager.AudioData(self.downloadDir+'/'+self.songTitle2FromPlaylist+'.'+self.extMp3, self.songTitle2FromPlaylist, self.songArtist2FromPlaylist, self.songAlbum2FromPlaylist)),
-                                                     ResultOfDownload(YTManager.AudioData(self.downloadDir+'/'+self.songTitle3FromPlaylist+'.'+self.extMp3, self.songTitle3FromPlaylist, self.songArtist3FromPlaylist, self.songAlbum3FromPlaylist))])
+        mock_downloadMp3.configure_mock(side_effect=[ResultOfDownload(AudioData(self.song1FromPlaylistPath, self.songTitle1FromPlaylist, self.hash1FromPlaylist, self.songArtist1FromPlaylist, self.songAlbum1FromPlaylist, self.songYear1FromPlaylist)),
+                                                     ResultOfDownload(AudioData(self.song2FromPlaylistPath, self.songTitle2FromPlaylist, self.hash2FromPlaylist, self.songArtist2FromPlaylist, self.songAlbum2FromPlaylist, self.songYear2FromPlaylist)),
+                                                     ResultOfDownload(AudioData(self.song3FromPlaylistPath, self.songTitle3FromPlaylist, self.hash3FromPlaylist, self.songArtist3FromPlaylist, self.songAlbum3FromPlaylist, self.songYear3FromPlaylist))])
+        mock_addMetadataToPlaylist.configure_mock(side_effect=[self.songTitleAndArtist1FromPlaylistFilename, self.songTitleAndArtist2FromPlaylistFilename, self.songTitleAndArtist3FromPlaylistFilename])
         mock_getRandomString.configure_mock(side_effect=[self.randomString1, self.randomString2, self.randomString3, self.randomString])
 
         # --------------------------------------------------------------------------------------------
@@ -169,10 +183,15 @@ class FlaskQuickDownload(unittest.TestCase, FlaskToolsForUT):
         mock_downloadMp3.assert_has_calls([mock.call(self.url1FromPlaylist),
                                            mock.call(self.url2FromPlaylist),
                                            mock.call(self.url3FromPlaylist)])
+        mock_addMetadataToPlaylist.assert_has_calls([mock.call('/tmp/quick_download/', '', self.song1Filename, 1, self.songTitle1FromPlaylist, self.songArtist1FromPlaylist, self.songAlbum1FromPlaylist,self.hash1FromPlaylist,self.songYear1FromPlaylist),
+                                                     mock.call('/tmp/quick_download/', '', self.song2Filename, 2, self.songTitle2FromPlaylist, self.songArtist2FromPlaylist, self.songAlbum2FromPlaylist,self.hash2FromPlaylist,self.songYear2FromPlaylist),
+                                                     mock.call('/tmp/quick_download/', '', self.song3Filename, 3, self.songTitle3FromPlaylist, self.songArtist3FromPlaylist, self.songAlbum3FromPlaylist,self.hash3FromPlaylist,self.songYear3FromPlaylist)
+                                                     ])
         self.assertEqual(mock_getRandomString.call_count, 4)
-        mock_zip.assert_called_once_with([self.downloadDir+'/'+self.songTitle1FromPlaylist+'.'+self.extMp3,
-                                          self.downloadDir+'/'+self.songTitle2FromPlaylist+'.'+self.extMp3,
-                                          self.downloadDir+'/'+self.songTitle3FromPlaylist+'.'+self.extMp3], self.playlistName)
+        mock_zip.assert_called_once_with([self.songTitleAndArtist1FromPlaylistFilename,
+                                          self.songTitleAndArtist2FromPlaylistFilename,
+                                          self.songTitleAndArtist3FromPlaylistFilename]
+                                          , self.playlistName)
 
         received = self.socketio_test_client.get_received()
         self.assertEqual(len(received), 5)
@@ -185,9 +204,9 @@ class FlaskQuickDownload(unittest.TestCase, FlaskToolsForUT):
                                             MediaFromPlaylist(self.index3FromPlaylist, self.url3FromPlaylist, self.songTitle3FromPlaylist)])
 
         # getPlaylistMediaInfo_response - three songs
-        expectedData = [SocketMessages.PlaylistMediaInfo(self.index1FromPlaylist, self.songTitle1FromPlaylist+"."+self.extMp3, self.randomString1),
-                        SocketMessages.PlaylistMediaInfo(self.index2FromPlaylist, self.songTitle2FromPlaylist+"."+self.extMp3, self.randomString2),
-                        SocketMessages.PlaylistMediaInfo(self.index3FromPlaylist, self.songTitle3FromPlaylist+"."+self.extMp3, self.randomString3)]
+        expectedData = [SocketMessages.PlaylistMediaInfo(self.index1FromPlaylist, self.songTitleAndArtist1FromPlaylistFilename, self.randomString1),
+                        SocketMessages.PlaylistMediaInfo(self.index2FromPlaylist, self.songTitleAndArtist2FromPlaylistFilename, self.randomString2),
+                        SocketMessages.PlaylistMediaInfo(self.index3FromPlaylist, self.songTitleAndArtist3FromPlaylistFilename, self.randomString3)]
         for x in range(3):
             self.assertEqual(self.getNameOfMessage(received, x+1), SocketMessages.PlaylistMediaInfo_response().message)
             self.checkPlaylistMediaInfo_response(self.getDataFromMessage(received, x+1), expectedData[x])

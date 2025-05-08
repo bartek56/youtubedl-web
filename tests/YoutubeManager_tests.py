@@ -7,6 +7,7 @@ from youtubedlWeb.Common.YoutubeTypes import PlaylistInfo, MediaFromPlaylist, Me
 from configparser import ConfigParser
 from datetime import datetime, timedelta
 import yt_dlp
+import os
 from yt_dlp import utils
 import metadata_mp3
 from metadata_mp3 import Mp3Info
@@ -237,6 +238,7 @@ class YoutubeTestParams():
     musicPath = "/media/music"
 
     playlistName = "test_playlist"
+    playlistNameAlbum = "YT test_playlist"
 
     playlistPath = musicPath+"/"+playlistName
 
@@ -627,10 +629,10 @@ class YouTubeManagerDlTestCase(unittest.TestCase, YoutubeTestParams):
         mock_extract_info.assert_called_once_with(self.ytLink)
         self.assertEqual(mock_metadata.call_count, self.numberOfSongs)
 
-        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistName, self.firstFilename,  self.playlistIndex1, self.firstTitle,  self.firstArtist,  self.firstAlbum,  self.firstWebsite,  self.actualDate),
-                                        mock.call(self.musicPath, self.playlistName, self.secondFilename, self.playlistIndex2, self.secondTitle, self.empty,        self.secondAlbum, self.secondWebsite, self.actualDate),
-                                        mock.call(self.musicPath, self.playlistName, self.thirdFilename,  self.playlistIndex3, self.thirdTitle,  self.thirdArtist,  self.thirdAlbum,  self.thirdWebsite,  self.actualDate),
-                                        mock.call(self.musicPath, self.playlistName, self.fourthFilename, self.playlistIndex4, self.fourthTitle, self.fourthArtist, self.fourthAlbum, self.fourthWebsite, self.actualDate)])
+        mock_metadata.assert_has_calls([mock.call(os.path.join(self.musicPath, self.playlistName, self.firstFilename),  self.playlistIndex1, self.firstTitle,  self.firstArtist,  self.firstAlbum,  self.playlistNameAlbum, self.firstWebsite,  self.actualDate),
+                                        mock.call(os.path.join(self.musicPath, self.playlistName, self.secondFilename), self.playlistIndex2, self.secondTitle, self.empty,        self.secondAlbum, self.playlistNameAlbum, self.secondWebsite, self.actualDate),
+                                        mock.call(os.path.join(self.musicPath, self.playlistName, self.thirdFilename),  self.playlistIndex3, self.thirdTitle,  self.thirdArtist,  self.thirdAlbum,  self.playlistNameAlbum, self.thirdWebsite,  self.actualDate),
+                                        mock.call(os.path.join(self.musicPath, self.playlistName, self.fourthFilename), self.playlistIndex4, self.fourthTitle, self.fourthArtist, self.fourthAlbum, self.playlistNameAlbum, self.fourthWebsite, self.actualDate)])
 
         self.assertTrue(result.IsSuccess())
         self.assertEqual(result.data(), self.numberOfSongs)
@@ -653,10 +655,10 @@ class YouTubeManagerDlTestCase(unittest.TestCase, YoutubeTestParams):
         mock_extract_info.assert_called_once_with(self.ytLink)
         self.assertEqual(mock_metadata.call_count, self.numberOfSongs)
 
-        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistName, self.firstFilename,  self.playlistIndex1, self.firstTitle,  self.firstArtist,  self.firstAlbum,  self.firstWebsite,  self.actualDate),
-                                        mock.call(self.musicPath, self.playlistName, self.secondFilename, self.playlistIndex2, self.secondTitle, self.secondArtist, self.empty,       self.secondWebsite, self.actualDate),
-                                        mock.call(self.musicPath, self.playlistName, self.thirdFilename,  self.playlistIndex3, self.thirdTitle,  self.thirdArtist,  self.thirdAlbum,  self.thirdWebsite,  self.actualDate),
-                                        mock.call(self.musicPath, self.playlistName, self.fourthFilename, self.playlistIndex4, self.fourthTitle, self.fourthArtist, self.fourthAlbum, self.fourthWebsite, self.actualDate)])
+        mock_metadata.assert_has_calls([mock.call(os.path.join(self.musicPath, self.playlistName, self.firstFilename),  self.playlistIndex1, self.firstTitle,  self.firstArtist,  self.firstAlbum,  self.playlistNameAlbum, self.firstWebsite,  self.actualDate),
+                                        mock.call(os.path.join(self.musicPath, self.playlistName, self.secondFilename), self.playlistIndex2, self.secondTitle, self.secondArtist, self.empty,       self.playlistNameAlbum, self.secondWebsite, self.actualDate),
+                                        mock.call(os.path.join(self.musicPath, self.playlistName, self.thirdFilename),  self.playlistIndex3, self.thirdTitle,  self.thirdArtist,  self.thirdAlbum,  self.playlistNameAlbum, self.thirdWebsite,  self.actualDate),
+                                        mock.call(os.path.join(self.musicPath, self.playlistName, self.fourthFilename), self.playlistIndex4, self.fourthTitle, self.fourthArtist, self.fourthAlbum, self.playlistNameAlbum, self.fourthWebsite, self.actualDate)])
 
         self.assertTrue(result.IsSuccess())
         self.assertEqual(result.data(), self.numberOfSongs)
@@ -982,10 +984,10 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
         self.assertEqual(mock_sanitize.call_count, 8)
 
         self.assertEqual(mock_metadata.call_count, self.numberOfSongs)
-        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistName, self.firstFilename,  str(self.numberOfArchiveSongs+1), self.firstTitle,  self.firstArtist,  self.firstAlbum,  self.firstWebsite,  self.actualDate),
-                                        mock.call(self.musicPath, self.playlistName, self.secondFilename, str(self.numberOfArchiveSongs+2), self.secondTitle, self.secondArtist, self.secondAlbum, self.secondWebsite, self.actualDate),
-                                        mock.call(self.musicPath, self.playlistName, self.thirdFilename,  str(self.numberOfArchiveSongs+3), self.thirdTitle,  self.thirdArtist,  self.thirdAlbum,  self.thirdWebsite,  self.actualDate),
-                                        mock.call(self.musicPath, self.playlistName, self.fourthFilename, str(self.numberOfArchiveSongs+4), self.fourthTitle, self.fourthArtist, self.fourthAlbum, self.fourthWebsite, self.actualDate)])
+        mock_metadata.assert_has_calls([mock.call(os.path.join(self.playlistPath, self.firstFilename),  str(self.numberOfArchiveSongs+1), self.firstTitle,  self.firstArtist,  self.firstAlbum, '', self.firstWebsite,  self.actualDate),
+                                        mock.call(os.path.join(self.playlistPath, self.secondFilename), str(self.numberOfArchiveSongs+2), self.secondTitle, self.secondArtist, self.secondAlbum, '', self.secondWebsite, self.actualDate),
+                                        mock.call(os.path.join(self.playlistPath, self.thirdFilename),  str(self.numberOfArchiveSongs+3), self.thirdTitle,  self.thirdArtist,  self.thirdAlbum, '', self.thirdWebsite,  self.actualDate),
+                                        mock.call(os.path.join(self.playlistPath, self.fourthFilename), str(self.numberOfArchiveSongs+4), self.fourthTitle, self.fourthArtist, self.fourthAlbum, '', self.fourthWebsite, self.actualDate)])
         self.assertEqual(mock_cover.call_count, 4)
         mock_cover.assert_has_calls([mock.call(self.firstFilenameWithPath, self.firstHash),
                                     mock.call(self.secondFilenameWithPath, self.secondHash),
@@ -1305,8 +1307,8 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
                                             ])
 
         self.assertEqual(mock_metadata.call_count, 1)
-        mock_metadata.assert_called_once_with(self.musicPath, self.playlistName, self.fourthFilename, str(self.numberOfArchiveSongs+1),
-                                              self.fourthTitle, self.fourthArtist, self.fourthAlbum, self.fourthWebsite, self.actualDate)
+        mock_metadata.assert_called_once_with(os.path.join(self.musicPath, self.playlistName, self.fourthFilename), str(self.numberOfArchiveSongs+1),
+                                              self.fourthTitle, self.fourthArtist, self.fourthAlbum, '', self.fourthWebsite, self.actualDate)
 
         self.assertTrue(result.IsSuccess())
         self.assertEqual(result.data(), 1)
@@ -1338,9 +1340,9 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
                                             ])
 
         self.assertEqual(mock_metadata.call_count, self.numberOfSongs-1)
-        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistName, self.firstFilename,  str(self.numberOfArchiveSongs+1),  self.firstTitle,  self.firstArtist,  self.firstAlbum,  self.firstWebsite,  self.actualDate),
-                                        mock.call(self.musicPath, self.playlistName, self.secondFilename, str(self.numberOfArchiveSongs+2),  self.secondTitle, self.secondArtist, self.secondAlbum, self.secondWebsite, self.actualDate),
-                                        mock.call(self.musicPath, self.playlistName, self.fourthFilename, str(self.numberOfArchiveSongs+3),  self.fourthTitle, self.fourthArtist, self.fourthAlbum, self.fourthWebsite, self.actualDate)])
+        mock_metadata.assert_has_calls([mock.call(os.path.join(self.musicPath, self.playlistName, self.firstFilename),  str(self.numberOfArchiveSongs+1),  self.firstTitle,  self.firstArtist,  self.firstAlbum, '', self.firstWebsite,  self.actualDate),
+                                        mock.call(os.path.join(self.musicPath, self.playlistName, self.secondFilename), str(self.numberOfArchiveSongs+2),  self.secondTitle, self.secondArtist, self.secondAlbum, '', self.secondWebsite, self.actualDate),
+                                        mock.call(os.path.join(self.musicPath, self.playlistName, self.fourthFilename), str(self.numberOfArchiveSongs+3),  self.fourthTitle, self.fourthArtist, self.fourthAlbum, '', self.fourthWebsite, self.actualDate)])
 
         self.assertEqual(mock_cover.call_count, 3)
         mock_cover.assert_has_calls([

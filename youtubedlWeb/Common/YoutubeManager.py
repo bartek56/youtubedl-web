@@ -395,7 +395,7 @@ class YoutubeManager:
 
             artist = yt_dlp.utils.sanitize_filename(artist)
             website = self.ytDomain + hashList[x]
-            self.metadataManager.renameAndAddMetadataToPlaylist(os.path.join(playlistDir,playlistName), fileName, playlistIndexList[x],
+            self.metadataManager.renameAndAddMetadataToPlaylist(os.path.join(playlistDir,playlistName,fileName), playlistIndexList[x],
                                                                 songTitle, artist, album, "YT "+playlistName, website, self._getDateTimeNowStr())
 
             songCounter+=1
@@ -430,7 +430,7 @@ class YoutubeManager:
         else:
             album_date = self._getDateTimeNowStr()
 
-        return self.metadataManager.renameAndAddMetadataToPlaylist(os.path.join(playlistDir, playlistName), fileName, playlistIndex,
+        return self.metadataManager.renameAndAddMetadataToPlaylist(os.path.join(playlistDir, playlistName, fileName), playlistIndex,
                                                                    title, artist, album, "", website, album_date)
 
     def _getSongsOfDir(self, playlistDir): # pragma: no cover
