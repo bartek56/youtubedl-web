@@ -121,7 +121,12 @@ def downloadMp3SongsFromList(listOfMedia:List[MediaFromPlaylist], downloadType):
 
     for x in listOfMedia:
         index += 1
-        resultOfMedia = app.youtubeManager._download_mp3(x.url)
+        if app.youtubeManager.isMusicClipArchived(app.youtubeManager.MUSIC_PATH, x.url):
+            # only get information about media, file exists
+            app.logger.debug("clip %s exists, only get information about MP3", x.title)
+            resultOfMedia:AudioData = app.youtubeManager._getMetadataFromYTForMp3(x.url, app.youtubeManager.MUSIC_PATH)
+        else:
+            resultOfMedia:AudioData = app.youtubeManager._download_mp3(x.url)
 
         if resultOfMedia.IsFailed():
             error = "Failed to download song with index " + str(index)
