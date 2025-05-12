@@ -533,7 +533,7 @@ class MediaServerDownloader(YoutubeManager):
     def download_playlists(self):
         if not self._isDirForPlaylists():
             logger.error("wrong path for playlists")
-            return
+            return 0
         songsCounter = 0
         playlists = self.ytConfig.getPlaylists()
         for playlist in playlists:

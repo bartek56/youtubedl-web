@@ -2,6 +2,7 @@ from typing import List
 from flask import Blueprint, render_template, session, send_file, send_from_directory
 from flask import current_app as app
 import shutil
+import yt_dlp
 
 from youtubedlWeb.Common.SocketMessages import PlaylistInfo_response, PlaylistMediaInfo_response
 from youtubedlWeb.Common.SocketMessages import MediaInfo_response, DownloadMedia_finish
@@ -84,7 +85,7 @@ def downloadPlaylist(url, downloadType):
             downloadedFiles = downloadVideoSongsFromList(ytData.listOfMedia, downloadType)
 
         if len(downloadedFiles)>0:
-            zipFileName = WebUtils.compressToZip(downloadedFiles, playlistName)
+            zipFileName = WebUtils.compressToZip(downloadedFiles,  yt_dlp.utils.sanitize_filename(playlistName))
             randomHash = WebUtils.getRandomString()
             session[randomHash] = zipFileName
             DownloadMedia_finish().sendMessage(randomHash)
@@ -140,6 +141,8 @@ def downloadMp3SongsFromList(listOfMedia:List[MediaFromPlaylist], downloadType):
 
         filenameFullPath = app.youtubeManager.addMetadataToPlaylist(app.youtubeManager.MUSIC_PATH, "", filename, index, songMetadata.title,
                                                                  songMetadata.artist, songMetadata.album, songMetadata.hash, str(songMetadata.year))
+
+        app.youtubeManager.metadataManager.addCoverOfYtMp3(filenameFullPath, songMetadata.hash)
 
         downloadedFiles.append(filenameFullPath)
         filename = filenameFullPath.split("/")[-1]

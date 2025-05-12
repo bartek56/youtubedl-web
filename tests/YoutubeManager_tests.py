@@ -1430,7 +1430,7 @@ class MediaServerDownloaderPlaylistsTestCase(unittest.TestCase):
 
         result = self.downloader.download_playlists()
 
-        self.assertIsNone(result)
+        self.assertEqual(result, 0)
         self.assertEqual(self.downloader._isDirForPlaylists.call_count, 1)
         self.downloader.downloadPlaylistMp3.assert_not_called()
 
