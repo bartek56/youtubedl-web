@@ -497,37 +497,47 @@ class YouTubeManagerDlTestCase(unittest.TestCase, YoutubeTestParams):
         self.assertEqual(result.error(), "failed download")
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
-    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToSong")
-    def test_downloadMP3(self, mock_metadata, mock_extract_info):
+    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadata")
+    @mock.patch.object(metadata_mp3.MetadataManager, "addCoverOfYtMp3")
+    def test_downloadMP3(self, mock_cover, mock_metadata, mock_extract_info):
         mock_extract_info.configure_mock(return_value=self.ytMp3DownloadResponse)
+        fileNameResult = "test.mp3"
+        mock_metadata.configure_mock(return_value=fileNameResult)
 
         result = self.ytManager.download_mp3(self.ytLink)
 
         mock_extract_info.assert_called_once_with(self.ytLink)
-        mock_metadata.assert_called_with(self.musicPath, self.fileName, self.title, self.artist, self.album, self.website, self.actualDate)
+        mock_cover.assert_called_once_with(fileNameResult, self.hash)
+        mock_metadata.assert_called_with(os.path.join(self.musicPath, self.fileName), None, self.title, self.artist, self.album, None, self.website, self.actualDate)
         self.assertTrue(result.IsSuccess())
         self.checkAudioData(result.data(), self.ytMp3DownloadResponse)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
-    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToSong", return_value=None)
-    def test_downloadMP3_failedWithModyfiMetadata(self, mock_metadata, mock_extract_info):
+    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadata", return_value=None)
+    @mock.patch.object(metadata_mp3.MetadataManager, "addCoverOfYtMp3")
+    def test_downloadMP3_failedWithModyfiMetadata(self, mock_cover, mock_metadata, mock_extract_info):
         mock_extract_info.configure_mock(return_value=self.ytMp3DownloadResponse)
 
         result = self.ytManager.download_mp3(self.ytLink)
 
         mock_extract_info.assert_called_once_with(self.ytLink)
-        mock_metadata.assert_called_with(self.musicPath, self.fileName, self.title, self.artist, self.album, self.website, self.actualDate)
+        mock_cover.assert_not_called()
+        mock_metadata.assert_called_with(os.path.join(self.musicPath, self.fileName), None, self.title, self.artist, self.album, None, self.website, self.actualDate)
         self.assertFalse(result.IsSuccess())
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
-    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToSong")
-    def test_downloadMP3_without_artist(self, mock_metadata, mock_extract_info):
+    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadata")
+    @mock.patch.object(metadata_mp3.MetadataManager, "addCoverOfYtMp3")
+    def test_downloadMP3_without_artist(self, mock_cover, mock_metadata, mock_extract_info):
+        fileNameResult = "test.mp3"
         mock_extract_info.configure_mock(return_value=self.ytMp3DownloadWithoutArtistResponse)
+        mock_metadata.configure_mock(return_value=fileNameResult)
 
         result = self.ytManager.download_mp3(self.ytLink)
 
         mock_extract_info.assert_called_with(self.ytLink)
-        mock_metadata.assert_called_with(self.musicPath, self.fileName, self.title, self.empty, self.album, self.website, self.actualDate)
+        mock_cover.assert_called_once_with(fileNameResult, self.hash)
+        mock_metadata.assert_called_with(os.path.join(self.musicPath, self.fileName), None, self.title, self.empty, self.album, None, self.website, self.actualDate)
         self.assertTrue(result.IsSuccess())
         self.checkAudioData(result.data(), self.ytMp3DownloadWithoutArtistResponse)
 
@@ -612,7 +622,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase, YoutubeTestParams):
         self.checkAudioData(data, ytMp3LongTitleDownloadResponseExpected)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
-    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToPlaylist")
+    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadata")
     def test_downloadMP3PlaylistFast(self, mock_metadata:mock.MagicMock, mock_extract_info:mock.MagicMock):
         ytDownloadMp3PlaylistResponse = {"entries":[
             {'playlist_index': self.playlistIndex1,"title":self.firstTitle,  "artist":self.firstArtist, "album":self.firstAlbum, "id":self.firstHash},
@@ -638,7 +648,7 @@ class YouTubeManagerDlTestCase(unittest.TestCase, YoutubeTestParams):
         self.assertEqual(result.data(), self.numberOfSongs)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
-    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToPlaylist")
+    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadata")
     def test_downloadMP3PlaylistFast_OneSongWithoutAlbum(self, mock_metadata:mock.MagicMock, mock_extract_info:mock.MagicMock):
         ytDownloadMp3PlaylistResponse = {"entries":[
             {'playlist_index': self.playlistIndex1,"title":self.firstTitle,  "artist":self.firstArtist, "album":self.firstAlbum, "id":self.firstHash},
@@ -953,7 +963,7 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "addCoverOfYtMp3")
-    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToPlaylist")
+    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadata")
     @mock.patch.object(yt_dlp.utils, "sanitize_filename")
     def test_downloadMP3Playlist(self, mock_sanitize, mock_metadata:mock.MagicMock, mock_cover:mock.MagicMock, mock_extract_info:mock.MagicMock):
         mock_extract_info.configure_mock(side_effect=[self.ytPlaylistInfoResponse4, self.ytDownloadMp3Response1,
@@ -1289,7 +1299,7 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
         self.assertEqual(result.data(), 5)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
-    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToPlaylist")
+    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadata")
     def test_downloadMP3Playlist_OneNewSongFromPlaylist(self, mock_metadata:mock.MagicMock, mock_extract_info:mock.MagicMock):
 
         self.ytManager.isMusicClipArchived = mock.MagicMock()
@@ -1315,7 +1325,7 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "addCoverOfYtMp3")
-    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToPlaylist")
+    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadata")
     def test_downloadMP3Playlist_oneSongFailed(self, mock_metadata:mock.MagicMock, mock_cover:mock.MagicMock, mock_extract_info:mock.MagicMock):
         errorMessage = "Failed to download from Youtube"
         mock_extract_info.configure_mock(side_effect=[self.ytPlaylistInfoResponse4, self.ytDownloadMp3Response1,

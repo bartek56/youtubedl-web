@@ -252,13 +252,15 @@ class YoutubeManager:
             mp3Data.title = yt_dlp.utils.sanitize_filename(mp3Data.title)
         mp3Data.artist = yt_dlp.utils.sanitize_filename(mp3Data.artist)
         website = self.ytDomain + mp3Data.hash
-        full_path = self.metadataManager.renameAndAddMetadataToSong(self.MUSIC_PATH, fileName,
-                                                                    mp3Data.title, mp3Data.artist, mp3Data.album, website, self._getDateTimeNowStr())
+        full_path = self.metadataManager.renameAndAddMetadata(os.path.join(self.MUSIC_PATH, fileName), None,
+                                                                    mp3Data.title, mp3Data.artist, mp3Data.album, None, website, self._getDateTimeNowStr())
 
         if full_path is None:
             log = YoutubeManagerLogs.NOT_FOUND
             logger.error(log)
             return ResultOfDownload(log)
+
+        self.metadataManager.addCoverOfYtMp3(full_path, mp3Data.hash)
 
         mp3Data.setPath(full_path)
         return ResultOfDownload(mp3Data)
@@ -395,7 +397,7 @@ class YoutubeManager:
 
             artist = yt_dlp.utils.sanitize_filename(artist)
             website = self.ytDomain + hashList[x]
-            self.metadataManager.renameAndAddMetadataToPlaylist(os.path.join(playlistDir,playlistName,fileName), playlistIndexList[x],
+            self.metadataManager.renameAndAddMetadata(os.path.join(playlistDir,playlistName,fileName), playlistIndexList[x],
                                                                 songTitle, artist, album, "YT "+playlistName, website, self._getDateTimeNowStr())
 
             songCounter+=1
@@ -430,7 +432,7 @@ class YoutubeManager:
         else:
             album_date = self._getDateTimeNowStr()
 
-        return self.metadataManager.renameAndAddMetadataToPlaylist(os.path.join(playlistDir, playlistName, fileName), playlistIndex,
+        return self.metadataManager.renameAndAddMetadata(os.path.join(playlistDir, playlistName, fileName), playlistIndex,
                                                                    title, artist, album, "", website, album_date)
 
     def _getSongsOfDir(self, playlistDir): # pragma: no cover
@@ -483,23 +485,35 @@ class YoutubeManager:
             os.makedirs(path)
 
     def _lookingForFile(self, path, songTitle, artist): # pragma: no cover
+        def lookingForFileAccordWithYTFilename(self, path, songName, artist):
+            songName = self.metadataManager._removeSheetFromSongName(songName)
+            fileName="%s%s"%(songName,self.mp3ext)
+            if os.path.isfile(os.path.join(path, fileName)):
+                return songName
+            songName = "%s - %s"%(artist, songName)
+            fileName="%s%s"%(songName,self.mp3ext)
+            if os.path.isfile(os.path.join(path, fileName)):
+             return songName
+            else:
+                return None
+
         fileName = "%s.mp3"%(songTitle)
         full_path = os.path.join(path,fileName)
         if os.path.isfile(full_path):
             return full_path
-        songName = self.metadataManager.lookingForFileAccordWithYTFilename(path, songTitle, artist)
+        songName = lookingForFileAccordWithYTFilename(path, songTitle, artist)
         fileName = "%s.mp3"%(songName)
         full_path = os.path.join(path,fileName)
         if os.path.isfile(full_path):
             return full_path
         songTitleTemp = yt_dlp.utils.sanitize_filename(songTitle)
-        songName = self.metadataManager.lookingForFileAccordWithYTFilename(path, songTitleTemp, artist)
+        songName = lookingForFileAccordWithYTFilename(path, songTitleTemp, artist)
         fileName = "%s.mp3"%(songName)
         full_path = os.path.join(path, fileName)
         if os.path.isfile(full_path):
             return full_path
         artistTemp = yt_dlp.utils.sanitize_filename(artist)
-        songName = self.metadataManager.lookingForFileAccordWithYTFilename(path, songTitleTemp, artistTemp)
+        songName = lookingForFileAccordWithYTFilename(path, songTitleTemp, artistTemp)
         fileName = "%s.mp3"%(songName)
         full_path = os.path.join(path, fileName)
         if os.path.isfile(full_path):

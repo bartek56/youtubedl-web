@@ -70,50 +70,51 @@ def register_socketio_youtubeDownloader(socketio):
         return send_file(fullPath, as_attachment=True)
 
 def downloadPlaylist(url, downloadType):
-        resultOfPlaylist = app.youtubeManager.getPlaylistInfo(url)
-        if resultOfPlaylist.IsFailed():
-            DownloadMedia_finish().sendError("Failed to get info playlist")
-            app.logger.error("Error to download media: %s", resultOfPlaylist.error())
-            return
-        ytData:YTManager.PlaylistInfo = resultOfPlaylist.data()
-        playlistName = ytData.playlistName
-        PlaylistInfo_response().sendMessage(SocketMessages.PlaylistInfo(playlistName, ytData.listOfMedia))
-        downloadedFiles = []
-        if downloadType == "mp3":
-            downloadedFiles = downloadMp3SongsFromList(ytData.listOfMedia, downloadType)
-        else:
-            downloadedFiles = downloadVideoSongsFromList(ytData.listOfMedia, downloadType)
+    resultOfPlaylist = app.youtubeManager.getPlaylistInfo(url)
+    if resultOfPlaylist.IsFailed():
+        DownloadMedia_finish().sendError("Failed to get info playlist")
+        app.logger.error("Error to download media: %s", resultOfPlaylist.error())
+        return
+    ytData:YTManager.PlaylistInfo = resultOfPlaylist.data()
+    playlistName = ytData.playlistName
+    PlaylistInfo_response().sendMessage(SocketMessages.PlaylistInfo(playlistName, ytData.listOfMedia))
+    downloadedFiles = []
+    if downloadType == "mp3":
+        downloadedFiles = downloadMp3SongsFromList(ytData.listOfMedia, downloadType)
+    else:
+        downloadedFiles = downloadVideoSongsFromList(ytData.listOfMedia, downloadType)
 
-        if len(downloadedFiles)>0:
-            zipFileName = WebUtils.compressToZip(downloadedFiles,  yt_dlp.utils.sanitize_filename(playlistName))
-            randomHash = WebUtils.getRandomString()
-            session[randomHash] = zipFileName
-            DownloadMedia_finish().sendMessage(randomHash)
-        else:
-            DownloadMedia_finish().sendError("Failed to download playlist")
+    if len(downloadedFiles) == 0:
+        DownloadMedia_finish().sendError("Failed to download playlist")
+        return
+
+    zipFileName = WebUtils.compressToZip(downloadedFiles,  yt_dlp.utils.sanitize_filename(playlistName))
+    randomHash = WebUtils.getRandomString()
+    session[randomHash] = zipFileName
+    DownloadMedia_finish().sendMessage(randomHash)
 
 def downloadSingle(url, downloadType):
-        result = app.youtubeManager.getMediaInfo(url)
-        if result.IsFailed():
-            DownloadMedia_finish().sendError(result.error())
-            app.logger.error("Failed download from url %s - error: %s", url, result.error())
-            return
-        mediaInfo:YTManager.MediaInfo = result.data()
+    result = app.youtubeManager.getMediaInfo(url)
+    if result.IsFailed():
+        DownloadMedia_finish().sendError(result.error())
+        app.logger.error("Failed download from url %s - error: %s", url, result.error())
+        return
+    mediaInfo:YTManager.MediaInfo = result.data()
 
-        hash = mediaInfo.url.split("?v=")[1]
-        MediaInfo_response().sendMessage(SocketMessages.MediaInfo(mediaInfo.title, mediaInfo.artist, hash))
-        result2 = downloadMediaOfType(url, downloadType)
+    hash = mediaInfo.url.split("?v=")[1]
+    MediaInfo_response().sendMessage(SocketMessages.MediaInfo(mediaInfo.title, mediaInfo.artist, hash))
+    result2 = downloadMediaOfType(url, downloadType)
 
-        if result2.IsFailed():
-            app.logger.error("Failed with download media %s - %s", url, result2.error())
-            DownloadMedia_finish().sendError("problem with download media: " + result2.error())
-            return
+    if result2.IsFailed():
+        app.logger.error("Failed with download media %s - %s", url, result2.error())
+        DownloadMedia_finish().sendError("problem with download media: " + result2.error())
+        return
 
-        data:YTManager.YoutubeClipData = result2.data()
-        filename = data.path.split("/")[-1]
-        randomHash = WebUtils.getRandomString()
-        session[randomHash] = filename
-        DownloadMedia_finish().sendMessage(randomHash)
+    data:YTManager.YoutubeClipData = result2.data()
+    filename = data.path.split("/")[-1]
+    randomHash = WebUtils.getRandomString()
+    session[randomHash] = filename
+    DownloadMedia_finish().sendMessage(randomHash)
 
 def downloadMp3SongsFromList(listOfMedia:List[MediaFromPlaylist], downloadType):
     downloadedFiles = []
@@ -122,6 +123,7 @@ def downloadMp3SongsFromList(listOfMedia:List[MediaFromPlaylist], downloadType):
 
     for x in listOfMedia:
         index += 1
+        #TODO create this sequence in YoutubeManager
         if app.youtubeManager.isMusicClipArchived(app.youtubeManager.MUSIC_PATH, x.url):
             # only get information about media, file exists
             app.logger.debug("clip %s exists, only get information about MP3", x.title)
