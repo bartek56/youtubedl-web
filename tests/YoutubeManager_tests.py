@@ -1005,7 +1005,13 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
                                     mock.call(self.fourthFilenameWithPath, self.fourthHash)])
 
         self.assertTrue(result.IsSuccess())
-        self.assertEqual(result.data(), self.numberOfSongs)
+        self.assertEqual(len(result.data()), self.numberOfSongs)
+        listOfDownloadedSongs = result.data()
+        self.assertEqual(listOfDownloadedSongs[0], os.path.join(self.playlistPath, self.firstFilename))
+        self.assertEqual(listOfDownloadedSongs[1], os.path.join(self.playlistPath, self.secondFilename))
+        self.assertEqual(listOfDownloadedSongs[2], os.path.join(self.playlistPath, self.thirdFilename))
+        self.assertEqual(listOfDownloadedSongs[3], os.path.join(self.playlistPath, self.fourthFilename))
+
 
     @mock.patch("yt_dlp.YoutubeDL")
     @mock.patch.object(metadata_mp3.MetadataManager, "addCoverOfYtMp3")
@@ -1072,7 +1078,12 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
             mock.call(self.musicPath, self.playlistName, self.fourthFilename,                              str(self.numberOfArchiveSongs+4), self.fourthTitle, self.fourthArtist, self.fourthAlbum, self.fourthHash)])
 
         self.assertTrue(result.IsSuccess())
-        self.assertEqual(result.data(), self.numberOfSongs)
+        self.assertEqual(len(result.data()), self.numberOfSongs)
+        listOfDownloadedSongs = result.data()
+        self.assertEqual(listOfDownloadedSongs[0], os.path.join(self.playlistPath, self.firstFilename))
+        self.assertEqual(listOfDownloadedSongs[1], os.path.join(self.playlistPath, self.secondFilename))
+        self.assertEqual(listOfDownloadedSongs[2], os.path.join(self.playlistPath, self.secondFilename.replace(".mp3", " (1).mp3")))
+        self.assertEqual(listOfDownloadedSongs[3], os.path.join(self.playlistPath, self.fourthFilename))
 
     @mock.patch("yt_dlp.YoutubeDL")
     @mock.patch.object(metadata_mp3.MetadataManager, "addCoverOfYtMp3")
@@ -1178,7 +1189,13 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
             ])
 
         self.assertTrue(result.IsSuccess())
-        self.assertEqual(result.data(), 5)
+        self.assertEqual(len(result.data()), 5)
+        listOfDownloadedSongs = result.data()
+        self.assertEqual(listOfDownloadedSongs[0], os.path.join(self.playlistPath, self.firstFilename.replace(".mp3", " (1).mp3")))
+        self.assertEqual(listOfDownloadedSongs[1], os.path.join(self.playlistPath, self.firstFilename.replace(".mp3", " (2).mp3")))
+        self.assertEqual(listOfDownloadedSongs[2], os.path.join(self.playlistPath, self.firstFilename.replace(".mp3", " (3).mp3")))
+        self.assertEqual(listOfDownloadedSongs[3], os.path.join(self.playlistPath, self.firstFilename.replace(".mp3", " (4).mp3")))
+        self.assertEqual(listOfDownloadedSongs[4], os.path.join(self.playlistPath, self.firstFilename.replace(".mp3", " (5).mp3")))
 
     @mock.patch("yt_dlp.YoutubeDL")
     @mock.patch.object(metadata_mp3.MetadataManager, "addCoverOfYtMp3")
@@ -1296,7 +1313,13 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
                                               ])
 
         self.assertTrue(result.IsSuccess())
-        self.assertEqual(result.data(), 5)
+        self.assertEqual(len(result.data()), 5)
+        listOfDownloadedSongs = result.data()
+        self.assertEqual(listOfDownloadedSongs[0], os.path.join(self.playlistPath, self.firstFilename.replace(".mp3", " (1).mp3")))
+        self.assertEqual(listOfDownloadedSongs[1], os.path.join(self.playlistPath, self.firstFilename.replace(".mp3", " (2).mp3")))
+        self.assertEqual(listOfDownloadedSongs[2], os.path.join(self.playlistPath, self.firstFilename.replace(".mp3", " (3).mp3")))
+        self.assertEqual(listOfDownloadedSongs[3], os.path.join(self.playlistPath, self.firstFilename.replace(".mp3", " (4).mp3")))
+        self.assertEqual(listOfDownloadedSongs[4], os.path.join(self.playlistPath, self.firstFilename.replace(".mp3", " (5).mp3")))
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadata")
@@ -1305,6 +1328,7 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
         self.ytManager.isMusicClipArchived = mock.MagicMock()
         self.ytManager.isMusicClipArchived.configure_mock(side_effect=[True, True, True, False])
         mock_extract_info.configure_mock(side_effect=[self.ytPlaylistInfoResponse4, self.ytDownloadMp3Response4])
+        mock_metadata.configure_mock(side_effect=[self.fourthFilenameWithPath])
 
         result = self.ytManager.downloadPlaylistMp3(self.musicPath, self.playlistName, self.ytLink)
 
@@ -1321,7 +1345,9 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
                                               self.fourthTitle, self.fourthArtist, self.playlistNameAlbum , self.fourthAlbum , self.fourthWebsite, self.actualDate)
 
         self.assertTrue(result.IsSuccess())
-        self.assertEqual(result.data(), 1)
+        self.assertEqual(len(result.data()), 1)
+        downloadedSong = result.data()[0]
+        self.assertEqual(downloadedSong, os.path.join(self.musicPath, self.playlistName, self.fourthFilename))
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "addCoverOfYtMp3")
@@ -1362,7 +1388,12 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
                                               ])
 
         self.assertTrue(result.IsSuccess())
-        self.assertEqual(result.data(), self.numberOfSongs-1)
+        self.assertEqual(len(result.data()), self.numberOfSongs-1)
+
+        listOfDownloadedSongs = result.data()
+        self.assertEqual(listOfDownloadedSongs[0], os.path.join(self.playlistPath, self.firstFilename))
+        self.assertEqual(listOfDownloadedSongs[1], os.path.join(self.playlistPath, self.secondFilename))
+        self.assertEqual(listOfDownloadedSongs[2], os.path.join(self.playlistPath, self.fourthFilename))
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     def test_downloadMP3Playlist_getInfoFailed(self, mock_extract_info:mock.MagicMock):
@@ -1389,19 +1420,25 @@ class MediaServerDownloaderPlaylistsTestCase(unittest.TestCase):
     def test_downloadPlaylists(self):
         self.downloader._isDirForPlaylists = MagicMock()
         self.downloader._isDirForPlaylists.configure_mock(return_value=True)
-
-        listOfPlaylistResult = [4, 15]
+        playlist1Result = ["/tmp/music/title1.mp3", "/tmp/music/title2.mp3","/tmp/music/title3.mp3","/tmp/music/title4.mp3","/tmp/music/title5.mp3","/tmp/music/title6.mp3"]
+        playlist2Result = ["/tmp/music/title7.mp3","/tmp/music/title8.mp3","/tmp/music/title9.mp3","/tmp/music/title10.mp3","/tmp/music/title11.mp3","/tmp/music/title12.mp3",
+                                 "/tmp/music/title13.mp3","/tmp/music/title14.mp3","/tmp/music/title15.mp3","/tmp/music/title16.mp3","/tmp/music/title17.mp3"]
+        listOfPlaylistResult = [playlist1Result, playlist2Result]
         lisOfResults = []
         expectedNumberOfDownloadedSongs = 0
         for x in range(CustomConfigParser.numberOfPlaylists):
-            numberOfDonwloadedSongs = listOfPlaylistResult[x]
-            expectedNumberOfDownloadedSongs += numberOfDonwloadedSongs
-            lisOfResults.append(ResultOfDownload(numberOfDonwloadedSongs))
+            downloadedSongs = listOfPlaylistResult[x]
+            expectedNumberOfDownloadedSongs += len(downloadedSongs)
+            lisOfResults.append(ResultOfDownload(downloadedSongs))
         self.downloader.downloadPlaylistMp3.configure_mock(side_effect=lisOfResults)
 
         result = self.downloader.download_playlists()
+        print(result)
 
-        self.assertEqual(result, expectedNumberOfDownloadedSongs)
+        self.assertCountEqual(result, listOfPlaylistResult)
+        self.assertListEqual(result[0], listOfPlaylistResult[0])
+        self.assertListEqual(result[1], listOfPlaylistResult[1])
+
         self.assertEqual(self.downloader._isDirForPlaylists.call_count, 1)
         self.downloader.downloadPlaylistMp3.assert_has_calls(
             [mock.call(CustomConfigParser.path, CustomConfigParser.playlist1Name, CustomConfigParser.playlist1Link),
@@ -1417,13 +1454,16 @@ class MediaServerDownloaderPlaylistsTestCase(unittest.TestCase):
 
         lisOfResults = []
         expectedNumberOfDownloadedSongs = 4
-        lisOfResults.append(ResultOfDownload(4))
+        listOfDownloadedSongs = ["/tmp/music/title1.mp3","/tmp/music/title1.mp3","/tmp/music/title1.mp3","/tmp/music/title1.mp3"]
+        lisOfResults.append(ResultOfDownload(listOfDownloadedSongs))
         lisOfResults.append(ResultOfDownload("error"))
         self.downloader.downloadPlaylistMp3.configure_mock(side_effect=lisOfResults)
 
         result = self.downloader.download_playlists()
 
-        self.assertEqual(result, expectedNumberOfDownloadedSongs)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(len(result[0]), expectedNumberOfDownloadedSongs)
+        self.assertListEqual(result[0], listOfDownloadedSongs)
         self.assertEqual(self.downloader._isDirForPlaylists.call_count, 1)
 
         self.downloader.downloadPlaylistMp3.assert_has_calls(

@@ -6,6 +6,8 @@ import codecs
 from mutagen.easyid3 import EasyID3
 from mutagen.mp3 import MP3
 import metadata_mp3
+import unicodedata
+import re
 
 class PlaylistsManager:
 
@@ -13,7 +15,12 @@ class PlaylistsManager:
         self.dir = playlistsDir
         self.isCrLfNeeded = isCrLfNeeded
 
+        #print("isCrLf:", self.isCrLfNeeded)
+        #print("root dir:", self.dir, "\n")
+
     def saveToFile(self, fileName, text):
+        if self.isCrLfNeeded:
+            text = text.replace('\n', '\r\n')
         f = codecs.open(os.path.join(self.dir, fileName),"wb","utf-8")
         f.write(text)
         f.close()
@@ -50,13 +57,17 @@ class PlaylistsManager:
         filesNameWithPath = []
         fullPath = os.path.join(self.dir, path)
         if not os.path.isdir(fullPath):
-            print("Wrong path to generate M3U list")
+            print("Wrong path to collect songs:", fullPath, " It was skipped")
             return filesNameWithPath
 
-        fileNames = [f for f in os.listdir(fullPath) if f.endswith('.mp3')]
+        for root, dirs, files in os.walk(fullPath):
+            for file in files:
+                if file.lower().endswith('.mp3'):
+                    #print("root", root)
+                    fileNameWithPath=os.path.join(root,file).replace(self.dir+"/", "")
+                    #print("root2", fileNameWithPath)
+                    filesNameWithPath.append(fileNameWithPath)
 
-        for file in fileNames:
-            filesNameWithPath.append(os.path.join(path, file))
         return filesNameWithPath
 
     def collectSongsFromDirs(self, folders:list):
@@ -99,26 +110,67 @@ class PlaylistsManager:
         textFile = self.generateHeaderOfM3u()
         textFile += self.collectAndGenerateM3UList(dirName)
 
-        if self.isCrLfNeeded:
-            textFile.replace("\n", "\r\n")
-
         playlistFile = "%s.m3u"%(dirName)
         self.saveToFile(playlistFile, textFile)
 
     def createPlaylists(self):
+        print("Create playlists for dirs start")
         folders = [f for f in os.listdir(self.dir) if os.path.isdir(os.path.join(self.dir, f))]
         for i in folders:
             self.createPlaylist(i)
+        print("Create playlists for dirs end\n")
 
 # -------------------------------------------------------------------------
     def removeCovers(self):
+        print("Remove covers start")
         metadataMng = metadata_mp3.MetadataManager()
         folders = [f for f in os.listdir(self.dir) if os.path.isdir(os.path.join(self.dir, f))]
         for folder in folders:
-            files = [g for g in os.listdir(os.path.join(self.dir, folder)) if os.path.isfile(os.path.join(self.dir, folder, g))]
+            files = [g for g in os.listdir(os.path.join(self.dir, folder)) if os.path.isfile(os.path.join(self.dir,folder, g))]
             for file in files:
                 if ".mp3" in file:
                     metadataMng.removeCoverOfMp3(os.path.join(self.dir, folder, file))
+        print("Remove covers end\n")
+
+    def clean_filename(self, name):
+        new_name = unicodedata.normalize('NFKD', name)
+        # Usuń znaki diakrytyczne (łączone)
+        new_name = ''.join(c for c in new_name if not unicodedata.combining(c))
+        # Zamień znaki, które nie są rozkładane (np. ł → l)
+        new_name = new_name.replace('ł', 'l').replace('Ł', 'L')
+        # 2. Usuwanie niedozwolonych znaków
+        # Znaki zabronione w nazwach plików w Windows
+        invalid_chars = r'[^a-zA-Z0-9 _\-.,()]'
+        new_name = re.sub(invalid_chars, '', new_name)
+
+        # 3. Usuwanie nadmiarowych spacji
+        new_name = re.sub(r'\s+', ' ', new_name).strip()
+        return new_name
+
+    def removePolishChars(self):
+        print("Remove polish chars start")
+        for root, dirs, files in os.walk(self.dir):
+            for name in files:
+                new_name = self.clean_filename(name)
+                if new_name != name:
+                    src = os.path.join(root, name)
+                    dst = os.path.join(root, new_name)
+                    try:
+                        os.rename(src, dst)
+                        print(f"Renamed: {name} -> {new_name}")
+                    except Exception as e:
+                        print(f"Error renaming {name}: {e}")
+            for name in dirs:
+                new_name = self.clean_filename(name)
+                if new_name != name:
+                    src = os.path.join(root, name)
+                    dst = os.path.join(root, new_name)
+                    try:
+                        os.rename(src, dst)
+                        print(f"Renamed folder: {name} -> {new_name}")
+                    except Exception as e:
+                        print(f"Error renaming folder {name}: {e}")
+        print("Remove polish chars end\n")
 
 # -------------------------------------------------------------------------
     def collectAndGenerateGroupOfPlaylists(self, folders:list, limitOfSongs=None):
@@ -126,7 +178,7 @@ class PlaylistsManager:
 
         songs = sorted(songs, key= lambda f: (
                 self.get_date(os.path.join(self.dir, f)),
-                self.get_tracknumber(os.path.join(self.dir, f))
+                self.get_tracknumber(os.path.join(self.dir,f))
                 ), reverse=True)
 
         if limitOfSongs is not None:
@@ -137,15 +189,15 @@ class PlaylistsManager:
         return textFile
 
     def createGroupOfPlaylists(self, playlistName:str, folders:list, limitOfSongs=None):
+        print("Create group", playlistName, "start")
 
         textFile = self.collectAndGenerateGroupOfPlaylists(folders, limitOfSongs)
-        if self.isCrLfNeeded:
-            textFile.replace("\n", "\r\n")
         if limitOfSongs is not None:
             playlistName = playlistName+" "+str(limitOfSongs)+" hits"
 
         playlistFile = "%s.m3u"%(playlistName)
         self.saveToFile(playlistFile, textFile)
+        print("Create group", playlistName, "end\n")
 
 # -------------------------------------------------------------------------
     def generateTopOfM3UList(self, numberOfSongs):
@@ -169,12 +221,12 @@ class PlaylistsManager:
             return textFile
 
     def createTopOfMusic(self, numberOfSongs, isCrLfNeeded=False):
+            print("Create Top", numberOfSongs, "start")
             textFile = self.generateTopOfM3UList(numberOfSongs)
-            if isCrLfNeeded:
-                textFile.replace("\n", "\r\n")
             playlistFile = "%s Top.m3u"%(str(numberOfSongs))
 
             self.saveToFile(playlistFile, textFile)
+            print("Create Top", numberOfSongs, "end\n")
 
 
 def main(argv):
@@ -223,14 +275,8 @@ def main(argv):
         manager.removeCovers()
         manager.createPlaylists()
 
-        folders=["Bachata","Kizomba","Semba","salsa"]
+        folders=["UrbanKiz"]
         manager.createGroupOfPlaylists("taniec", folders)
-
-        folders=["imprezka","techno","Rock-Electronic","relaks"]
-        manager.createGroupOfPlaylists("trening", folders)
-
-        folders=["relaks","chillout","spokojne-sad","Rock-Electronic"]
-        manager.createGroupOfPlaylists("praca", folders)
 
         manager.createTopOfMusic(30)
         manager.createTopOfMusic(100)
@@ -251,5 +297,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    pass
-    #main(sys.argv[1:])
+    main(sys.argv[1:])

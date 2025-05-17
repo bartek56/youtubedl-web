@@ -552,6 +552,7 @@ class MediaServerDownloader(YoutubeManager):
         if not self._isDirForPlaylists():
             logger.error("wrong path for playlists")
             return 0
+        downloadedSongs = []
         songsCounter = 0
         playlists = self.ytConfig.getPlaylists()
         for playlist in playlists:
@@ -562,10 +563,14 @@ class MediaServerDownloader(YoutubeManager):
             if result.IsFailed():
                 logger.error("Failed to download playlist %s", playlist.name)
                 continue
-            logger.info("--------------- downloaded %s songs from \"%s\" playlist ------------------", result.data(), playlist.name)
-            songsCounter += result.data()
+            downloadedFiles:list = result.data()
+            numberOfDownloadedSongs = len(downloadedFiles)
+            logger.info("--------------- downloaded %s songs from \"%s\" playlist ------------------", numberOfDownloadedSongs, playlist.name)
+            if numberOfDownloadedSongs > 0:
+                downloadedSongs.append(downloadedFiles)
+                songsCounter += numberOfDownloadedSongs
         logger.info("[SUMMARY] downloaded %s songs"%(songsCounter))
-        return songsCounter
+        return downloadedSongs
 
     def downloadPlaylistMp3(self, playlistDir, playlistName, url) -> ResultOfDownload:
         path=os.path.join(playlistDir, playlistName)
@@ -576,7 +581,7 @@ class MediaServerDownloader(YoutubeManager):
             return result
         playlistInfo:PlaylistInfo
         playlistInfo = result.data()
-        songCounter = 0
+        downloadedSongs = []
 
         numberOfDownloadedSongsLocally = self._getNumberOfDownloadedSongs(path)
 
@@ -604,8 +609,8 @@ class MediaServerDownloader(YoutubeManager):
             numberOfDownloadedSongsLocally+=1
             filenameWithPath = self.addMetadataToPlaylist(playlistDir, playlistName, songMetadata.path.split("/")[-1], str(numberOfDownloadedSongsLocally), songMetadata.title, songMetadata.artist, songMetadata.album, songMetadata.hash)
             self.metadataManager.addCoverOfYtMp3(filenameWithPath, songMetadata.hash)
-            songCounter+=1
-        return ResultOfDownload(songCounter)
+            downloadedSongs.append(filenameWithPath)
+        return ResultOfDownload(downloadedSongs)
 
     def checkPlaylistStatus(self, playlistDir, playlistName, url):
         directory=os.path.join(playlistDir, playlistName)
@@ -812,20 +817,40 @@ def main(): # pragma: no cover
             logger.error("configuration file %s doesn't exists", args.configFile)
             exit()
         yt = MediaServerDownloader(args.configFile)
-        numberOfDownloadedSongs = yt.download_playlists()
-        if numberOfDownloadedSongs > 0:
+        downloadedFiles:list = yt.download_playlists()
+        if len(downloadedFiles) > 0:
+            logger.info("Downloaded songs:")
+            for x in downloadedFiles:
+                for y in x:
+                    logger.info(y)
+            logger.info("Updating playlists")
             playlistsCreator = PlaylistsManager(yt.ytConfig.getPath())
-            playlistsCreator.createPlaylists()
+            updatedPlaylists = []
+            for x in downloadedFiles:
+                downloadedFile = x[0]
+                playlistDir = downloadedFile.split("/")[-2]
+                playlistsCreator.createPlaylist(playlistDir)
+                updatedPlaylists.append(playlistDir)
+            playlistsCreator.createTopOfMusic(30)
             playlistsCreator.createTopOfMusic(100)
+            playlistsCreator.createTopOfMusic(200)
+
 
             folders=["imprezka","techno","Rock-Electronic","relaks","stare hity"]
-            playlistsCreator.createGroupOfPlaylists("trening", folders)
+            common = (set(folders) & set(updatedPlaylists))
+            if len(common) > 0:
+                playlistsCreator.createGroupOfPlaylists("trening", folders)
 
             folders=["relaks","chillout","spokojne-sad","cafe","positive chill","polskie hity","muzyka filmowa"]
-            playlistsCreator.createGroupOfPlaylists("praca", folders)
+            common = (set(folders) & set(updatedPlaylists))
+            if len(common) > 0:
+                playlistsCreator.createGroupOfPlaylists("praca", folders)
 
             folders=["Bachata","Bachata Dominikana","Kizomba","latino","Semba"]
-            playlistsCreator.createGroupOfPlaylists("taniec", folders)
+            common = (set(folders) & set(updatedPlaylists))
+            if len(common) > 0:
+                playlistsCreator.createGroupOfPlaylists("taniec", folders)
+
     else:
         if args.mode is not None and args.playlistUpdate is not None:
             my_parser.error("choose only one purpose")
