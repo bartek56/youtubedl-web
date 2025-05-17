@@ -994,10 +994,10 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
         self.assertEqual(mock_sanitize.call_count, 8)
 
         self.assertEqual(mock_metadata.call_count, self.numberOfSongs)
-        mock_metadata.assert_has_calls([mock.call(os.path.join(self.playlistPath, self.firstFilename),  str(self.numberOfArchiveSongs+1), self.firstTitle,  self.firstArtist,  self.firstAlbum, '', self.firstWebsite,  self.actualDate),
-                                        mock.call(os.path.join(self.playlistPath, self.secondFilename), str(self.numberOfArchiveSongs+2), self.secondTitle, self.secondArtist, self.secondAlbum, '', self.secondWebsite, self.actualDate),
-                                        mock.call(os.path.join(self.playlistPath, self.thirdFilename),  str(self.numberOfArchiveSongs+3), self.thirdTitle,  self.thirdArtist,  self.thirdAlbum, '', self.thirdWebsite,  self.actualDate),
-                                        mock.call(os.path.join(self.playlistPath, self.fourthFilename), str(self.numberOfArchiveSongs+4), self.fourthTitle, self.fourthArtist, self.fourthAlbum, '', self.fourthWebsite, self.actualDate)])
+        mock_metadata.assert_has_calls([mock.call(os.path.join(self.playlistPath, self.firstFilename),  str(self.numberOfArchiveSongs+1), self.firstTitle,  self.firstArtist,  self.playlistNameAlbum, self.firstAlbum,  self.firstWebsite,  self.actualDate),
+                                        mock.call(os.path.join(self.playlistPath, self.secondFilename), str(self.numberOfArchiveSongs+2), self.secondTitle, self.secondArtist, self.playlistNameAlbum, self.secondAlbum, self.secondWebsite, self.actualDate),
+                                        mock.call(os.path.join(self.playlistPath, self.thirdFilename),  str(self.numberOfArchiveSongs+3), self.thirdTitle,  self.thirdArtist,  self.playlistNameAlbum, self.thirdAlbum,  self.thirdWebsite,  self.actualDate),
+                                        mock.call(os.path.join(self.playlistPath, self.fourthFilename), str(self.numberOfArchiveSongs+4), self.fourthTitle, self.fourthArtist, self.playlistNameAlbum, self.fourthAlbum, self.fourthWebsite, self.actualDate)])
         self.assertEqual(mock_cover.call_count, 4)
         mock_cover.assert_has_calls([mock.call(self.firstFilenameWithPath, self.firstHash),
                                     mock.call(self.secondFilenameWithPath, self.secondHash),
@@ -1318,7 +1318,7 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
 
         self.assertEqual(mock_metadata.call_count, 1)
         mock_metadata.assert_called_once_with(os.path.join(self.musicPath, self.playlistName, self.fourthFilename), str(self.numberOfArchiveSongs+1),
-                                              self.fourthTitle, self.fourthArtist, self.fourthAlbum, '', self.fourthWebsite, self.actualDate)
+                                              self.fourthTitle, self.fourthArtist, self.playlistNameAlbum , self.fourthAlbum , self.fourthWebsite, self.actualDate)
 
         self.assertTrue(result.IsSuccess())
         self.assertEqual(result.data(), 1)
@@ -1350,9 +1350,9 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
                                             ])
 
         self.assertEqual(mock_metadata.call_count, self.numberOfSongs-1)
-        mock_metadata.assert_has_calls([mock.call(os.path.join(self.musicPath, self.playlistName, self.firstFilename),  str(self.numberOfArchiveSongs+1),  self.firstTitle,  self.firstArtist,  self.firstAlbum, '', self.firstWebsite,  self.actualDate),
-                                        mock.call(os.path.join(self.musicPath, self.playlistName, self.secondFilename), str(self.numberOfArchiveSongs+2),  self.secondTitle, self.secondArtist, self.secondAlbum, '', self.secondWebsite, self.actualDate),
-                                        mock.call(os.path.join(self.musicPath, self.playlistName, self.fourthFilename), str(self.numberOfArchiveSongs+3),  self.fourthTitle, self.fourthArtist, self.fourthAlbum, '', self.fourthWebsite, self.actualDate)])
+        mock_metadata.assert_has_calls([mock.call(os.path.join(self.musicPath, self.playlistName, self.firstFilename),  str(self.numberOfArchiveSongs+1),  self.firstTitle,  self.firstArtist,  self.playlistNameAlbum, self.firstAlbum, self.firstWebsite,  self.actualDate),
+                                        mock.call(os.path.join(self.musicPath, self.playlistName, self.secondFilename), str(self.numberOfArchiveSongs+2),  self.secondTitle, self.secondArtist, self.playlistNameAlbum, self.secondAlbum, self.secondWebsite, self.actualDate),
+                                        mock.call(os.path.join(self.musicPath, self.playlistName, self.fourthFilename), str(self.numberOfArchiveSongs+3),  self.fourthTitle, self.fourthArtist, self.playlistNameAlbum, self.fourthAlbum, self.fourthWebsite, self.actualDate)])
 
         self.assertEqual(mock_cover.call_count, 3)
         mock_cover.assert_has_calls([

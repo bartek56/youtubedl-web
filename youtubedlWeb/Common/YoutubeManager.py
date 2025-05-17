@@ -424,6 +424,10 @@ class YoutubeManager:
         title = yt_dlp.utils.sanitize_filename(title)
         artist = yt_dlp.utils.sanitize_filename(artist)
         website = ""
+        albumArtist = album
+        album = ""
+        if len(playlistName) > 0:
+            album = "YT "+playlistName
         if hash is not None and len(hash) > 0:
             website = self.ytDomain + hash
         album_date = ""
@@ -433,7 +437,7 @@ class YoutubeManager:
             album_date = self._getDateTimeNowStr()
 
         return self.metadataManager.renameAndAddMetadata(os.path.join(playlistDir, playlistName, fileName), playlistIndex,
-                                                                   title, artist, album, "", website, album_date)
+                                                                   title, artist, album, albumArtist, website, album_date)
 
     def _getSongsOfDir(self, playlistDir): # pragma: no cover
         if not os.path.isdir(playlistDir):
