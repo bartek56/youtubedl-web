@@ -6,6 +6,7 @@ from .config import Config
 from .Common.YoutubeManager import YoutubeManager, YoutubeConfig
 from .Common.AlarmManager import AlarmManager
 from .Common.MailManager import Mail
+from .Common.SocketManager import SocketManager
 
 socketio = SocketIO(manage_session=False)
 
@@ -29,6 +30,8 @@ def create_app(config=Config):
 
     app.subprocess = subprocess
     app.desktop = False
+
+    app.socketManager = SocketManager()
 
     app.mailManager = Mail()
     app.youtubeConfig = YoutubeConfig()

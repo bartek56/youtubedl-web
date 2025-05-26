@@ -489,7 +489,7 @@ class YoutubeManager:
             os.makedirs(path)
 
     def _lookingForFile(self, path, songTitle, artist): # pragma: no cover
-        def lookingForFileAccordWithYTFilename(self, path, songName, artist):
+        def lookingForFileAccordWithYTFilename(path, songName, artist):
             songName = self.metadataManager._removeSheetFromSongName(songName)
             fileName="%s%s"%(songName,self.mp3ext)
             if os.path.isfile(os.path.join(path, fileName)):

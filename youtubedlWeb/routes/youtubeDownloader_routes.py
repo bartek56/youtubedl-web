@@ -12,6 +12,7 @@ from youtubedlWeb.Common.YoutubeTypes import MediaFromPlaylist
 
 import youtubedlWeb.Common.YoutubeManager as YTManager
 import youtubedlWeb.Common.SocketMessages as SocketMessages
+import youtubedlWeb.Common.SocketManager as SocketManager
 import youtubedlWeb.Common.WebUtils as WebUtils
 #TODO do not include for MediaServer
 #import webview
@@ -96,25 +97,25 @@ def downloadPlaylist(url, downloadType):
 def downloadSingle(url, downloadType):
     result = app.youtubeManager.getMediaInfo(url)
     if result.IsFailed():
-        DownloadMedia_finish().sendError(result.error())
+        app.socketManager.downloadMedia_finish_error(result.error())
         app.logger.error("Failed download from url %s - error: %s", url, result.error())
         return
     mediaInfo:YTManager.MediaInfo = result.data()
 
     hash = mediaInfo.url.split("?v=")[1]
-    MediaInfo_response().sendMessage(SocketMessages.MediaInfo(mediaInfo.title, mediaInfo.artist, hash))
+    app.socketManager.mediaInfo_response(SocketMessages.MediaInfo(mediaInfo.title, mediaInfo.artist, hash))
     result2 = downloadMediaOfType(url, downloadType)
 
     if result2.IsFailed():
         app.logger.error("Failed with download media %s - %s", url, result2.error())
-        DownloadMedia_finish().sendError("problem with download media: " + result2.error())
+        app.socketManager.downloadMedia_finish_error("problem with download media: " + result2.error())
         return
 
     data:YTManager.YoutubeClipData = result2.data()
     filename = data.path.split("/")[-1]
     randomHash = WebUtils.getRandomString()
     session[randomHash] = filename
-    DownloadMedia_finish().sendMessage(randomHash)
+    app.socketManager.downloadMedia_finish(randomHash)
 
 def downloadMp3SongsFromList(listOfMedia:List[MediaFromPlaylist], downloadType):
     downloadedFiles = []
