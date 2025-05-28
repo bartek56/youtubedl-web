@@ -16,13 +16,14 @@ class SocketManager:
             newUserID = str(uuid.uuid4())
             session['user_id'] = newUserID
             self.sessions[newUserID] = []
+
             app.logger.debug("new connection")
             return
         userId = session['user_id']
         app.logger.debug("user_id : %s", userId)
         if userId not in self.sessions.keys():
             self.sessions[userId] = []
-            app.logger.debug("User with id: %s doesn;t exist", userId)
+            app.logger.debug("User with id: %s doesn't exist", userId)
             return
         messageQueueList = self.sessions[userId]
         for message in messageQueueList:

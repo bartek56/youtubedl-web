@@ -1,5 +1,5 @@
 from typing import List
-from flask import Blueprint, render_template, session, send_file, send_from_directory
+from flask import Blueprint, render_template, session, send_file, send_from_directory, request
 from flask import current_app as app
 import shutil
 import yt_dlp
@@ -69,6 +69,12 @@ def register_socketio_youtubeDownloader(socketio):
             return render_template('index.html')
         app.logger.error("it's not supported on web")
         return send_file(fullPath, as_attachment=True)
+
+    @socketio.on('connect')
+    def connect():
+        app.logger.debug("---------------- connect. namespace:%s, sid: %s", request.namespace, request.sid)
+        session['sid'] = request.sid
+        app.socketManager.connection()
 
 def downloadPlaylist(url, downloadType):
     resultOfPlaylist = app.youtubeManager.getPlaylistInfo(url)

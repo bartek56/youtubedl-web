@@ -1,6 +1,7 @@
 import logging
 from typing import List
 from flask_socketio import emit
+from flask import session
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,8 @@ class Message:
         self.message = message
 
     def _emitMessage(self):
-        emit(self.message, self._messageContent)
+        logger.debug("emit message to sid: %s", session["sid"])
+        emit(self.message, self._messageContent, namespace='/', to=session["sid"])
 
     def _setMessage(self, data):
         self.data = data
