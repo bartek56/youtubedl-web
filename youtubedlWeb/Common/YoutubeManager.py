@@ -491,11 +491,11 @@ class YoutubeManager:
     def _lookingForFile(self, path, songTitle, artist): # pragma: no cover
         def lookingForFileAccordWithYTFilename(path, songName, artist):
             songName = self.metadataManager._removeSheetFromSongName(songName)
-            fileName="%s%s"%(songName,self.mp3ext)
+            fileName="%s%s"%(songName,".mp3")
             if os.path.isfile(os.path.join(path, fileName)):
                 return songName
             songName = "%s - %s"%(artist, songName)
-            fileName="%s%s"%(songName,self.mp3ext)
+            fileName="%s%s"%(songName,".mp3")
             if os.path.isfile(os.path.join(path, fileName)):
              return songName
             else:
