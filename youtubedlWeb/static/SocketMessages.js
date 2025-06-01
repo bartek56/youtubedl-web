@@ -98,6 +98,15 @@ class MediaInfo_response extends MessageBase{
     }
 }
 
+// -------------- Resume ------------------------
+// data: empty
+class Resume extends MessageBase{
+    static Message = "resume"
+    constructor(msg)
+    {
+        super(msg)
+    }
+}
 
 // -------------- downloadMedia_finish ------------------------
 // data: hash

@@ -1,83 +1,64 @@
 from youtubedlWeb.Common.SocketMessages import *
-from flask import session
 from flask import current_app as app
 import uuid
 
 class SocketManager:
     def __init__(self):
-        #if 'user_id' in session:
-        #    print("!!!!!!", session['user_id'])
         self.activeUsersId = {}
+        self.session_to_sid = {}
 
-    def connection(self, sid):
+    def updateSessionSid(self, sessionId, sid):
+        self.session_to_sid[sessionId] = sid
+
+    def connection(self, session_id, sid):
         app.logger.debug("--- Connection ---")
-        session['sid'] = sid
-
-        # check if session in the client browser still exist
-        if 'user_id' not in session:
-            app.logger.debug("new connection, create user_id")
-            newUserID = str(uuid.uuid4())
-            session['user_id'] = newUserID
-            self.activeUsersId[newUserID] = []
+        self.session_to_sid[session_id] = sid
+        app.logger.debug("session_id: %s, sid: %s", session_id, sid)
+        if session_id not in self.activeUsersId.keys():
+            app.logger.debug("Add new active user %s", session_id)
+            self.activeUsersId[session_id] = []
             return
-        userId = session['user_id']
-        app.logger.debug("user_id : %s", userId)
-        if userId not in self.activeUsersId.keys():
-            app.logger.debug("Session exists, add new active user %s", userId)
-            self.activeUsersId[userId] = []
-            return
-        messageQueueList = self.activeUsersId[userId]
+        messageQueueList = self.activeUsersId[session_id]
+        if len(messageQueueList) > 0 :
+            Resume().sendMessage("", sid)
         for message in messageQueueList:
             msg:Message = message[0]()
             dataOfMessage = message[1]
-            app.logger.debug("send %s message with data: %s from history", msg.message, dataOfMessage)
-            msg.sendMessage(dataOfMessage)
-
-    def newSession(self, sid):
-        session['sid'] = sid
-        if 'user_id' not in session:
-            app.logger.warning("user_id key doesn't exist in session")
-        userId = session['user_id']
-        self.activeUsersId[userId] = []
+            msg.sendMessage(dataOfMessage,sid)
 
     def disconnection(self, sid):
         app.logger.debug("--- Disconnection ---")
-        if 'user_id' in session:
-            userId = session['user_id']
-            app.logger.debug("session exist: %s", userId)
-            #self.activeUsersId.pop(userId)
+        #TODO
 
-    def getId(self):
-        if 'user_id' not in session:
-            newUserID = str(uuid.uuid4())
-            session['user_id'] = newUserID
-            self.activeUsersId[newUserID] = []
-            return newUserID
-        return session['user_id']
+    def getSessionId(self, sid):
+        sessionId = None
+        for sessionId_, sid_ in self.session_to_sid.items():
+            if sid_ == sid:
+                sessionId = sessionId_
+                break
+        app.logger.debug("SessionId: %s, sid: %s", sessionId, sid)
+        return sessionId
 
-    def addMessageToQueue(self, msg):
+    def addMessageToQueue(self, msg, session_id):
         app.logger.debug("Add message to the queue")
-        id = self.getId()
-        self.activeUsersId[id].append(msg)
-        for key, value in self.activeUsersId.items():
-            print(key, value)
+        self.activeUsersId[session_id].append(msg)
 
-    def downloadMedia_finish(self, hash):
-        self.addMessageToQueue((DownloadMedia_finish, hash))
-        DownloadMedia_finish().sendMessage(hash)
+    def downloadMedia_finish(self, hash, session_id):
+        self.addMessageToQueue((DownloadMedia_finish, hash), session_id)
+        DownloadMedia_finish().sendMessage(hash, self.session_to_sid[session_id])
 
-    def downloadMedia_finish_error(self, error):
-        self.addMessageToQueue((DownloadMedia_finish, error))
-        DownloadMedia_finish().sendError(error)
+    def downloadMedia_finish_error(self, error, session_id):
+        self.addMessageToQueue((DownloadMedia_finish, error), session_id)
+        DownloadMedia_finish().sendError(error, self.session_to_sid[session_id])
 
-    def mediaInfo_response(self, mediaInfo:MediaInfo):
-        self.addMessageToQueue((MediaInfo_response, mediaInfo))
-        MediaInfo_response().sendMessage(mediaInfo)
+    def mediaInfo_response(self, mediaInfo:MediaInfo, session_id):
+        self.addMessageToQueue((MediaInfo_response, mediaInfo), session_id)
+        MediaInfo_response().sendMessage(mediaInfo, self.session_to_sid[session_id])
 
-    def playlistInfo_response(self, playlistInfoMsg:PlaylistInfo):
-        self.addMessageToQueue((PlaylistInfo_response, playlistInfoMsg))
-        PlaylistInfo_response().sendMessage(playlistInfoMsg)
+    def playlistInfo_response(self, playlistInfoMsg:PlaylistInfo, session_id):
+        self.addMessageToQueue((PlaylistInfo_response, playlistInfoMsg), session_id)
+        PlaylistInfo_response().sendMessage(playlistInfoMsg, self.session_to_sid[session_id])
 
-    def playlistMediaInfo_response(self, playlistMediaInfoMsg:PlaylistMediaInfo):
-        self.addMessageToQueue((PlaylistMediaInfo_response, playlistMediaInfoMsg))
-        PlaylistMediaInfo_response().sendMessage(playlistMediaInfoMsg)
+    def playlistMediaInfo_response(self, playlistMediaInfoMsg:PlaylistMediaInfo, session_id):
+        self.addMessageToQueue((PlaylistMediaInfo_response, playlistMediaInfoMsg), session_id)
+        PlaylistMediaInfo_response().sendMessage(playlistMediaInfoMsg, self.session_to_sid[session_id])

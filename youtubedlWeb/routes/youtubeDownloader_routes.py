@@ -2,6 +2,7 @@ from typing import List
 from flask import Blueprint, render_template, session, send_file, send_from_directory, request
 from flask import current_app as app
 import shutil
+import uuid
 import yt_dlp
 
 from youtubedlWeb.Common.SocketMessages import PlaylistInfo_response, PlaylistMediaInfo_response
@@ -39,12 +40,19 @@ def download_file(name):
         return render_template('index.html')
     return send_file(fullPath, as_attachment=True)
 
+@youtubeDownloader_bp.route("/get-session-id")
+def get_session_id():
+    newSession = str(uuid.uuid4())
+    app.logger.info("new session: %s", newSession)
+    return newSession
+
 def register_socketio_youtubeDownloader(socketio):
 
     @socketio.on('connect')
-    def connect():
-        app.logger.debug("---------------- connect. namespace:%s, sid: %s", request.namespace, request.sid)
-        app.socketManager.connection(request.sid)
+    def connect(auth):
+        session_id = auth.get("session_id") if auth else None
+        app.logger.debug("---------------- connect. namespace:%s, sid: %s, session_id: %s", request.namespace, request.sid, session_id)
+        app.socketManager.connection(session_id, request.sid)
 
     @socketio.on('disconnect')
     def handle_disconnect():
@@ -54,16 +62,17 @@ def register_socketio_youtubeDownloader(socketio):
     @socketio.on(DownloadMediaRequest.message)
     def downloadMedia(msg):
         response = DownloadMediaRequest(msg).downloadMedia
-        app.socketManager.newSession(request.sid)
+        session_id = app.socketManager.getSessionId(request.sid)
+        app.logger.debug("SessionID: %s", session_id)
         url = response.link
         downloadType = response.type
         if len(url) == 0:
             DownloadMedia_finish().sendError("Link is empty")
             return
         if "playlist?list" in url and "watch?v" not in url:
-            downloadPlaylist(url, downloadType)
+            downloadPlaylist(url, downloadType, session_id)
         else:
-            downloadSingle(url, downloadType)
+            downloadSingle(url, downloadType, session_id)
 
     @socketio.on(DownloadFileRequest.message)
     def downloadFile(msg):
@@ -84,8 +93,9 @@ def register_socketio_youtubeDownloader(socketio):
         app.logger.error("it's not supported on web")
         return send_file(fullPath, as_attachment=True)
 
-
-def downloadPlaylist(url, downloadType):
+def downloadPlaylist(url, downloadType, session_id):
+    session_id = app.socketManager.getSessionId(request.sid)
+    app.logger.debug("SessionID: %s", session_id)
     resultOfPlaylist = app.youtubeManager.getPlaylistInfo(url)
     if resultOfPlaylist.IsFailed():
         app.socketManager.downloadMedia_finish_error("Failed to get info playlist")
@@ -93,33 +103,32 @@ def downloadPlaylist(url, downloadType):
         return
     ytData:YTManager.PlaylistInfo = resultOfPlaylist.data()
     playlistName = ytData.playlistName
-#    PlaylistInfo_response().sendMessage(SocketMessages.PlaylistInfo(playlistName, ytData.listOfMedia))
-    app.socketManager.playlistInfo_response(SocketMessages.PlaylistInfo(playlistName, ytData.listOfMedia))
+    app.socketManager.playlistInfo_response(SocketMessages.PlaylistInfo(playlistName, ytData.listOfMedia), session_id)
     downloadedFiles = []
     if downloadType == "mp3":
-        downloadedFiles = downloadMp3SongsFromList(ytData.listOfMedia, downloadType)
+        downloadedFiles = downloadMp3SongsFromList(ytData.listOfMedia, downloadType, session_id)
     else:
-        downloadedFiles = downloadVideoSongsFromList(ytData.listOfMedia, downloadType)
+        downloadedFiles = downloadVideoSongsFromList(ytData.listOfMedia, downloadType, session_id)
 
     if len(downloadedFiles) == 0:
-        app.socketManager.downloadMedia_finish_error("Failed to download playlist")
+        app.socketManager.downloadMedia_finish_error("Failed to download playlist", session_id)
         return
 
     zipFileName = WebUtils.compressToZip(downloadedFiles,  yt_dlp.utils.sanitize_filename(playlistName))
     randomHash = WebUtils.getRandomString()
     session[randomHash] = zipFileName
-    app.socketManager.downloadMedia_finish(randomHash)
+    app.socketManager.downloadMedia_finish(randomHash, session_id)
 
-def downloadSingle(url, downloadType):
+def downloadSingle(url, downloadType, session_id):
     result = app.youtubeManager.getMediaInfo(url)
     if result.IsFailed():
-        app.socketManager.downloadMedia_finish_error(result.error())
+        app.socketManager.downloadMedia_finish_error(result.error(), session_id)
         app.logger.error("Failed download from url %s - error: %s", url, result.error())
         return
     mediaInfo:YTManager.MediaInfo = result.data()
 
     hash = mediaInfo.url.split("?v=")[1]
-    app.socketManager.mediaInfo_response(SocketMessages.MediaInfo(mediaInfo.title, mediaInfo.artist, hash))
+    app.socketManager.mediaInfo_response(SocketMessages.MediaInfo(mediaInfo.title, mediaInfo.artist, hash), session_id)
     result2 = downloadMediaOfType(url, downloadType)
 
     if result2.IsFailed():
@@ -131,9 +140,9 @@ def downloadSingle(url, downloadType):
     filename = data.path.split("/")[-1]
     randomHash = WebUtils.getRandomString()
     session[randomHash] = filename
-    app.socketManager.downloadMedia_finish(randomHash)
+    app.socketManager.downloadMedia_finish(randomHash, session_id)
 
-def downloadMp3SongsFromList(listOfMedia:List[MediaFromPlaylist], downloadType):
+def downloadMp3SongsFromList(listOfMedia:List[MediaFromPlaylist], downloadType, session_id):
     downloadedFiles = []
     index = 0
     numberOfDownloadedSongs = 0
@@ -167,13 +176,13 @@ def downloadMp3SongsFromList(listOfMedia:List[MediaFromPlaylist], downloadType):
         filename = filenameFullPath.split("/")[-1]
         randomHash = WebUtils.getRandomString()
         session[randomHash] = filename
-        app.socketManager.playlistMediaInfo_response(SocketMessages.PlaylistMediaInfo(x.playlistIndex, filename, randomHash))
+        app.socketManager.playlistMediaInfo_response(SocketMessages.PlaylistMediaInfo(x.playlistIndex, filename, randomHash), session_id)
     if numberOfDownloadedSongs == 0:
         DownloadMedia_finish().sendError("Failed to download playlist")
         return downloadedFiles
     return downloadedFiles
 
-def downloadVideoSongsFromList(listOfMedia:List[MediaFromPlaylist], downloadType):
+def downloadVideoSongsFromList(listOfMedia:List[MediaFromPlaylist], downloadType, session_id):
     downloadedFiles = []
     index = 0
     numberOfDownloadedSongs = 0
@@ -192,7 +201,7 @@ def downloadVideoSongsFromList(listOfMedia:List[MediaFromPlaylist], downloadType
         filename = data.path.split("/")[-1]
         randomHash = WebUtils.getRandomString()
         session[randomHash] = filename
-        app.socketManager.playlistMediaInfo_response(SocketMessages.PlaylistMediaInfo(x.playlistIndex, filename, randomHash))
+        app.socketManager.playlistMediaInfo_response(SocketMessages.PlaylistMediaInfo(x.playlistIndex, filename, randomHash), session_id)
     if numberOfDownloadedSongs == 0:
         DownloadMedia_finish().sendError("Failed to download playlist")
         return

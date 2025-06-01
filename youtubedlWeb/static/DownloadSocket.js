@@ -9,11 +9,28 @@ function clickDownload(event, hash) {
 
 $(document).ready(function () {
 
+    async function initSocket() {
+        let session_id = localStorage.getItem("session_id");
+
+        if (!session_id) {
+            const res = await fetch("/get-session-id");
+            session_id = await res.text();
+            localStorage.setItem("session_id", session_id);
+        }
+    }
+
     var downloadResult = [];
     var loader = document.getElementById("spinner");
     loader.style.display = 'none';
 
-    var socket = io.connect();
+    initSocket()
+    const session_id = localStorage.getItem("session_id");
+    const socket = io({
+        auth: {
+            session_id: session_id
+        }
+    });
+
     socketManager = new SocketManager(socket)
 
     var form = document.getElementById("downloadForm");
@@ -47,6 +64,12 @@ $(document).ready(function () {
         socketManager.sendMessage(request)
 
         return true;
+    });
+
+    // Resume
+    socket.on(Resume.Message, function (msg) {
+        var loader = document.getElementById("spinner");
+        loader.style.display = 'block';
     });
 
     // single media
@@ -143,5 +166,4 @@ $(document).ready(function () {
         // for desktop app
         // downloadLink.innerHTML = '<a href="#" onclick="clickDownload(event, \''+ hash +'\');"/' + ' ' + '">Download file</a>';
     });
-
 });

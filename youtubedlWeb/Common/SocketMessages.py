@@ -1,7 +1,6 @@
 import logging
 from typing import List
 from flask_socketio import emit
-from flask import session
 
 logger = logging.getLogger(__name__)
 
@@ -15,9 +14,9 @@ class Message:
         self.error=None
         self.message = message
 
-    def _emitMessage(self):
-        logger.debug("emit message to sid: %s", session["sid"])
-        emit(self.message, self._messageContent, namespace='/', to=session["sid"])
+    def _emitMessage(self, to_=None):
+        logger.debug("emit message to sid: %s", to_)
+        emit(self.message, self._messageContent, namespace='/', to=to_)
 
     def _setMessage(self, data):
         self.data = data
@@ -25,10 +24,10 @@ class Message:
     def _addMessageToContent(self):
         self._messageContent[self._dataKey] = self.data
 
-    def sendMessage(self, data):
+    def sendMessage(self, data, to=None):
         self._setMessage(data)
         self._addMessageToContent()
-        self._emitMessage()
+        self._emitMessage(to)
 
     def _setError(self, error):
         self.error = error
@@ -65,6 +64,14 @@ class MediaInfo_response(Message):
         self.data["title"] = mediaInfo.title
         self.data["hash"] = mediaInfo.hash
 
+
+# ------------------- Resume -------------------------------
+# data: empty
+class Resume(Message):
+    message="resume"
+
+    def __init__(self):
+        super().__init__(self.message)
 
 # ------------------- downloadMedia_finish -------------------------------
 # data: hash
