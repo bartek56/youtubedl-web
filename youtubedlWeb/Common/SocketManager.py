@@ -1,11 +1,13 @@
 from youtubedlWeb.Common.SocketMessages import *
 from flask import current_app as app
-import uuid
+import time
 
 class SocketManager:
     def __init__(self):
         self.activeUsersId = {}
         self.session_to_sid = {}
+        self.sessionLifetime = {}
+        self.SESSION_TIMEOUT = 180 #sec
 
     def updateSessionSid(self, sessionId, sid):
         self.session_to_sid[sessionId] = sid
@@ -13,6 +15,7 @@ class SocketManager:
     def connection(self, session_id, sid):
         app.logger.debug("--- Connection ---")
         self.session_to_sid[session_id] = sid
+        self.sessionLifetime[session_id] = time.time()
         app.logger.debug("session_id: %s, sid: %s", session_id, sid)
         if session_id not in self.activeUsersId.keys():
             app.logger.debug("Add new active user %s", session_id)
@@ -28,7 +31,19 @@ class SocketManager:
 
     def disconnection(self, sid):
         app.logger.debug("--- Disconnection ---")
-        #TODO
+        now = time.time()
+        for sessionId in list(self.sessionLifetime):
+            lastTimePoint = self.sessionLifetime[sessionId]
+            if now - lastTimePoint > self.SESSION_TIMEOUT:
+                app.logger.debug("Clean session_id: %s", sessionId)
+                # TODO one object
+                self.activeUsersId.pop(sessionId)
+                self.sessionLifetime.pop(sessionId)
+                self.session_to_sid.pop(sessionId)
+
+
+    def clearQueue(self, session_id):
+        self.activeUsersId[session_id] = []
 
     def getSessionId(self, sid):
         sessionId = None
@@ -41,6 +56,8 @@ class SocketManager:
 
     def addMessageToQueue(self, msg, session_id):
         app.logger.debug("Add message to the queue")
+        # TODO heartbeat
+        self.sessionLifetime[session_id] = time.time()
         self.activeUsersId[session_id].append(msg)
 
     def downloadMedia_finish(self, hash, session_id):
