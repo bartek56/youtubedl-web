@@ -933,10 +933,11 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
                                                   mock.call(str(self.musicPath+"/"+self.playlistName+"/"+self.mp3InfoTrack2.fileName),self.mp3InfoTrack2)])
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
-    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadataToPlaylist")
+    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadata")
     def test_downloadMP3Playlist(self, mock_metadata:mock.MagicMock, mock_extract_info:mock.MagicMock):
         mock_extract_info.configure_mock(side_effect=[self.ytPlaylistInfoResponse4, self.ytDownloadMp3Response1,
                                                       self.ytDownloadMp3Response2, self.ytDownloadMp3Response3, self.ytDownloadMp3Response4])
+        mock_metadata.configure_mock(side_effect=[self.firstFilenameWithPath,self.secondFilenameWithPath,self.thirdFilenameWithPath,self.fourthFilenameWithPath])
 
 
         result = self.ytManager.downloadPlaylistMp3(self.musicPath, self.playlistName, self.ytLink)
@@ -953,19 +954,19 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
                                             ])
 
         self.assertEqual(mock_metadata.call_count, self.numberOfSongs)
-        mock_metadata.assert_has_calls([mock.call(self.musicPath, self.playlistName, self.firstFilename,  str(self.numberOfArchiveSongs+1), self.firstTitle,  self.firstArtist,  self.firstAlbum,  self.firstWebsite,  self.actualDate),
-                                        mock.call(self.musicPath, self.playlistName, self.secondFilename, str(self.numberOfArchiveSongs+2), self.secondTitle, self.secondArtist, self.secondAlbum, self.secondWebsite, self.actualDate),
-                                        mock.call(self.musicPath, self.playlistName, self.thirdFilename,  str(self.numberOfArchiveSongs+3), self.thirdTitle,  self.thirdArtist,  self.thirdAlbum,  self.thirdWebsite,  self.actualDate),
-                                        mock.call(self.musicPath, self.playlistName, self.fourthFilename, str(self.numberOfArchiveSongs+4), self.fourthTitle, self.fourthArtist, self.fourthAlbum, self.fourthWebsite, self.actualDate)])
+        mock_metadata.assert_has_calls([mock.call(os.path.join(self.playlistPath, self.firstFilename),  str(self.numberOfArchiveSongs+1), self.firstTitle,  self.firstArtist,  self.playlistNameAlbum, self.firstAlbum,  self.firstWebsite,  self.actualDate),
+                                        mock.call(os.path.join(self.playlistPath, self.secondFilename), str(self.numberOfArchiveSongs+2), self.secondTitle, self.secondArtist, self.playlistNameAlbum, self.secondAlbum, self.secondWebsite, self.actualDate),
+                                        mock.call(os.path.join(self.playlistPath, self.thirdFilename),  str(self.numberOfArchiveSongs+3), self.thirdTitle,  self.thirdArtist,  self.playlistNameAlbum, self.thirdAlbum,  self.thirdWebsite,  self.actualDate),
+                                        mock.call(os.path.join(self.playlistPath, self.fourthFilename), str(self.numberOfArchiveSongs+4), self.fourthTitle, self.fourthArtist, self.playlistNameAlbum, self.fourthAlbum, self.fourthWebsite, self.actualDate)])
 
         self.assertTrue(result.IsSuccess())
-        self.assertEqual(result.data(), self.numberOfSongs)
+        self.assertEqual(len(result.data()), self.numberOfSongs)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "addCoverOfYtMp3")
     @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadata")
     @mock.patch.object(yt_dlp.utils, "sanitize_filename")
-    def test_downloadMP3Playlist(self, mock_sanitize, mock_metadata:mock.MagicMock, mock_cover:mock.MagicMock, mock_extract_info:mock.MagicMock):
+    def test_downloadMP3Playlist2(self, mock_sanitize, mock_metadata:mock.MagicMock, mock_cover:mock.MagicMock, mock_extract_info:mock.MagicMock):
         mock_extract_info.configure_mock(side_effect=[self.ytPlaylistInfoResponse4, self.ytDownloadMp3Response1,
                                                       self.ytDownloadMp3Response2, self.ytDownloadMp3Response3, self.ytDownloadMp3Response4])
 
@@ -1348,6 +1349,42 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
         self.assertEqual(len(result.data()), 1)
         downloadedSong = result.data()[0]
         self.assertEqual(downloadedSong, os.path.join(self.musicPath, self.playlistName, self.fourthFilename))
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
+    @mock.patch.object(metadata_mp3.MetadataManager, "renameAndAddMetadata")
+    def test_downloadMP3Playlist_TwoNewSongsFromPlaylist(self, mock_metadata:mock.MagicMock, mock_extract_info:mock.MagicMock):
+
+        self.ytManager.isMusicClipArchived = mock.MagicMock()
+        self.ytManager.isMusicClipArchived.configure_mock(side_effect=[True, True, False, False])
+        mock_extract_info.configure_mock(side_effect=[self.ytPlaylistInfoResponse4, self.ytDownloadMp3Response3, self.ytDownloadMp3Response4])
+        mock_metadata.configure_mock(side_effect=[self.thirdFilenameWithPath, self.fourthFilenameWithPath])
+
+
+        result = self.ytManager.downloadPlaylistMp3(self.musicPath, self.playlistName, self.ytLink)
+
+
+        self.assertEqual(self.ytManager._createDirIfNotExist.call_count, 3)
+        self.ytManager._createDirIfNotExist.assert_called_with(self.musicPath+"/"+self.playlistName)
+        self.assertEqual(mock_extract_info.call_count, 3)
+        mock_extract_info.assert_has_calls([mock.call(self.ytLink, download=False),
+                                            mock.call(self.thirdUrl),
+                                            mock.call(self.fourthUrl)
+                                            ])
+
+        self.assertEqual(mock_metadata.call_count, 2)
+        mock_metadata.assert_has_calls([mock.call(os.path.join(self.musicPath, self.playlistName, self.thirdFilename), str(self.numberOfArchiveSongs+1),
+                                              self.thirdTitle, self.thirdArtist, self.playlistNameAlbum , self.thirdAlbum , self.thirdWebsite, self.actualDate),
+                                        mock.call(os.path.join(self.musicPath, self.playlistName, self.fourthFilename), str(self.numberOfArchiveSongs+2),
+                                              self.fourthTitle, self.fourthArtist, self.playlistNameAlbum , self.fourthAlbum , self.fourthWebsite, self.actualDate)
+                                        ])
+
+        self.assertTrue(result.IsSuccess())
+        self.assertEqual(len(result.data()), 2)
+        downloadedSong1 = result.data()[0]
+        downloadedSong2 = result.data()[1]
+
+        self.assertEqual(downloadedSong1, os.path.join(self.musicPath, self.playlistName, self.thirdFilename))
+        self.assertEqual(downloadedSong2, os.path.join(self.musicPath, self.playlistName, self.fourthFilename))
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     @mock.patch.object(metadata_mp3.MetadataManager, "addCoverOfYtMp3")
