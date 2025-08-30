@@ -584,6 +584,11 @@ class MediaServerDownloader(YoutubeManager):
         downloadedSongs = []
 
         numberOfDownloadedSongsLocally = self._getNumberOfDownloadedSongs(path)
+        if len(playlistInfo.listOfMedia) > 2:
+            isFirstClipArchive = self.isMusicClipArchived(path, playlistInfo.listOfMedia[0].url)
+            isLastClipArchive = self.isMusicClipArchived(path, playlistInfo.listOfMedia[len(playlistInfo.listOfMedia)-1].url)
+            if not isFirstClipArchive and isLastClipArchive:
+                playlistInfo.listOfMedia.reverse()
 
         for songData in playlistInfo.listOfMedia:
             logger.debug(str(songData))
