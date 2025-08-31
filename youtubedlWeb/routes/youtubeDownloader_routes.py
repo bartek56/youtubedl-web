@@ -1,6 +1,7 @@
 from typing import List
 from flask import Blueprint, render_template, session, send_file, send_from_directory, request
 from flask import current_app as app
+import os
 import shutil
 import uuid
 import yt_dlp
@@ -142,32 +143,50 @@ def downloadMp3SongsFromList(listOfMedia:List[MediaFromPlaylist], downloadType, 
     downloadedFiles = []
     index = 0
     numberOfDownloadedSongs = 0
+    listOfDownlodedFiles = []
+
+    for dirpath, _, filenames in os.walk(app.youtubeManager.MUSIC_PATH):
+                for filename in filenames:
+                    if filename.lower().endswith(".mp3"):
+                        filepath = os.path.join(dirpath, filename)
+                        mp3Metadata = app.youtubeManager.metadataManager.getMp3Info(filepath)
+                        if mp3Metadata is None or mp3Metadata.website is None:
+                            continue
+                        listOfDownlodedFiles.append((filepath, mp3Metadata))
 
     for x in listOfMedia:
+        filenameFullPath = None
         index += 1
-        #TODO create this sequence in YoutubeManager
+
+        hash = app.youtubeManager.getMediaHashFromLink(x.url)
         if app.youtubeManager.isMusicClipArchived(app.youtubeManager.MUSIC_PATH, x.url):
-            # only get information about media, file exists
             app.logger.debug("clip %s exists, only get information about MP3", x.title)
-            resultOfMedia:AudioData = app.youtubeManager._getMetadataFromYTForMp3(x.url, app.youtubeManager.MUSIC_PATH)
+            for path, downloadedFile in listOfDownlodedFiles:
+                if hash in downloadedFile.website:
+                    filenameFullPath = path
         else:
+            app.logger.debug("Download mp3 %s", x.title)
             resultOfMedia:AudioData = app.youtubeManager._download_mp3(x.url)
 
-        if resultOfMedia.IsFailed():
-            error = "Failed to download song with index " + str(index)
-            #TODO
-            #PlaylistMediaInfo_response().sendError(error)
-            app.logger.error(error)
-            continue
-        numberOfDownloadedSongs+=1
-        songMetadata:YTManager.AudioData = resultOfMedia.data()
-        filename = songMetadata.path.split("/")[-1]
+            if resultOfMedia.IsFailed():
+                error = "Failed to download song with index " + str(index)
+                #TODO
+                #PlaylistMediaInfo_response().sendError(error)
+                app.logger.error(error)
+                continue
+            songMetadata:YTManager.AudioData = resultOfMedia.data()
 
-        filenameFullPath = app.youtubeManager.addMetadataToPlaylist(app.youtubeManager.MUSIC_PATH, "", filename, index, songMetadata.title,
+            filename = songMetadata.path.split("/")[-1]
+            filenameFullPath = app.youtubeManager.addMetadataToPlaylist(app.youtubeManager.MUSIC_PATH, "", filename, index, songMetadata.title,
                                                                  songMetadata.artist, songMetadata.album, songMetadata.hash, str(songMetadata.year))
 
-        app.youtubeManager.metadataManager.addCoverOfYtMp3(filenameFullPath, songMetadata.hash)
+            app.youtubeManager.metadataManager.addCoverOfYtMp3(filenameFullPath, songMetadata.hash)
 
+        if filenameFullPath is None:
+            app.logger.error("filenameFullPath is unknown !")
+            continue
+
+        numberOfDownloadedSongs+=1
         downloadedFiles.append(filenameFullPath)
         filename = filenameFullPath.split("/")[-1]
         randomHash = WebUtils.getRandomString()
@@ -182,19 +201,42 @@ def downloadVideoSongsFromList(listOfMedia:List[MediaFromPlaylist], downloadType
     downloadedFiles = []
     index = 0
     numberOfDownloadedSongs = 0
+
+    print(downloadType)
+
+    listOfDownloadedFiles = []
+
+    for dirpath, _, filenames in os.walk(app.youtubeManager.VIDEO_PATH):
+                for filename in filenames:
+                    filepath = os.path.join(dirpath, filename)
+                    listOfDownloadedFiles.append(filepath)
+
     for x in listOfMedia:
         index += 1
-        resultOfMedia = downloadMediaOfType(x.url, downloadType)
-        if resultOfMedia.IsFailed():
-            error = "Failed to download song with index " + str(index)
-            #TODO
-            #PlaylistMediaInfo_response().sendError(error)
-            app.logger.error(error)
-            continue
-        numberOfDownloadedSongs+=1
-        data:YTManager.VideoData = resultOfMedia.data()
-        downloadedFiles.append(data.path)
-        filename = data.path.split("/")[-1]
+        filenameFullPath = None
+
+        fileNameCompare = x.title + "_"+downloadType
+        downloadedVideos = [elem for elem in listOfDownloadedFiles if fileNameCompare in elem]
+        app.logger.debug("Archived videos: %s", downloadedVideos)
+
+        # video is downloaded
+        if len(downloadedVideos) == 1:
+            filenameFullPath = downloadedVideos[0]
+            numberOfDownloadedSongs+=1
+        else:
+            resultOfMedia = downloadMediaOfType(x.url, downloadType)
+            if resultOfMedia.IsFailed():
+                error = "Failed to download song with index " + str(index)
+                #TODO
+                #PlaylistMediaInfo_response().sendError(error)
+                app.logger.error(error)
+                continue
+            numberOfDownloadedSongs+=1
+            data:YTManager.VideoData = resultOfMedia.data()
+            filenameFullPath = data.path
+
+        downloadedFiles.append(filenameFullPath)
+        filename = filenameFullPath.split("/")[-1]
         randomHash = WebUtils.getRandomString()
         session[randomHash] = filename
         app.socketManager.playlistMediaInfo_response(SocketMessages.PlaylistMediaInfo(x.playlistIndex, filename, randomHash), session_id)

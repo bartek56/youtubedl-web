@@ -43,6 +43,7 @@ class SocketManager:
 
 
     def clearQueue(self, session_id):
+        app.logger.debug("--- clear queue ---")
         self.activeUsersId[session_id] = []
 
     def getSessionId(self, sid):
