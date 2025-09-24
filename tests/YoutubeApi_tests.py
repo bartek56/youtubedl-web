@@ -3,6 +3,7 @@ from youtubedlWeb import create_app, socketio
 from youtubedlWeb.config import ConfigTesting
 import unittest
 import unittest.mock as mock
+from metadata_mp3 import Mp3Info
 from unittest.mock import MagicMock
 
 from youtubedlWeb.Common.SocketMessages import PlaylistInfo_response, PlaylistInfo, MediaFromPlaylist, DownloadMediaFromPlaylist_start
@@ -96,6 +97,7 @@ class FlaskQuickDownload(unittest.TestCase, FlaskToolsForUT):
     path = "/tmp/" + title+".mp3"
     downloadDir = "/home/music"
     url = "https://www.youtube.com/watch?v=1Pl-FT0VCNs"
+    ytDomain = "https://www.youtube.com/watch?v="
     hash = "1Pl-FT0VCNs"
 
     playlistsPath = "/home/music/youtube playlists"
@@ -226,9 +228,11 @@ class FlaskQuickDownload(unittest.TestCase, FlaskToolsForUT):
     @mock.patch.object(YoutubeManager, 'addMetadataToPlaylist')
     @mock.patch.object(YoutubeManager, 'getPlaylistInfo')
     @mock.patch.object(YoutubeManager, 'isMusicClipArchived')
+    @mock.patch.object(YoutubeManager, 'getListOfDownloadedSongs')
     @mock.patch('youtubedlWeb.Common.WebUtils.getRandomString')
     @mock.patch('youtubedlWeb.Common.WebUtils.compressToZip')
     def test_downloadMp3PlaylistClipIsArchived(self, mock_zip:MagicMock, mock_getRandomString:MagicMock,
+                                               mock_getListOfDownloadedSongs,
                                                mock_isMusicClipArchived:MagicMock, mock_getPlaylistInfo:MagicMock,
                                                mock_addMetadataToPlaylist:MagicMock, mock_getMetadataFromYT:MagicMock, mock_downloadMp3:MagicMock):
         mock_getPlaylistInfo.configure_mock(return_value = ResultOfDownload(
@@ -240,7 +244,9 @@ class FlaskQuickDownload(unittest.TestCase, FlaskToolsForUT):
         mock_getMetadataFromYT.configure_mock(side_effect=[ResultOfDownload(AudioData(self.song1FromPlaylistPath, self.songTitle1FromPlaylist, self.hash1FromPlaylist, self.songArtist1FromPlaylist, self.songAlbum1FromPlaylist, self.songYear1FromPlaylist)),
                                                      ResultOfDownload(AudioData(self.song2FromPlaylistPath, self.songTitle2FromPlaylist, self.hash2FromPlaylist, self.songArtist2FromPlaylist, self.songAlbum2FromPlaylist, self.songYear2FromPlaylist)),
                                                      ResultOfDownload(AudioData(self.song3FromPlaylistPath, self.songTitle3FromPlaylist, self.hash3FromPlaylist, self.songArtist3FromPlaylist, self.songAlbum3FromPlaylist, self.songYear3FromPlaylist))])
-        mock_addMetadataToPlaylist.configure_mock(side_effect=[self.songTitleAndArtist1FromPlaylistFilename, self.songTitleAndArtist2FromPlaylistFilename, self.songTitleAndArtist3FromPlaylistFilename])
+        mock_getListOfDownloadedSongs.configure_mock(return_value=[(self.songTitleAndArtist1FromPlaylistFilename, Mp3Info(_website=self.ytDomain + self.hash1FromPlaylist)),
+                                                                   (self.songTitleAndArtist2FromPlaylistFilename, Mp3Info(_website=self.ytDomain + self.hash2FromPlaylist)),
+                                                                   (self.songTitleAndArtist3FromPlaylistFilename, Mp3Info(_website=self.ytDomain + self.hash3FromPlaylist))])
         mock_getRandomString.configure_mock(side_effect=[self.randomString1, self.randomString2, self.randomString3, self.randomString])
 
         # --------------------------------------------------------------------------------------------
@@ -253,10 +259,6 @@ class FlaskQuickDownload(unittest.TestCase, FlaskToolsForUT):
                                                    mock.call(self.quickDownloadPath, self.url3FromPlaylist)
                                                    ])
         mock_downloadMp3.assert_not_called()
-        mock_addMetadataToPlaylist.assert_has_calls([mock.call('/tmp/quick_download/', '', self.song1Filename, 1, self.songTitle1FromPlaylist, self.songArtist1FromPlaylist, self.songAlbum1FromPlaylist,self.hash1FromPlaylist,self.songYear1FromPlaylist),
-                                                     mock.call('/tmp/quick_download/', '', self.song2Filename, 2, self.songTitle2FromPlaylist, self.songArtist2FromPlaylist, self.songAlbum2FromPlaylist,self.hash2FromPlaylist,self.songYear2FromPlaylist),
-                                                     mock.call('/tmp/quick_download/', '', self.song3Filename, 3, self.songTitle3FromPlaylist, self.songArtist3FromPlaylist, self.songAlbum3FromPlaylist,self.hash3FromPlaylist,self.songYear3FromPlaylist)
-                                                     ])
         self.assertEqual(mock_getRandomString.call_count, 4)
         mock_zip.assert_called_once_with([self.songTitleAndArtist1FromPlaylistFilename,
                                           self.songTitleAndArtist2FromPlaylistFilename,

@@ -19,7 +19,6 @@ $(document).ready(function () {
         }
     }
 
-    var downloadResult = [];
     var loader = document.getElementById("spinner");
     loader.style.display = 'none';
 
@@ -40,7 +39,6 @@ $(document).ready(function () {
         table.innerHTML = ' ';
         var downloadLink = document.getElementById("downloadLink");
         downloadLink.innerHTML = ' '
-        downloadResult = [];
         var downloadType = ""
         var rbDownloadType = document.getElementsByName("quickdownload");
         for (var i = 0; i < rbDownloadType.length; i++) {
@@ -70,6 +68,8 @@ $(document).ready(function () {
     socket.on(Resume.Message, function (msg) {
         var loader = document.getElementById("spinner");
         loader.style.display = 'block';
+        var button = document.getElementById("btnFetch")
+        button.disabled = true;
     });
 
     // single media
@@ -129,12 +129,17 @@ $(document).ready(function () {
         var playlistMediaInfo_response = new PlaylistMediaInfo_response(msg)
         if (playlistMediaInfo_response.isError())
         {
+            var index = playlistMediaInfo_response.getError()
+            var row = table.rows[index-1];
+            row.deleteCell(1);
+            var cell = row.insertCell(1);
+            // for web app
+            cell.innerHTML = 'X';
             return
         }
 
         var data = playlistMediaInfo_response.getData()
         var index = data.playlistIndex
-        downloadResult.push(data.filename);
         var row = table.rows[index-1];
         row.deleteCell(1);
         var cell = row.insertCell(1);
@@ -150,12 +155,13 @@ $(document).ready(function () {
         // stop spinner
         var loader = document.getElementById("spinner");
         loader.style.display = 'none';
+        var button = document.getElementById("btnFetch")
+        button.disabled = false;
+
         var downloadMedia_Finish = new DownloadMedia_finish(msg)
         if (downloadMedia_Finish.isError()){
             var downloadLink = document.getElementById("downloadLink");
             downloadLink.innerHTML = downloadMedia_Finish.getError();
-            var button = document.getElementById("btnFetch")
-            button.disabled = false;
             return
         }
         var hash = downloadMedia_Finish.getData()

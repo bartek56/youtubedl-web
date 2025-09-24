@@ -27,7 +27,11 @@ class SocketManager:
         for message in messageQueueList:
             msg:Message = message[0]()
             dataOfMessage = message[1]
-            msg.sendMessage(dataOfMessage,sid)
+            isError = not message[2]
+            if isError:
+                msg.sendError(dataOfMessage, sid)
+            else:
+                msg.sendMessage(dataOfMessage,sid)
 
     def disconnection(self, sid):
         app.logger.debug("--- Disconnection ---")
@@ -56,17 +60,25 @@ class SocketManager:
         return sessionId
 
     def addMessageToQueue(self, msg, session_id):
-        app.logger.debug("Add message to the queue")
+        app.logger.debug("Add message %s to the queue", msg)
         # TODO heartbeat
         self.sessionLifetime[session_id] = time.time()
-        self.activeUsersId[session_id].append(msg)
+        msgToQueue = (msg[0], msg[1], True)
+        self.activeUsersId[session_id].append(msgToQueue)
+
+    def addErrorToQueue(self, msg, session_id):
+        app.logger.debug("Add error %s to the queue", msg)
+        # TODO heartbeat
+        self.sessionLifetime[session_id] = time.time()
+        msgToQueue = (msg[0], msg[1], False)
+        self.activeUsersId[session_id].append(msgToQueue)
 
     def downloadMedia_finish(self, hash, session_id):
         self.addMessageToQueue((DownloadMedia_finish, hash), session_id)
         DownloadMedia_finish().sendMessage(hash, self.session_to_sid[session_id])
 
     def downloadMedia_finish_error(self, error, session_id):
-        self.addMessageToQueue((DownloadMedia_finish, error), session_id)
+        self.addErrorToQueue((DownloadMedia_finish, error), session_id)
         DownloadMedia_finish().sendError(error, self.session_to_sid[session_id])
 
     def mediaInfo_response(self, mediaInfo:MediaInfo, session_id):
@@ -80,3 +92,7 @@ class SocketManager:
     def playlistMediaInfo_response(self, playlistMediaInfoMsg:PlaylistMediaInfo, session_id):
         self.addMessageToQueue((PlaylistMediaInfo_response, playlistMediaInfoMsg), session_id)
         PlaylistMediaInfo_response().sendMessage(playlistMediaInfoMsg, self.session_to_sid[session_id])
+
+    def playlistMediaInfo_response_error(self, error, session_id):
+        self.addErrorToQueue((PlaylistMediaInfo_response, error), session_id)
+        PlaylistMediaInfo_response().sendError(error, self.session_to_sid[session_id])

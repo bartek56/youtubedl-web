@@ -15,7 +15,7 @@ class Message:
         self.message = message
 
     def _emitMessage(self, to_=None):
-        logger.debug("emit message to sid: %s", to_)
+        logger.debug("emit message %s:%s to sid: %s", self.message, self._messageContent, to_)
         emit(self.message, self._messageContent, namespace='/', to=to_)
 
     def _setMessage(self, data):
@@ -35,11 +35,10 @@ class Message:
     def _addErrorToContent(self):
         self._messageContent[self._errorKey] = self.error
 
-    def sendError(self, error):
+    def sendError(self, error, to=None):
         self._setError(error)
         self._addErrorToContent()
-        self._emitMessage()
-
+        self._emitMessage(to)
 
 # ------------------ MediaInfo_response -----------------------------------
 class MediaInfo:

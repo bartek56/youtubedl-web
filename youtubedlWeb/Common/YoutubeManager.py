@@ -189,6 +189,18 @@ class YoutubeManager:
 
         return result
 
+    def getListOfDownloadedSongs(self):
+        listOfDownlodedFiles = []
+        for dirpath, _, filenames in os.walk(self.MUSIC_PATH):
+                for filename in filenames:
+                    if filename.lower().endswith(".mp3"):
+                        filepath = os.path.join(dirpath, filename)
+                        mp3Metadata = self.metadataManager.getMp3Info(filepath)
+                        if mp3Metadata is None or mp3Metadata.website is None:
+                            continue
+                        listOfDownlodedFiles.append((filepath, mp3Metadata))
+        return listOfDownlodedFiles
+
     def isMusicClipArchived(self, path, url): # pragma: no cover
         hash = self.getMediaHashFromLink(url)
         contentOfFile = self._openFile(path, self.mp3DownloadedListFileName)
