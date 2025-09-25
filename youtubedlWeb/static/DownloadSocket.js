@@ -13,7 +13,7 @@ $(document).ready(function () {
         let session_id = localStorage.getItem("session_id");
 
         if (!session_id) {
-            const res = await fetch("/get-session-id");
+            const res = await fetch("/youtubedl/get-session-id");
             session_id = await res.text();
             localStorage.setItem("session_id", session_id);
         }

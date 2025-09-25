@@ -52,7 +52,7 @@ def register_socketio_youtubeDownloader(socketio):
         app.socketManager.connection(session_id, request.sid)
 
     @socketio.on('disconnect')
-    def handle_disconnect(auth):
+    def handle_disconnect():
         app.logger.debug("---------------- disconnect. namespace:%s, sid: %s", request.namespace, request.sid)
         app.socketManager.disconnection(request.sid)
 
