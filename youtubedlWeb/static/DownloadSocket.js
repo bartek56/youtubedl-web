@@ -144,7 +144,7 @@ $(document).ready(function () {
         row.deleteCell(1);
         var cell = row.insertCell(1);
         // for web app
-        cell.innerHTML = '<a href="/youtubedl/download/' + data.hash + '">V</a>';
+        cell.innerHTML = '<a href="/youtubedl/download/' + data.hash + '" target="_blank">V</a>';
 
         // for desktop app
         // cell.innerHTML = '<a href="#" onclick="clickDownload(event, \''+ data.hash +'\');"/' + ' ' + '">V</a>';
@@ -167,7 +167,7 @@ $(document).ready(function () {
         var hash = downloadMedia_Finish.getData()
         var downloadLink = document.getElementById('downloadLink');
         // for web app
-        downloadLink.innerHTML = '<a href="/youtubedl/download/' + hash + '">Download file</a>';
+        downloadLink.innerHTML = '<a href="/youtubedl/download/' + hash + '" target="_blank">Download file</a>';
 
         // for desktop app
         // downloadLink.innerHTML = '<a href="#" onclick="clickDownload(event, \''+ hash +'\');"/' + ' ' + '">Download file</a>';
