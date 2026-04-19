@@ -1,8 +1,5 @@
 version: 2.1
 
-orbs:
-  gh-pages: circleci/github-pages@2.0
-
 jobs:
   build:
     docker:
