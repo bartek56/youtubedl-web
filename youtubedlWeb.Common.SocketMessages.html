@@ -167,12 +167,32 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.SocketMessages.Message.sendError">
 <span class="sig-name descname"><span class="pre">sendError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/SocketMessages.html#Message.sendError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.SocketMessages.Message.sendError" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Sends an error message with the given error to the given sid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>error</strong> – The error to be sent.</p></li>
+<li><p><strong>to</strong> (<em>str</em>) – The sid to emit the message to. If not given, emits to all connected clients.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Sets the error of the message to the given error, adds it to the message content, and emits the message to the given sid.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.SocketMessages.Message.sendMessage">
 <span class="sig-name descname"><span class="pre">sendMessage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/SocketMessages.html#Message.sendMessage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.SocketMessages.Message.sendMessage" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Sends a message with the given data to the given sid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – The data to be sent.</p></li>
+<li><p><strong>to</strong> (<em>str</em>) – The sid to emit the message to. If not given, emits to all connected clients.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Sets the data of the message to the given data, adds it to the message content, and emits the message to the given sid.</p>
+</dd></dl>
 
 </dd></dl>
 

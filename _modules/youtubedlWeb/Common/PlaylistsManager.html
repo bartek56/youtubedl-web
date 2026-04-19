@@ -85,6 +85,14 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">PlaylistsManager</span><span class="p">:</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">playlistsDir</span><span class="p">,</span> <span class="n">isCrLfNeeded</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize PlaylistsManager.</span>
+
+<span class="sd">        :param playlistsDir: path to the directory where playlists are saved</span>
+<span class="sd">        :param isCrLfNeeded: if True, it will replace all &quot;\n&quot; with &quot;\r\n&quot; in the saved file</span>
+<span class="sd">        :type playlistsDir: str</span>
+<span class="sd">        :type isCrLfNeeded: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dir</span> <span class="o">=</span> <span class="n">playlistsDir</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">isCrLfNeeded</span> <span class="o">=</span> <span class="n">isCrLfNeeded</span>
 
@@ -94,6 +102,14 @@
 <div class="viewcode-block" id="PlaylistsManager.saveToFile">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.saveToFile">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">saveToFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fileName</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save given text to a file.</span>
+
+<span class="sd">        :param fileName: name of the file where the text will be saved</span>
+<span class="sd">        :param text: text to be saved</span>
+<span class="sd">        :type fileName: str</span>
+<span class="sd">        :type text: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isCrLfNeeded</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">f</span> <span class="o">=</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">fileName</span><span class="p">),</span><span class="s2">&quot;wb&quot;</span><span class="p">,</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
@@ -104,43 +120,78 @@
 <div class="viewcode-block" id="PlaylistsManager.generateHeaderOfM3u">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.generateHeaderOfM3u">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">generateHeaderOfM3u</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate the header of a M3U file.</span>
+
+<span class="sd">        :return: The header of a M3U file as a string</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;#EXTM3U</span><span class="se">\n</span><span class="s2">&quot;</span></div>
 
 
 <div class="viewcode-block" id="PlaylistsManager.get_tracknumber">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.get_tracknumber">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_tracknumber</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;get_tracknumber: File&quot;</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;doesn&#39;t exist&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="mi">1</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">audio</span> <span class="o">=</span> <span class="n">EasyID3</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
-                <span class="n">ret</span> <span class="o">=</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tracknumber&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span> <span class="c1">#audio.get(key, [&quot;&quot;])[0]  # Zwraca wartość metadanej lub pusty string</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;doesn&#39;t have a tracknumber&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="mi">1</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get track number from a given file.</span>
+
+<span class="sd">        If the file doesn&#39;t exist, returns 1.</span>
+<span class="sd">        If the file doesn&#39;t have a track number, returns 1.</span>
+
+<span class="sd">        :param file_path: path to the file</span>
+<span class="sd">        :type file_path: str</span>
+<span class="sd">        :return: track number of the file</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;get_tracknumber: File&quot;</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;doesn&#39;t exist&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">1</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">audio</span> <span class="o">=</span> <span class="n">EasyID3</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tracknumber&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span> <span class="c1">#audio.get(key, [&quot;&quot;])[0]  # Zwraca wartość metadanej lub pusty string</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;doesn&#39;t have a tracknumber&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">1</span></div>
 
 
 <div class="viewcode-block" id="PlaylistsManager.get_date">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.get_date">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;get_date: File&quot;</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;doesn&#39;t exist&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="s2">&quot;2050-01-01&quot;</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">audio</span> <span class="o">=</span> <span class="n">EasyID3</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
-                <span class="n">ret</span> <span class="o">=</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="k">return</span> <span class="n">ret</span> <span class="c1">#audio.get(key, [&quot;&quot;])[0]  # Zwraca wartość metadanej lub pusty string</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;doesn&#39;t have a date&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="s2">&quot;2050-01-01&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get date from a given file.</span>
+
+<span class="sd">        If the file doesn&#39;t exist, returns &quot;2050-01-01&quot;.</span>
+<span class="sd">        If the file doesn&#39;t have a date, returns &quot;2050-01-01&quot;.</span>
+
+<span class="sd">        :param file_path: path to the file</span>
+<span class="sd">        :type file_path: str</span>
+<span class="sd">        :return: date of the file</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;get_date: File&quot;</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;doesn&#39;t exist&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s2">&quot;2050-01-01&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">audio</span> <span class="o">=</span> <span class="n">EasyID3</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">ret</span> <span class="c1">#audio.get(key, [&quot;&quot;])[0]  # Zwraca wartość metadanej lub pusty string</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;doesn&#39;t have a date&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s2">&quot;2050-01-01&quot;</span></div>
 
 
 <div class="viewcode-block" id="PlaylistsManager.collectSongs">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.collectSongs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">collectSongs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Collect all MP3 files in a given directory and its subdirectories.</span>
 
+<span class="sd">        :param path: path to the directory to collect songs from</span>
+<span class="sd">        :type path: str</span>
+<span class="sd">        :return: list of paths to MP3 files</span>
+<span class="sd">        :rtype: list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">filesNameWithPath</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">fullPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">fullPath</span><span class="p">):</span>
@@ -161,6 +212,14 @@
 <div class="viewcode-block" id="PlaylistsManager.collectSongsFromDirs">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.collectSongsFromDirs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">collectSongsFromDirs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folders</span><span class="p">:</span><span class="nb">list</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Collect all MP3 files in a given list of directories and its subdirectories.</span>
+
+<span class="sd">        :param folders: list of paths to directories to collect songs from</span>
+<span class="sd">        :type folders: list</span>
+<span class="sd">        :return: list of paths to MP3 files</span>
+<span class="sd">        :rtype: list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">listOfFiles</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">folder</span> <span class="ow">in</span> <span class="n">folders</span><span class="p">:</span>
             <span class="n">listOfFiles</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">collectSongs</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
@@ -170,6 +229,14 @@
 <div class="viewcode-block" id="PlaylistsManager.generateM3UList">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.generateM3UList">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">generateM3UList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">files</span><span class="p">:</span><span class="nb">list</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a M3U list from a given list of MP3 files.</span>
+
+<span class="sd">        :param files: list of paths to MP3 files</span>
+<span class="sd">        :type files: list</span>
+<span class="sd">        :return: M3U list as a string</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">textFile</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="k">for</span> <span class="n">fileName</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
             <span class="n">fileNameWithFullPath</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">fileName</span><span class="p">)</span>
@@ -190,7 +257,15 @@
 <div class="viewcode-block" id="PlaylistsManager.collectAndGenerateM3UList">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.collectAndGenerateM3UList">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">collectAndGenerateM3UList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Collect all MP3 files in a given directory and its subdirectories,</span>
+<span class="sd">        sort them by track number and generate a M3U list from them.</span>
 
+<span class="sd">        :param path: path to the directory to collect songs from</span>
+<span class="sd">        :type path: str</span>
+<span class="sd">        :return: M3U list as a string</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">filesNameWithPath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">collectSongs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="c1"># one kind of playlist so sort only by track number</span>
         <span class="n">filesNameWithPath</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">filesNameWithPath</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span> <span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="p">(</span>
@@ -206,6 +281,14 @@
 <div class="viewcode-block" id="PlaylistsManager.createPlaylist">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createPlaylist">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">createPlaylist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dirName</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a playlist from a given directory.</span>
+
+<span class="sd">        :param dirName: name of the directory to collect songs from</span>
+<span class="sd">        :type dirName: str</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">textFile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generateHeaderOfM3u</span><span class="p">()</span>
         <span class="n">textFile</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">collectAndGenerateM3UList</span><span class="p">(</span><span class="n">dirName</span><span class="p">)</span>
 
@@ -216,6 +299,12 @@
 <div class="viewcode-block" id="PlaylistsManager.createPlaylists">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createPlaylists">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">createPlaylists</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create playlists for all directories in the given path.</span>
+
+<span class="sd">        :return: None</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Create playlists for dirs start&quot;</span><span class="p">)</span>
         <span class="n">folders</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">folders</span><span class="p">:</span>
@@ -227,6 +316,12 @@
 <div class="viewcode-block" id="PlaylistsManager.removeCovers">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.removeCovers">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">removeCovers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove all covers from all .mp3 files in all subdirectories of the given path.</span>
+
+<span class="sd">        :return: None</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Remove covers start&quot;</span><span class="p">)</span>
         <span class="n">metadataMng</span> <span class="o">=</span> <span class="n">metadata_mp3</span><span class="o">.</span><span class="n">MetadataManager</span><span class="p">()</span>
         <span class="n">folders</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))]</span>
@@ -241,6 +336,13 @@
 <div class="viewcode-block" id="PlaylistsManager.clean_filename">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.clean_filename">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">clean_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clean a filename by removing diacritics, combining characters, non-ASCII characters, and replacing spaces with underscores.</span>
+
+<span class="sd">        :param name: the filename to clean</span>
+<span class="sd">        :return: a cleaned filename</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">new_name</span> <span class="o">=</span> <span class="n">unicodedata</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="s1">&#39;NFKD&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
         <span class="c1"># Usuń znaki diakrytyczne (łączone)</span>
         <span class="n">new_name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">new_name</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">unicodedata</span><span class="o">.</span><span class="n">combining</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
@@ -259,6 +361,12 @@
 <div class="viewcode-block" id="PlaylistsManager.removePolishChars">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.removePolishChars">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">removePolishChars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove polish characters from all files and directories in the given path.</span>
+
+<span class="sd">        :return: None</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Remove polish chars start&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
@@ -288,6 +396,17 @@
 <div class="viewcode-block" id="PlaylistsManager.collectAndGenerateGroupOfPlaylists">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.collectAndGenerateGroupOfPlaylists">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">collectAndGenerateGroupOfPlaylists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folders</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span> <span class="n">limitOfSongs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Collect all MP3 files in a given list of directories, sort them by date and track number,</span>
+<span class="sd">        and generate a M3U list from them.</span>
+
+<span class="sd">        :param folders: list of directories to collect songs from</span>
+<span class="sd">        :type folders: list</span>
+<span class="sd">        :param limitOfSongs: maximum number of songs to include in the M3U list</span>
+<span class="sd">        :type limitOfSongs: int</span>
+<span class="sd">        :return: M3U list as a string</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">songs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">collectSongsFromDirs</span><span class="p">(</span><span class="n">folders</span><span class="p">)</span>
 
         <span class="n">songs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">songs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span> <span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="p">(</span>
@@ -306,6 +425,19 @@
 <div class="viewcode-block" id="PlaylistsManager.createGroupOfPlaylists">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createGroupOfPlaylists">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">createGroupOfPlaylists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">folders</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span> <span class="n">limitOfSongs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a group of playlists from a given list of directories, sort them by date and track number,</span>
+<span class="sd">        and generate a M3U list from them.</span>
+
+<span class="sd">        :param playlistName: name of the playlist</span>
+<span class="sd">        :type playlistName: str</span>
+<span class="sd">        :param folders: list of directories to collect songs from</span>
+<span class="sd">        :type folders: list</span>
+<span class="sd">        :param limitOfSongs: maximum number of songs to include in the M3U list</span>
+<span class="sd">        :type limitOfSongs: int</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Create group&quot;</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">,</span> <span class="s2">&quot;start&quot;</span><span class="p">)</span>
 
         <span class="n">textFile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">collectAndGenerateGroupOfPlaylists</span><span class="p">(</span><span class="n">folders</span><span class="p">,</span> <span class="n">limitOfSongs</span><span class="p">)</span>
@@ -321,35 +453,53 @@
 <div class="viewcode-block" id="PlaylistsManager.generateTopOfM3UList">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.generateTopOfM3UList">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">generateTopOfM3UList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numberOfSongs</span><span class="p">):</span>
-            <span class="n">mp3_files</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a M3U list from the top numberOfSongs songs in the music directory sorted by date and track number.</span>
 
-            <span class="k">for</span> <span class="n">dirpath</span><span class="p">,</span> <span class="n">dirnames</span><span class="p">,</span> <span class="n">filenames</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.mp3&#39;</span><span class="p">):</span>
-                        <span class="n">fileNameWithPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
-                        <span class="n">mp3_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fileNameWithPath</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="o">+</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+<span class="sd">        :param numberOfSongs: maximum number of songs to include in the M3U list</span>
+<span class="sd">        :type numberOfSongs: int</span>
+<span class="sd">        :return: M3U list as a string</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mp3_files</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">dirpath</span><span class="p">,</span> <span class="n">dirnames</span><span class="p">,</span> <span class="n">filenames</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.mp3&#39;</span><span class="p">):</span>
+                    <span class="n">fileNameWithPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+                    <span class="n">mp3_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fileNameWithPath</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="o">+</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
 
 
-            <span class="n">mp3_files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span> <span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_date</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">f</span><span class="p">)),</span>
-                                                          <span class="bp">self</span><span class="o">.</span><span class="n">get_tracknumber</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
-                                                          <span class="p">),</span>
-                               <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">mp3_files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span> <span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_date</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">f</span><span class="p">)),</span>
+                                                      <span class="bp">self</span><span class="o">.</span><span class="n">get_tracknumber</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
+                                                      <span class="p">),</span>
+                           <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-            <span class="n">textFile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generateHeaderOfM3u</span><span class="p">()</span>
-            <span class="n">textFile</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generateM3UList</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">[:</span><span class="n">numberOfSongs</span><span class="p">])</span>
+        <span class="n">textFile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generateHeaderOfM3u</span><span class="p">()</span>
+        <span class="n">textFile</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generateM3UList</span><span class="p">(</span><span class="n">mp3_files</span><span class="p">[:</span><span class="n">numberOfSongs</span><span class="p">])</span>
 
-            <span class="k">return</span> <span class="n">textFile</span></div>
+        <span class="k">return</span> <span class="n">textFile</span></div>
 
 
 <div class="viewcode-block" id="PlaylistsManager.createTopOfMusic">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createTopOfMusic">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">createTopOfMusic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numberOfSongs</span><span class="p">,</span> <span class="n">isCrLfNeeded</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Create Top&quot;</span><span class="p">,</span> <span class="n">numberOfSongs</span><span class="p">,</span> <span class="s2">&quot;start&quot;</span><span class="p">)</span>
-            <span class="n">textFile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generateTopOfM3UList</span><span class="p">(</span><span class="n">numberOfSongs</span><span class="p">)</span>
-            <span class="n">playlistFile</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> Top.m3u&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">numberOfSongs</span><span class="p">))</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a M3U list from the top numberOfSongs songs in the music directory sorted by date and track number.</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">saveToFile</span><span class="p">(</span><span class="n">playlistFile</span><span class="p">,</span> <span class="n">textFile</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Create Top&quot;</span><span class="p">,</span> <span class="n">numberOfSongs</span><span class="p">,</span> <span class="s2">&quot;end</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+<span class="sd">        :param numberOfSongs: maximum number of songs to include in the M3U list</span>
+<span class="sd">        :type numberOfSongs: int</span>
+<span class="sd">        :param isCrLfNeeded: if True, a new line will be added at the end of the file</span>
+<span class="sd">        :type isCrLfNeeded: bool</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Create Top&quot;</span><span class="p">,</span> <span class="n">numberOfSongs</span><span class="p">,</span> <span class="s2">&quot;start&quot;</span><span class="p">)</span>
+        <span class="n">textFile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generateTopOfM3UList</span><span class="p">(</span><span class="n">numberOfSongs</span><span class="p">)</span>
+        <span class="n">playlistFile</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> Top.m3u&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">numberOfSongs</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">saveToFile</span><span class="p">(</span><span class="n">playlistFile</span><span class="p">,</span> <span class="n">textFile</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Create Top&quot;</span><span class="p">,</span> <span class="n">numberOfSongs</span><span class="p">,</span> <span class="s2">&quot;end</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 </div>
 
 

@@ -78,6 +78,14 @@
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmManager.html#youtubedlWeb.Common.AlarmManager.AlarmManager">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AlarmManager</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subprocess</span><span class="p">,</span> <span class="n">alarmTimer</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">alarmScript</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the AlarmManager with the given subprocess, alarmTimer and alarmScript.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        subprocess (subprocess): the subprocess module</span>
+<span class="sd">        alarmTimer (str): the name of the alarm timer</span>
+<span class="sd">        alarmScript (str): the name of the alarm script</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ALARM_TIMER</span> <span class="o">=</span> <span class="n">alarmTimer</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ALARM_SCRIPT</span> <span class="o">=</span> <span class="n">alarmScript</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">subprocess</span> <span class="o">=</span> <span class="n">subprocess</span>
@@ -85,6 +93,12 @@
 <div class="viewcode-block" id="AlarmManager.loadAlarmConfig">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmManager.html#youtubedlWeb.Common.AlarmManager.AlarmManager.loadAlarmConfig">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">loadAlarmConfig</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads the alarm configuration from the timer and script.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dictionary with the alarm configuration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">mondayChecked</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="n">tuesdayChecked</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="n">wednesdayChecked</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
@@ -199,6 +213,18 @@
 <div class="viewcode-block" id="AlarmManager.loadConfig">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmManager.html#youtubedlWeb.Common.AlarmManager.AlarmManager.loadConfig">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">loadConfig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configFile</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads the alarm configuration from a file.</span>
+
+<span class="sd">        This function opens the specified file and reads it line by line. It then returns</span>
+<span class="sd">        the list of lines.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            configFile (str): The file path to the alarm configuration file.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            content (list): A list of strings representing the alarm configuration file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">configFile</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
         <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
         <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -208,6 +234,17 @@
 <div class="viewcode-block" id="AlarmManager.nextSnoozeCheck">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmManager.html#youtubedlWeb.Common.AlarmManager.AlarmManager.nextSnoozeCheck">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">nextSnoozeCheck</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks the status of the alarm snooze timer.</span>
+
+<span class="sd">        This function checks if the alarm snooze timer is active. If it is active,</span>
+<span class="sd">        it will return the time of the next snooze alarm. If the alarm snooze timer</span>
+<span class="sd">        is disabled, it will return an empty string.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            nextSnooze (str): The time of the next snooze alarm, or an empty string if</span>
+<span class="sd">                the alarm snooze timer is disabled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">nextSnooze</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">SystemdCommand</span><span class="o">.</span><span class="n">IS_ACTIVE_ALARM_SNOOZE_TIMER</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -223,6 +260,17 @@
 <div class="viewcode-block" id="AlarmManager.nextAlarmCheck">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmManager.html#youtubedlWeb.Common.AlarmManager.AlarmManager.nextAlarmCheck">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">nextAlarmCheck</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks the status of the alarm timer.</span>
+
+<span class="sd">        This function checks if the alarm timer is active. If it is active,</span>
+<span class="sd">        it will return the time of the next alarm. If the alarm timer is disabled,</span>
+<span class="sd">        it will return an empty string.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            nextAlarm (str): The time of the next alarm, or an empty string if</span>
+<span class="sd">                the alarm timer is disabled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">nextAlarm</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">SystemdCommand</span><span class="o">.</span><span class="n">IS_ACTIVE_ALARM_TIMER</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -237,6 +285,18 @@
 <div class="viewcode-block" id="AlarmManager.getTimeOfService">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmManager.html#youtubedlWeb.Common.AlarmManager.AlarmManager.getTimeOfService">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">getTimeOfService</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">systemdService</span><span class="p">:</span><span class="n">SystemdCommand</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the time of a given systemd service.</span>
+
+<span class="sd">        This function gets the time of a given systemd service. It will run a</span>
+<span class="sd">        command to get the time of the service and return it as a string.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            systemdService (SystemdCommand): The systemd service to get the time of.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The time of the given systemd service.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">systemdService</span> <span class="o">+</span> <span class="s2">&quot; | grep </span><span class="se">\&quot;</span><span class="s2">Trigger:</span><span class="se">\&quot;</span><span class="s2"> | cut -d&#39;;&#39; -f2- | sed -e </span><span class="se">\&quot;</span><span class="s2">s/ left//</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span></div>
 
 
@@ -245,6 +305,27 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">updateAlarmConfig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alarmDays</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">minVolume</span><span class="p">,</span> <span class="n">maxVolume</span><span class="p">,</span> <span class="n">defaultVolume</span><span class="p">,</span>
               <span class="n">growingVolume</span><span class="p">,</span> <span class="n">growingSpeed</span><span class="p">,</span> <span class="n">alarmPlaylist</span><span class="p">,</span> <span class="n">alarmMode</span><span class="p">):</span>
 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the alarm configuration.</span>
+
+<span class="sd">        This function updates the alarm configuration. It will take the new alarm</span>
+<span class="sd">        settings and update the alarm timer and alarm script. It will then save</span>
+<span class="sd">        the updated configuration.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            alarmDays (str): The days of the week to trigger the alarm.</span>
+<span class="sd">            time (str): The time of the day to trigger the alarm.</span>
+<span class="sd">            minVolume (int): The minimum volume of the alarm.</span>
+<span class="sd">            maxVolume (int): The maximum volume of the alarm.</span>
+<span class="sd">            defaultVolume (int): The default volume of the alarm.</span>
+<span class="sd">            growingVolume (int): The growing volume of the alarm.</span>
+<span class="sd">            growingSpeed (int): The growing speed of the alarm.</span>
+<span class="sd">            alarmPlaylist (str): The playlist to play during the alarm.</span>
+<span class="sd">            alarmMode (str): The mode of the alarm.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loadConfig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ALARM_TIMER</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)):</span>
             <span class="k">if</span> <span class="s2">&quot;OnCalendar&quot;</span> <span class="ow">in</span> <span class="n">content</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
@@ -283,6 +364,16 @@
 <div class="viewcode-block" id="AlarmManager.saveConfig">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmManager.html#youtubedlWeb.Common.AlarmManager.AlarmManager.saveConfig">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">saveConfig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configFile</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span><span class="nb">list</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Saves the content to the config file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            configFile (str): The name of the config file.</span>
+<span class="sd">            content (list): The content to be saved.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">configFile</span><span class="p">,</span><span class="s2">&quot;w&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>

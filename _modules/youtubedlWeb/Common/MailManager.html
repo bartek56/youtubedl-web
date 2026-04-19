@@ -76,6 +76,13 @@
 <div class="viewcode-block" id="Mail.initialize">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.MailManager.html#youtubedlWeb.Common.MailManager.Mail.initialize">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="c1"># pragma: no cover</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Initialize mail sender.</span>
+
+<span class="sd">        This function sets up the mail sender. It imports the Gmail module from simplegmail and creates a Gmail object. If the import fails, it returns False. Otherwise, it returns True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Success of the initialization.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">senderMail</span> <span class="o">=</span> <span class="s2">&quot;iprecorder.server@gmail.com&quot;</span>
         <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">isInitialize</span> <span class="o">=</span> <span class="kc">False</span>
@@ -92,6 +99,19 @@
 <div class="viewcode-block" id="Mail.sendMail">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.MailManager.html#youtubedlWeb.Common.MailManager.Mail.sendMail">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">sendMail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">subject</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">attachments</span><span class="o">=</span><span class="p">[]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sends a mail.</span>
+
+<span class="sd">        This function sends a mail using the Gmail module. It takes four parameters: the address of the recipient, the subject of the mail, the text of the mail, and a list of attachments. If the mail sender is not initialized, it returns False. Otherwise, it returns True.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            address (str): the address of the recipient</span>
+<span class="sd">            subject (str): the subject of the mail</span>
+<span class="sd">            text (str): the text of the mail</span>
+<span class="sd">            attachments (list): a list of attachments</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: success of the mail sending</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isInitialize</span><span class="p">:</span>
             <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
               <span class="s2">&quot;to&quot;</span><span class="p">:</span> <span class="n">address</span><span class="p">,</span>

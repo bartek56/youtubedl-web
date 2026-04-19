@@ -94,87 +94,293 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.clean_filename">
 <span class="sig-name descname"><span class="pre">clean_filename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.clean_filename"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.clean_filename" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Clean a filename by removing diacritics, combining characters, non-ASCII characters, and replacing spaces with underscores.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> – the filename to clean</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a cleaned filename</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.collectAndGenerateGroupOfPlaylists">
 <span class="sig-name descname"><span class="pre">collectAndGenerateGroupOfPlaylists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limitOfSongs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.collectAndGenerateGroupOfPlaylists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.collectAndGenerateGroupOfPlaylists" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Collect all MP3 files in a given list of directories, sort them by date and track number,
+and generate a M3U list from them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>folders</strong> (<em>list</em>) – list of directories to collect songs from</p></li>
+<li><p><strong>limitOfSongs</strong> (<em>int</em>) – maximum number of songs to include in the M3U list</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>M3U list as a string</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.collectAndGenerateM3UList">
 <span class="sig-name descname"><span class="pre">collectAndGenerateM3UList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.collectAndGenerateM3UList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.collectAndGenerateM3UList" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Collect all MP3 files in a given directory and its subdirectories,
+sort them by track number and generate a M3U list from them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – path to the directory to collect songs from</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>M3U list as a string</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.collectSongs">
 <span class="sig-name descname"><span class="pre">collectSongs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.collectSongs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.collectSongs" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Collect all MP3 files in a given directory and its subdirectories.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – path to the directory to collect songs from</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of paths to MP3 files</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.collectSongsFromDirs">
 <span class="sig-name descname"><span class="pre">collectSongsFromDirs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.collectSongsFromDirs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.collectSongsFromDirs" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Collect all MP3 files in a given list of directories and its subdirectories.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>folders</strong> (<em>list</em>) – list of paths to directories to collect songs from</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of paths to MP3 files</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createGroupOfPlaylists">
 <span class="sig-name descname"><span class="pre">createGroupOfPlaylists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">playlistName</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limitOfSongs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.createGroupOfPlaylists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createGroupOfPlaylists" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Create a group of playlists from a given list of directories, sort them by date and track number,
+and generate a M3U list from them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>playlistName</strong> (<em>str</em>) – name of the playlist</p></li>
+<li><p><strong>folders</strong> (<em>list</em>) – list of directories to collect songs from</p></li>
+<li><p><strong>limitOfSongs</strong> (<em>int</em>) – maximum number of songs to include in the M3U list</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createPlaylist">
 <span class="sig-name descname"><span class="pre">createPlaylist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirName</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.createPlaylist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createPlaylist" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Create a playlist from a given directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dirName</strong> (<em>str</em>) – name of the directory to collect songs from</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createPlaylists">
 <span class="sig-name descname"><span class="pre">createPlaylists</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.createPlaylists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createPlaylists" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Create playlists for all directories in the given path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createTopOfMusic">
 <span class="sig-name descname"><span class="pre">createTopOfMusic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">numberOfSongs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isCrLfNeeded</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.createTopOfMusic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createTopOfMusic" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Generate a M3U list from the top numberOfSongs songs in the music directory sorted by date and track number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>numberOfSongs</strong> (<em>int</em>) – maximum number of songs to include in the M3U list</p></li>
+<li><p><strong>isCrLfNeeded</strong> (<em>bool</em>) – if True, a new line will be added at the end of the file</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.generateHeaderOfM3u">
 <span class="sig-name descname"><span class="pre">generateHeaderOfM3u</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.generateHeaderOfM3u"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.generateHeaderOfM3u" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Generate the header of a M3U file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The header of a M3U file as a string</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.generateM3UList">
 <span class="sig-name descname"><span class="pre">generateM3UList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.generateM3UList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.generateM3UList" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Generate a M3U list from a given list of MP3 files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>files</strong> (<em>list</em>) – list of paths to MP3 files</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>M3U list as a string</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.generateTopOfM3UList">
 <span class="sig-name descname"><span class="pre">generateTopOfM3UList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">numberOfSongs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.generateTopOfM3UList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.generateTopOfM3UList" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Generate a M3U list from the top numberOfSongs songs in the music directory sorted by date and track number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>numberOfSongs</strong> (<em>int</em>) – maximum number of songs to include in the M3U list</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>M3U list as a string</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.get_date">
 <span class="sig-name descname"><span class="pre">get_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.get_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.get_date" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Get date from a given file.</p>
+<p>If the file doesn’t exist, returns “2050-01-01”.
+If the file doesn’t have a date, returns “2050-01-01”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_path</strong> (<em>str</em>) – path to the file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>date of the file</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.get_tracknumber">
 <span class="sig-name descname"><span class="pre">get_tracknumber</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.get_tracknumber"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.get_tracknumber" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Get track number from a given file.</p>
+<p>If the file doesn’t exist, returns 1.
+If the file doesn’t have a track number, returns 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_path</strong> (<em>str</em>) – path to the file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>track number of the file</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.removeCovers">
 <span class="sig-name descname"><span class="pre">removeCovers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.removeCovers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.removeCovers" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Remove all covers from all .mp3 files in all subdirectories of the given path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.removePolishChars">
 <span class="sig-name descname"><span class="pre">removePolishChars</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.removePolishChars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.removePolishChars" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Remove polish characters from all files and directories in the given path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.saveToFile">
 <span class="sig-name descname"><span class="pre">saveToFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fileName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.saveToFile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.saveToFile" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Save given text to a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fileName</strong> (<em>str</em>) – name of the file where the text will be saved</p></li>
+<li><p><strong>text</strong> (<em>str</em>) – text to be saved</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 

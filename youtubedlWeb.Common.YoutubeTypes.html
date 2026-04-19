@@ -124,22 +124,32 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.YoutubeTypes.ResultOfDownload.IsFailed">
 <span class="sig-name descname"><span class="pre">IsFailed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/YoutubeTypes.html#ResultOfDownload.IsFailed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.YoutubeTypes.ResultOfDownload.IsFailed" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Returns True if the result of the operation is failed, False otherwise.</p>
+<p>Failed operation means that the data is a string and is not empty.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.YoutubeTypes.ResultOfDownload.IsSuccess">
 <span class="sig-name descname"><span class="pre">IsSuccess</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/YoutubeTypes.html#ResultOfDownload.IsSuccess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.YoutubeTypes.ResultOfDownload.IsSuccess" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Returns True if the result of the operation is successful, False otherwise.</p>
+<p>Successful operation means that the data is not a string and is not empty.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.YoutubeTypes.ResultOfDownload.data">
 <span class="sig-name descname"><span class="pre">data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/YoutubeTypes.html#ResultOfDownload.data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.YoutubeTypes.ResultOfDownload.data" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Returns the data of the operation.</p>
+<p>If the result of the operation is successful (i.e. the data is not a string and is not empty), returns the data.
+Otherwise, returns None.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.YoutubeTypes.ResultOfDownload.error">
 <span class="sig-name descname"><span class="pre">error</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/YoutubeTypes.html#ResultOfDownload.error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.YoutubeTypes.ResultOfDownload.error" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Returns the error message of the operation.</p>
+<p>If the result of the operation is failed (i.e. the data is a string and is not empty), returns the error message.
+Otherwise, returns None.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -156,12 +166,31 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.YoutubeTypes.VideoSettings.getFormat">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">getFormat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/YoutubeTypes.html#VideoSettings.getFormat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.YoutubeTypes.VideoSettings.getFormat" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Gets the format of the video to download.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The format of the video to download.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.YoutubeTypes.VideoSettings.getSubname">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">getSubname</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/YoutubeTypes.html#VideoSettings.getSubname"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.YoutubeTypes.VideoSettings.getSubname" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Gets the subname of the video to download.</p>
+<p>The subname is a suffix to add to the title of the video when saving it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The subname of the video to download.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -172,7 +201,13 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.YoutubeTypes.YoutubeClipData.setPath">
 <span class="sig-name descname"><span class="pre">setPath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/YoutubeTypes.html#YoutubeClipData.setPath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.YoutubeTypes.YoutubeClipData.setPath" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Sets the path to the YouTube clip.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to the YouTube clip.</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 

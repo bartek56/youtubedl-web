@@ -94,67 +94,201 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.SocketManager.SocketManager.addErrorToQueue">
 <span class="sig-name descname"><span class="pre">addErrorToQueue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/SocketManager.html#SocketManager.addErrorToQueue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.SocketManager.SocketManager.addErrorToQueue" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Add an error to the message queue for a given session_id.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>msg</strong> (<em>tuple</em>) – tuple of (messageType, messageData)</p></li>
+<li><p><strong>session_id</strong> (<em>str</em>) – session id of user</p></li>
+</ul>
+</dd>
+</dl>
+<p>The error is added to the queue associated with the session_id.
+The session lifetime is updated to the current time.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.SocketManager.SocketManager.addMessageToQueue">
 <span class="sig-name descname"><span class="pre">addMessageToQueue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/SocketManager.html#SocketManager.addMessageToQueue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.SocketManager.SocketManager.addMessageToQueue" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Add a message to the message queue for a given session_id.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>msg</strong> (<em>tuple</em>) – tuple of (messageType, messageData)</p></li>
+<li><p><strong>session_id</strong> (<em>str</em>) – session id of user</p></li>
+</ul>
+</dd>
+</dl>
+<p>The message is added to the queue associated with the session_id.
+The session lifetime is updated to the current time.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.SocketManager.SocketManager.clearQueue">
 <span class="sig-name descname"><span class="pre">clearQueue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/SocketManager.html#SocketManager.clearQueue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.SocketManager.SocketManager.clearQueue" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Clear the message queue for a given session_id.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>session_id</strong> (<em>str</em>) – session id of user</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.SocketManager.SocketManager.connection">
 <span class="sig-name descname"><span class="pre">connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/SocketManager.html#SocketManager.connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.SocketManager.SocketManager.connection" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Handle connection event.</p>
+<p>This method is called when user connects to the socket server.
+It stores session_id to sid mapping and updates session lifetime.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>session_id</strong> (<em>str</em>) – session id of user</p></li>
+<li><p><strong>sid</strong> (<em>str</em>) – socket id of user</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.SocketManager.SocketManager.disconnection">
 <span class="sig-name descname"><span class="pre">disconnection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/SocketManager.html#SocketManager.disconnection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.SocketManager.SocketManager.disconnection" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Handle disconnection event.</p>
+<p>This method is called when user disconnects from the socket server.
+It removes session_id to sid mapping and updates session lifetime.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sid</strong> (<em>str</em>) – socket id of user</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.SocketManager.SocketManager.downloadMedia_finish">
 <span class="sig-name descname"><span class="pre">downloadMedia_finish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hash</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/SocketManager.html#SocketManager.downloadMedia_finish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.SocketManager.SocketManager.downloadMedia_finish" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Send a downloadMedia_finish message to the client with the given hash.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hash</strong> (<em>str</em>) – hash of the downloaded file</p></li>
+<li><p><strong>session_id</strong> (<em>str</em>) – session id of user</p></li>
+</ul>
+</dd>
+</dl>
+<p>The message is added to the queue associated with the session_id.
+The session lifetime is updated to the current time.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.SocketManager.SocketManager.downloadMedia_finish_error">
 <span class="sig-name descname"><span class="pre">downloadMedia_finish_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/SocketManager.html#SocketManager.downloadMedia_finish_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.SocketManager.SocketManager.downloadMedia_finish_error" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Send a downloadMedia_finish error message to the client with the given error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>error</strong> (<em>str</em>) – error message to send to the client</p></li>
+<li><p><strong>session_id</strong> (<em>str</em>) – session id of user</p></li>
+</ul>
+</dd>
+</dl>
+<p>The error is added to the queue associated with the session_id.
+The session lifetime is updated to the current time.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.SocketManager.SocketManager.getSessionId">
 <span class="sig-name descname"><span class="pre">getSessionId</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/SocketManager.html#SocketManager.getSessionId"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.SocketManager.SocketManager.getSessionId" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Get the session_id for a given sid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sid</strong> (<em>str</em>) – socket id of user</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>session id of user</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.SocketManager.SocketManager.mediaInfo_response">
 <span class="sig-name descname"><span class="pre">mediaInfo_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mediaInfo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="youtubedlWeb.Common.SocketMessages.html#youtubedlWeb.Common.SocketMessages.MediaInfo" title="youtubedlWeb.Common.SocketMessages.MediaInfo"><span class="pre">MediaInfo</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/SocketManager.html#SocketManager.mediaInfo_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.SocketManager.SocketManager.mediaInfo_response" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Send a mediaInfo_response message to the client with the given mediaInfo.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mediaInfo</strong> (<a class="reference internal" href="youtubedlWeb.Common.SocketMessages.html#youtubedlWeb.Common.SocketMessages.MediaInfo" title="youtubedlWeb.Common.SocketMessages.MediaInfo"><em>MediaInfo</em></a>) – media info to send to the client</p></li>
+<li><p><strong>session_id</strong> (<em>str</em>) – session id of user</p></li>
+</ul>
+</dd>
+</dl>
+<p>The message is added to the queue associated with the session_id.
+The session lifetime is updated to the current time.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.SocketManager.SocketManager.playlistInfo_response">
 <span class="sig-name descname"><span class="pre">playlistInfo_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">playlistInfoMsg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="youtubedlWeb.Common.SocketMessages.html#youtubedlWeb.Common.SocketMessages.PlaylistInfo" title="youtubedlWeb.Common.SocketMessages.PlaylistInfo"><span class="pre">PlaylistInfo</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/SocketManager.html#SocketManager.playlistInfo_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.SocketManager.SocketManager.playlistInfo_response" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Send a playlistInfo_response message to the client with the given playlistInfo.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>playlistInfoMsg</strong> (<a class="reference internal" href="youtubedlWeb.Common.SocketMessages.html#youtubedlWeb.Common.SocketMessages.PlaylistInfo" title="youtubedlWeb.Common.SocketMessages.PlaylistInfo"><em>PlaylistInfo</em></a>) – playlist info to send to the client</p></li>
+<li><p><strong>session_id</strong> (<em>str</em>) – session id of user</p></li>
+</ul>
+</dd>
+</dl>
+<p>The message is added to the queue associated with the session_id.
+The session lifetime is updated to the current time.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.SocketManager.SocketManager.playlistMediaInfo_response">
 <span class="sig-name descname"><span class="pre">playlistMediaInfo_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">playlistMediaInfoMsg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="youtubedlWeb.Common.SocketMessages.html#youtubedlWeb.Common.SocketMessages.PlaylistMediaInfo" title="youtubedlWeb.Common.SocketMessages.PlaylistMediaInfo"><span class="pre">PlaylistMediaInfo</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/SocketManager.html#SocketManager.playlistMediaInfo_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.SocketManager.SocketManager.playlistMediaInfo_response" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Send a playlistMediaInfo_response message to the client with the given playlistMediaInfo.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>playlistMediaInfoMsg</strong> (<a class="reference internal" href="youtubedlWeb.Common.SocketMessages.html#youtubedlWeb.Common.SocketMessages.PlaylistMediaInfo" title="youtubedlWeb.Common.SocketMessages.PlaylistMediaInfo"><em>PlaylistMediaInfo</em></a>) – playlist media info to send to the client</p></li>
+<li><p><strong>session_id</strong> (<em>str</em>) – session id of user</p></li>
+</ul>
+</dd>
+</dl>
+<p>The message is added to the queue associated with the session_id.
+The session lifetime is updated to the current time.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.SocketManager.SocketManager.playlistMediaInfo_response_error">
 <span class="sig-name descname"><span class="pre">playlistMediaInfo_response_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/SocketManager.html#SocketManager.playlistMediaInfo_response_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.SocketManager.SocketManager.playlistMediaInfo_response_error" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Send a playlistMediaInfo_response error message to the client with the given error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>error</strong> (<em>str</em>) – error message to send to the client</p></li>
+<li><p><strong>session_id</strong> (<em>str</em>) – session id of user</p></li>
+</ul>
+</dd>
+</dl>
+<p>The error is added to the queue associated with the session_id.
+The session lifetime is updated to the current time.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.SocketManager.SocketManager.updateSessionSid">
 <span class="sig-name descname"><span class="pre">updateSessionSid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sessionId</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/SocketManager.html#SocketManager.updateSessionSid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.SocketManager.SocketManager.updateSessionSid" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Update session_id to sid mapping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sessionId</strong> (<em>str</em>) – session id of user</p></li>
+<li><p><strong>sid</strong> (<em>str</em>) – socket id of user</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 

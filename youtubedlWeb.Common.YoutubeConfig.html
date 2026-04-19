@@ -94,47 +94,140 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.addPlaylist">
 <span class="sig-name descname"><span class="pre">addPlaylist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">playlist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/YoutubeConfig.html#YoutubeConfig.addPlaylist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.addPlaylist" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Adds a new playlist to download.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>playlist</strong> (<em>dict</em>) – A dictionary containing the name and link of the playlist.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the playlist was added successfully, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.getPath">
 <span class="sig-name descname"><span class="pre">getPath</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/YoutubeConfig.html#YoutubeConfig.getPath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.getPath" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Gets the path to the directory where the program saves the downloaded songs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The path to the directory where the program saves the downloaded songs.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.getPlaylists">
 <span class="sig-name descname"><span class="pre">getPlaylists</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="youtubedlWeb.Common.YoutubeTypes.html#youtubedlWeb.Common.YoutubeTypes.PlaylistConfig" title="youtubedlWeb.Common.YoutubeTypes.PlaylistConfig"><span class="pre">PlaylistConfig</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/youtubedlWeb/Common/YoutubeConfig.html#YoutubeConfig.getPlaylists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.getPlaylists" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Gets the list of playlists to download.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of PlaylistConfig objects, each containing the name and link of a playlist.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[<a class="reference internal" href="youtubedlWeb.Common.YoutubeTypes.html#youtubedlWeb.Common.YoutubeTypes.PlaylistConfig" title="youtubedlWeb.Common.YoutubeTypes.PlaylistConfig">PlaylistConfig</a>]</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.getPlaylistsName">
 <span class="sig-name descname"><span class="pre">getPlaylistsName</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/YoutubeConfig.html#YoutubeConfig.getPlaylistsName"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.getPlaylistsName" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Gets the list of names of playlists to download.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of names of playlists to download.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.getUrlOfPlaylist">
 <span class="sig-name descname"><span class="pre">getUrlOfPlaylist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">playlistName</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/YoutubeConfig.html#YoutubeConfig.getUrlOfPlaylist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.getUrlOfPlaylist" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Gets the URL of the playlist with the given name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>playlistName</strong> (<em>str</em>) – The name of the playlist.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The URL of the playlist, or None if the playlist doesn’t exist.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.initialize">
 <span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configFile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser=&lt;configparser.ConfigParser</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/YoutubeConfig.html#YoutubeConfig.initialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.initialize" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Initializes a YoutubeConfig object with the given configuration file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>configFile</strong> (<em>str</em>) – Path to the configuration file.</p></li>
+<li><p><strong>parser</strong> (<em>configparser.ConfigParser</em>) – Parser to use for reading the configuration file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.removePlaylist">
 <span class="sig-name descname"><span class="pre">removePlaylist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">playlistName</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/YoutubeConfig.html#YoutubeConfig.removePlaylist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.removePlaylist" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Removes a playlist from the list of playlists to download.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>playlistName</strong> (<em>str</em>) – The name of the playlist to remove.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the playlist was removed successfully, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.save">
 <span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/YoutubeConfig.html#YoutubeConfig.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.save" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Saves the configuration to the config file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.setPath">
 <span class="sig-name descname"><span class="pre">setPath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/YoutubeConfig.html#YoutubeConfig.setPath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.setPath" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Sets the path to the directory where the program saves the downloaded songs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to the directory where the program saves the downloaded songs.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 

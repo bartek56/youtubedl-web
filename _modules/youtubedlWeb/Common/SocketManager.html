@@ -77,6 +77,18 @@
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.SocketManager.html#youtubedlWeb.Common.SocketManager.SocketManager">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SocketManager</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize SocketManager object.</span>
+
+<span class="sd">        This object stores information about active users and</span>
+<span class="sd">        manages session lifetime.</span>
+
+<span class="sd">        Attributes:</span>
+<span class="sd">            activeUsersId (dict): mapping of session_id to list of messages to send</span>
+<span class="sd">            session_to_sid (dict): mapping of session_id to sid</span>
+<span class="sd">            sessionLifetime (dict): mapping of session_id to timestamp of last message</span>
+<span class="sd">            SESSION_TIMEOUT (int): time in seconds after which session is considered inactive</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">activeUsersId</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">session_to_sid</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sessionLifetime</span> <span class="o">=</span> <span class="p">{}</span>
@@ -85,12 +97,29 @@
 <div class="viewcode-block" id="SocketManager.updateSessionSid">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.SocketManager.html#youtubedlWeb.Common.SocketManager.SocketManager.updateSessionSid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">updateSessionSid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sessionId</span><span class="p">,</span> <span class="n">sid</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update session_id to sid mapping.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sessionId (str): session id of user</span>
+<span class="sd">            sid (str): socket id of user</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">session_to_sid</span><span class="p">[</span><span class="n">sessionId</span><span class="p">]</span> <span class="o">=</span> <span class="n">sid</span></div>
 
 
 <div class="viewcode-block" id="SocketManager.connection">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.SocketManager.html#youtubedlWeb.Common.SocketManager.SocketManager.connection">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">,</span> <span class="n">sid</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Handle connection event.</span>
+
+<span class="sd">        This method is called when user connects to the socket server.</span>
+<span class="sd">        It stores session_id to sid mapping and updates session lifetime.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            session_id (str): session id of user</span>
+<span class="sd">            sid (str): socket id of user</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;--- Connection ---&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">session_to_sid</span><span class="p">[</span><span class="n">session_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">sid</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sessionLifetime</span><span class="p">[</span><span class="n">session_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
@@ -115,6 +144,15 @@
 <div class="viewcode-block" id="SocketManager.disconnection">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.SocketManager.html#youtubedlWeb.Common.SocketManager.SocketManager.disconnection">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">disconnection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sid</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Handle disconnection event.</span>
+
+<span class="sd">        This method is called when user disconnects from the socket server.</span>
+<span class="sd">        It removes session_id to sid mapping and updates session lifetime.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sid (str): socket id of user</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;--- Disconnection ---&quot;</span><span class="p">)</span>
         <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">sessionId</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sessionLifetime</span><span class="p">):</span>
@@ -131,6 +169,12 @@
 <div class="viewcode-block" id="SocketManager.clearQueue">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.SocketManager.html#youtubedlWeb.Common.SocketManager.SocketManager.clearQueue">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">clearQueue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clear the message queue for a given session_id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            session_id (str): session id of user</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;--- clear queue ---&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">activeUsersId</span><span class="p">[</span><span class="n">session_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span></div>
 
@@ -138,6 +182,15 @@
 <div class="viewcode-block" id="SocketManager.getSessionId">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.SocketManager.html#youtubedlWeb.Common.SocketManager.SocketManager.getSessionId">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">getSessionId</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sid</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the session_id for a given sid.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sid (str): socket id of user</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: session id of user</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">sessionId</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">for</span> <span class="n">sessionId_</span><span class="p">,</span> <span class="n">sid_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_to_sid</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">sid_</span> <span class="o">==</span> <span class="n">sid</span><span class="p">:</span>
@@ -150,6 +203,16 @@
 <div class="viewcode-block" id="SocketManager.addMessageToQueue">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.SocketManager.html#youtubedlWeb.Common.SocketManager.SocketManager.addMessageToQueue">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">addMessageToQueue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">session_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a message to the message queue for a given session_id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            msg (tuple): tuple of (messageType, messageData)</span>
+<span class="sd">            session_id (str): session id of user</span>
+
+<span class="sd">        The message is added to the queue associated with the session_id.</span>
+<span class="sd">        The session lifetime is updated to the current time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Add message </span><span class="si">%s</span><span class="s2"> to the queue&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
         <span class="c1"># TODO heartbeat</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sessionLifetime</span><span class="p">[</span><span class="n">session_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
@@ -160,6 +223,16 @@
 <div class="viewcode-block" id="SocketManager.addErrorToQueue">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.SocketManager.html#youtubedlWeb.Common.SocketManager.SocketManager.addErrorToQueue">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">addErrorToQueue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">session_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add an error to the message queue for a given session_id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            msg (tuple): tuple of (messageType, messageData)</span>
+<span class="sd">            session_id (str): session id of user</span>
+
+<span class="sd">        The error is added to the queue associated with the session_id.</span>
+<span class="sd">        The session lifetime is updated to the current time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Add error </span><span class="si">%s</span><span class="s2"> to the queue&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
         <span class="c1"># TODO heartbeat</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sessionLifetime</span><span class="p">[</span><span class="n">session_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
@@ -170,6 +243,16 @@
 <div class="viewcode-block" id="SocketManager.downloadMedia_finish">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.SocketManager.html#youtubedlWeb.Common.SocketManager.SocketManager.downloadMedia_finish">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">downloadMedia_finish</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">hash</span><span class="p">,</span> <span class="n">session_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send a downloadMedia_finish message to the client with the given hash.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            hash (str): hash of the downloaded file</span>
+<span class="sd">            session_id (str): session id of user</span>
+
+<span class="sd">        The message is added to the queue associated with the session_id.</span>
+<span class="sd">        The session lifetime is updated to the current time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">addMessageToQueue</span><span class="p">((</span><span class="n">DownloadMedia_finish</span><span class="p">,</span> <span class="nb">hash</span><span class="p">),</span> <span class="n">session_id</span><span class="p">)</span>
         <span class="n">DownloadMedia_finish</span><span class="p">()</span><span class="o">.</span><span class="n">sendMessage</span><span class="p">(</span><span class="nb">hash</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_to_sid</span><span class="p">[</span><span class="n">session_id</span><span class="p">])</span></div>
 
@@ -177,6 +260,16 @@
 <div class="viewcode-block" id="SocketManager.downloadMedia_finish_error">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.SocketManager.html#youtubedlWeb.Common.SocketManager.SocketManager.downloadMedia_finish_error">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">downloadMedia_finish_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">session_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send a downloadMedia_finish error message to the client with the given error.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            error (str): error message to send to the client</span>
+<span class="sd">            session_id (str): session id of user</span>
+
+<span class="sd">        The error is added to the queue associated with the session_id.</span>
+<span class="sd">        The session lifetime is updated to the current time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">addErrorToQueue</span><span class="p">((</span><span class="n">DownloadMedia_finish</span><span class="p">,</span> <span class="n">error</span><span class="p">),</span> <span class="n">session_id</span><span class="p">)</span>
         <span class="n">DownloadMedia_finish</span><span class="p">()</span><span class="o">.</span><span class="n">sendError</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_to_sid</span><span class="p">[</span><span class="n">session_id</span><span class="p">])</span></div>
 
@@ -184,6 +277,16 @@
 <div class="viewcode-block" id="SocketManager.mediaInfo_response">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.SocketManager.html#youtubedlWeb.Common.SocketManager.SocketManager.mediaInfo_response">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">mediaInfo_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mediaInfo</span><span class="p">:</span><span class="n">MediaInfo</span><span class="p">,</span> <span class="n">session_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send a mediaInfo_response message to the client with the given mediaInfo.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mediaInfo (MediaInfo): media info to send to the client</span>
+<span class="sd">            session_id (str): session id of user</span>
+
+<span class="sd">        The message is added to the queue associated with the session_id.</span>
+<span class="sd">        The session lifetime is updated to the current time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">addMessageToQueue</span><span class="p">((</span><span class="n">MediaInfo_response</span><span class="p">,</span> <span class="n">mediaInfo</span><span class="p">),</span> <span class="n">session_id</span><span class="p">)</span>
         <span class="n">MediaInfo_response</span><span class="p">()</span><span class="o">.</span><span class="n">sendMessage</span><span class="p">(</span><span class="n">mediaInfo</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_to_sid</span><span class="p">[</span><span class="n">session_id</span><span class="p">])</span></div>
 
@@ -191,6 +294,16 @@
 <div class="viewcode-block" id="SocketManager.playlistInfo_response">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.SocketManager.html#youtubedlWeb.Common.SocketManager.SocketManager.playlistInfo_response">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">playlistInfo_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">playlistInfoMsg</span><span class="p">:</span><span class="n">PlaylistInfo</span><span class="p">,</span> <span class="n">session_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send a playlistInfo_response message to the client with the given playlistInfo.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            playlistInfoMsg (PlaylistInfo): playlist info to send to the client</span>
+<span class="sd">            session_id (str): session id of user</span>
+
+<span class="sd">        The message is added to the queue associated with the session_id.</span>
+<span class="sd">        The session lifetime is updated to the current time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">addMessageToQueue</span><span class="p">((</span><span class="n">PlaylistInfo_response</span><span class="p">,</span> <span class="n">playlistInfoMsg</span><span class="p">),</span> <span class="n">session_id</span><span class="p">)</span>
         <span class="n">PlaylistInfo_response</span><span class="p">()</span><span class="o">.</span><span class="n">sendMessage</span><span class="p">(</span><span class="n">playlistInfoMsg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_to_sid</span><span class="p">[</span><span class="n">session_id</span><span class="p">])</span></div>
 
@@ -198,6 +311,16 @@
 <div class="viewcode-block" id="SocketManager.playlistMediaInfo_response">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.SocketManager.html#youtubedlWeb.Common.SocketManager.SocketManager.playlistMediaInfo_response">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">playlistMediaInfo_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">playlistMediaInfoMsg</span><span class="p">:</span><span class="n">PlaylistMediaInfo</span><span class="p">,</span> <span class="n">session_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send a playlistMediaInfo_response message to the client with the given playlistMediaInfo.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            playlistMediaInfoMsg (PlaylistMediaInfo): playlist media info to send to the client</span>
+<span class="sd">            session_id (str): session id of user</span>
+
+<span class="sd">        The message is added to the queue associated with the session_id.</span>
+<span class="sd">        The session lifetime is updated to the current time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">addMessageToQueue</span><span class="p">((</span><span class="n">PlaylistMediaInfo_response</span><span class="p">,</span> <span class="n">playlistMediaInfoMsg</span><span class="p">),</span> <span class="n">session_id</span><span class="p">)</span>
         <span class="n">PlaylistMediaInfo_response</span><span class="p">()</span><span class="o">.</span><span class="n">sendMessage</span><span class="p">(</span><span class="n">playlistMediaInfoMsg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_to_sid</span><span class="p">[</span><span class="n">session_id</span><span class="p">])</span></div>
 
@@ -205,6 +328,16 @@
 <div class="viewcode-block" id="SocketManager.playlistMediaInfo_response_error">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.SocketManager.html#youtubedlWeb.Common.SocketManager.SocketManager.playlistMediaInfo_response_error">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">playlistMediaInfo_response_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">session_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send a playlistMediaInfo_response error message to the client with the given error.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            error (str): error message to send to the client</span>
+<span class="sd">            session_id (str): session id of user</span>
+
+<span class="sd">        The error is added to the queue associated with the session_id.</span>
+<span class="sd">        The session lifetime is updated to the current time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">addErrorToQueue</span><span class="p">((</span><span class="n">PlaylistMediaInfo_response</span><span class="p">,</span> <span class="n">error</span><span class="p">),</span> <span class="n">session_id</span><span class="p">)</span>
         <span class="n">PlaylistMediaInfo_response</span><span class="p">()</span><span class="o">.</span><span class="n">sendError</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_to_sid</span><span class="p">[</span><span class="n">session_id</span><span class="p">])</span></div>
 </div>
