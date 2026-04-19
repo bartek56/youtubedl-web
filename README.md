@@ -1,5 +1,7 @@
 
 [![CircleCI](https://img.shields.io/circleci/build/github/bartek56/youtubedl-web)](https://app.circleci.com/pipelines/github/bartek56/youtubedl-web)
+[![Docs](https://img.shields.io/badge/docs-online-brightgreen)](https://bartek56.github.io/youtubedl-web/)
+
 
 
 website to download and manage Youtube list; to set alarm in MediaServer
