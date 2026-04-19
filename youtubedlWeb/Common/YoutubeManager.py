@@ -397,7 +397,7 @@ class YoutubeManager:
         self._createDirIfNotExist(path)
 
         ydl_opts = {
-              #'format': 'bestaudio/best',
+              'format': 'bestaudio/best',
               'addmetadata': True,
               'logger': self.logger,
               'outtmpl': path+'/'+titleFormat,
