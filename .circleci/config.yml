@@ -26,12 +26,10 @@ jobs:
           name: Deploy docs to GitHub Pages
           command: |
             pip install ghp-import
+            git remote set-url origin https://$GITHUB_TOKEN@github.com/bartek56/youtubedl-web.git
             ghp-import -n -p -f docs/build/html
 
       - store_test_results:
           path: results
       - store_artifacts:
           path: results
-      - gh-pages/deploy:
-          build-dir: docs/build/html
-          remote-url: git@github.com:bartek56/youtubedl-web.git
