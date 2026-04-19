@@ -1,6 +1,7 @@
 #IDE
 *~
 .vscode
+.vscode-ctags
 
 #python
 __pycache__
@@ -13,6 +14,7 @@ dist
 youtubedlWeb/static/bootstrap-*
 youtubedlWeb/static/clockpicker
 flask_session
+
 #googleAPI
 client_secret.json
 gmail_token.json

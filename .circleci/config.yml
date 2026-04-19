@@ -13,7 +13,21 @@ jobs:
           command: |
             coverage run -m pytest --junitxml=results/TestsReport.xml --html=results/TestsReport.html --self-contained-html tests/*
             coverage html
+      - run:
+          name: Build Sphinx documentation
+          command: |
+            cd docs
+            make html
+      - run:
+          name: Deploy docs to GitHub Pages
+          command: |
+            pip install ghp-import
+            ghp-import -n -p -f docs/build/html
+
       - store_test_results:
           path: results
       - store_artifacts:
           path: results
+      - store_artifacts:
+          path: docs/build/html
+          destination: docs
