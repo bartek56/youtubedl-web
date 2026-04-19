@@ -1,4 +1,8 @@
 version: 2.1
+
+orbs:
+  gh-pages: circleci/github-pages@2.0
+
 jobs:
   build:
     docker:
@@ -28,6 +32,6 @@ jobs:
           path: results
       - store_artifacts:
           path: results
-      - store_artifacts:
-          path: docs/build/html
-          destination: docs
+      - gh-pages/deploy:
+          build-dir: docs/build/html
+          remote-url: git@github.com:bartek56/youtubedl-web.git
