@@ -12,6 +12,14 @@ import re
 class PlaylistsManager:
 
     def __init__(self, playlistsDir, isCrLfNeeded=False):
+        """
+        Initialize PlaylistsManager.
+
+        :param playlistsDir: path to the directory where playlists are saved
+        :param isCrLfNeeded: if True, it will replace all "\n" with "\r\n" in the saved file
+        :type playlistsDir: str
+        :type isCrLfNeeded: bool
+        """
         self.dir = playlistsDir
         self.isCrLfNeeded = isCrLfNeeded
 
@@ -19,6 +27,14 @@ class PlaylistsManager:
         #print("root dir:", self.dir, "\n")
 
     def saveToFile(self, fileName, text):
+        """
+        Save given text to a file.
+
+        :param fileName: name of the file where the text will be saved
+        :param text: text to be saved
+        :type fileName: str
+        :type text: str
+        """
         if self.isCrLfNeeded:
             text = text.replace('\n', '\r\n')
         f = codecs.open(os.path.join(self.dir, fileName),"wb","utf-8")
@@ -26,34 +42,69 @@ class PlaylistsManager:
         f.close()
 
     def generateHeaderOfM3u(self):
+        """
+        Generate the header of a M3U file.
+
+        :return: The header of a M3U file as a string
+        :rtype: str
+        """
         return "#EXTM3U\n"
 
     def get_tracknumber(self, file_path):
-            if not os.path.isfile(file_path):
-                print("get_tracknumber: File", file_path, "doesn't exist")
-                return 1
-            try:
-                audio = EasyID3(file_path)
-                ret = audio.get("tracknumber", [""])[0]
-                return int(ret) #audio.get(key, [""])[0]  # Zwraca wartość metadanej lub pusty string
-            except Exception as e:
-                print("file", file_path, "doesn't have a tracknumber")
-                return 1
+        """
+        Get track number from a given file.
+
+        If the file doesn't exist, returns 1.
+        If the file doesn't have a track number, returns 1.
+
+        :param file_path: path to the file
+        :type file_path: str
+        :return: track number of the file
+        :rtype: int
+        """
+        if not os.path.isfile(file_path):
+            print("get_tracknumber: File", file_path, "doesn't exist")
+            return 1
+        try:
+            audio = EasyID3(file_path)
+            ret = audio.get("tracknumber", [""])[0]
+            return int(ret) #audio.get(key, [""])[0]  # Zwraca wartość metadanej lub pusty string
+        except Exception as e:
+            print("file", file_path, "doesn't have a tracknumber")
+            return 1
 
     def get_date(self, file_path):
-            if not os.path.isfile(file_path):
-                print("get_date: File", file_path, "doesn't exist")
-                return "2050-01-01"
-            try:
-                audio = EasyID3(file_path)
-                ret = audio.get("date", [""])[0]
-                return ret #audio.get(key, [""])[0]  # Zwraca wartość metadanej lub pusty string
-            except Exception as e:
-                print("file", file_path, "doesn't have a date")
-                return "2050-01-01"
+        """
+        Get date from a given file.
+
+        If the file doesn't exist, returns "2050-01-01".
+        If the file doesn't have a date, returns "2050-01-01".
+
+        :param file_path: path to the file
+        :type file_path: str
+        :return: date of the file
+        :rtype: str
+        """
+        if not os.path.isfile(file_path):
+            print("get_date: File", file_path, "doesn't exist")
+            return "2050-01-01"
+        try:
+            audio = EasyID3(file_path)
+            ret = audio.get("date", [""])[0]
+            return ret #audio.get(key, [""])[0]  # Zwraca wartość metadanej lub pusty string
+        except Exception as e:
+            print("file", file_path, "doesn't have a date")
+            return "2050-01-01"
 
     def collectSongs(self, path):
+        """
+        Collect all MP3 files in a given directory and its subdirectories.
 
+        :param path: path to the directory to collect songs from
+        :type path: str
+        :return: list of paths to MP3 files
+        :rtype: list
+        """
         filesNameWithPath = []
         fullPath = os.path.join(self.dir, path)
         if not os.path.isdir(fullPath):
@@ -71,12 +122,28 @@ class PlaylistsManager:
         return filesNameWithPath
 
     def collectSongsFromDirs(self, folders:list):
+        """
+        Collect all MP3 files in a given list of directories and its subdirectories.
+
+        :param folders: list of paths to directories to collect songs from
+        :type folders: list
+        :return: list of paths to MP3 files
+        :rtype: list
+        """
         listOfFiles = []
         for folder in folders:
             listOfFiles += self.collectSongs(folder)
         return listOfFiles
 
     def generateM3UList(self, files:list):
+        """
+        Generate a M3U list from a given list of MP3 files.
+
+        :param files: list of paths to MP3 files
+        :type files: list
+        :return: M3U list as a string
+        :rtype: str
+        """
         textFile = ""
         for fileName in files:
             fileNameWithFullPath="%s/%s"%(self.dir, fileName)
@@ -94,7 +161,15 @@ class PlaylistsManager:
         return textFile
 
     def collectAndGenerateM3UList(self, path:str):
+        """
+        Collect all MP3 files in a given directory and its subdirectories,
+        sort them by track number and generate a M3U list from them.
 
+        :param path: path to the directory to collect songs from
+        :type path: str
+        :return: M3U list as a string
+        :rtype: str
+        """
         filesNameWithPath = self.collectSongs(path)
         # one kind of playlist so sort only by track number
         filesNameWithPath = sorted(filesNameWithPath, key= lambda f: (
@@ -107,6 +182,14 @@ class PlaylistsManager:
 
 # -------------------------------------------------------------------------
     def createPlaylist(self, dirName):
+        """
+        Create a playlist from a given directory.
+
+        :param dirName: name of the directory to collect songs from
+        :type dirName: str
+        :return: None
+        :rtype: None
+        """
         textFile = self.generateHeaderOfM3u()
         textFile += self.collectAndGenerateM3UList(dirName)
 
@@ -114,6 +197,12 @@ class PlaylistsManager:
         self.saveToFile(playlistFile, textFile)
 
     def createPlaylists(self):
+        """
+        Create playlists for all directories in the given path.
+
+        :return: None
+        :rtype: None
+        """
         print("Create playlists for dirs start")
         folders = [f for f in os.listdir(self.dir) if os.path.isdir(os.path.join(self.dir, f))]
         for i in folders:
@@ -122,6 +211,12 @@ class PlaylistsManager:
 
 # -------------------------------------------------------------------------
     def removeCovers(self):
+        """
+        Remove all covers from all .mp3 files in all subdirectories of the given path.
+
+        :return: None
+        :rtype: None
+        """
         print("Remove covers start")
         metadataMng = metadata_mp3.MetadataManager()
         folders = [f for f in os.listdir(self.dir) if os.path.isdir(os.path.join(self.dir, f))]
@@ -133,6 +228,13 @@ class PlaylistsManager:
         print("Remove covers end\n")
 
     def clean_filename(self, name):
+        """
+        Clean a filename by removing diacritics, combining characters, non-ASCII characters, and replacing spaces with underscores.
+
+        :param name: the filename to clean
+        :return: a cleaned filename
+        :rtype: str
+        """
         new_name = unicodedata.normalize('NFKD', name)
         # Usuń znaki diakrytyczne (łączone)
         new_name = ''.join(c for c in new_name if not unicodedata.combining(c))
@@ -148,6 +250,12 @@ class PlaylistsManager:
         return new_name
 
     def removePolishChars(self):
+        """
+        Remove polish characters from all files and directories in the given path.
+
+        :return: None
+        :rtype: None
+        """
         print("Remove polish chars start")
         for root, dirs, files in os.walk(self.dir):
             for name in files:
@@ -174,6 +282,17 @@ class PlaylistsManager:
 
 # -------------------------------------------------------------------------
     def collectAndGenerateGroupOfPlaylists(self, folders:list, limitOfSongs=None):
+        """
+        Collect all MP3 files in a given list of directories, sort them by date and track number,
+        and generate a M3U list from them.
+
+        :param folders: list of directories to collect songs from
+        :type folders: list
+        :param limitOfSongs: maximum number of songs to include in the M3U list
+        :type limitOfSongs: int
+        :return: M3U list as a string
+        :rtype: str
+        """
         songs = self.collectSongsFromDirs(folders)
 
         songs = sorted(songs, key= lambda f: (
@@ -189,6 +308,19 @@ class PlaylistsManager:
         return textFile
 
     def createGroupOfPlaylists(self, playlistName:str, folders:list, limitOfSongs=None):
+        """
+        Create a group of playlists from a given list of directories, sort them by date and track number,
+        and generate a M3U list from them.
+
+        :param playlistName: name of the playlist
+        :type playlistName: str
+        :param folders: list of directories to collect songs from
+        :type folders: list
+        :param limitOfSongs: maximum number of songs to include in the M3U list
+        :type limitOfSongs: int
+        :return: None
+        :rtype: None
+        """
         print("Create group", playlistName, "start")
 
         textFile = self.collectAndGenerateGroupOfPlaylists(folders, limitOfSongs)
@@ -201,32 +333,50 @@ class PlaylistsManager:
 
 # -------------------------------------------------------------------------
     def generateTopOfM3UList(self, numberOfSongs):
-            mp3_files = []
+        """
+        Generate a M3U list from the top numberOfSongs songs in the music directory sorted by date and track number.
 
-            for dirpath, dirnames, filenames in os.walk(self.dir):
-                for file in filenames:
-                    if file.lower().endswith('.mp3'):
-                        fileNameWithPath = os.path.join(dirpath, file)
-                        mp3_files.append(fileNameWithPath.replace(self.dir+"/", ""))
+        :param numberOfSongs: maximum number of songs to include in the M3U list
+        :type numberOfSongs: int
+        :return: M3U list as a string
+        :rtype: str
+        """
+        mp3_files = []
+
+        for dirpath, dirnames, filenames in os.walk(self.dir):
+            for file in filenames:
+                if file.lower().endswith('.mp3'):
+                    fileNameWithPath = os.path.join(dirpath, file)
+                    mp3_files.append(fileNameWithPath.replace(self.dir+"/", ""))
 
 
-            mp3_files = sorted(mp3_files, key= lambda f: (self.get_date(os.path.join(self.dir, f)),
-                                                          self.get_tracknumber(os.path.join(self.dir, f))
-                                                          ),
-                               reverse=True)
+        mp3_files = sorted(mp3_files, key= lambda f: (self.get_date(os.path.join(self.dir, f)),
+                                                      self.get_tracknumber(os.path.join(self.dir, f))
+                                                      ),
+                           reverse=True)
 
-            textFile = self.generateHeaderOfM3u()
-            textFile += self.generateM3UList(mp3_files[:numberOfSongs])
+        textFile = self.generateHeaderOfM3u()
+        textFile += self.generateM3UList(mp3_files[:numberOfSongs])
 
-            return textFile
+        return textFile
 
     def createTopOfMusic(self, numberOfSongs, isCrLfNeeded=False):
-            print("Create Top", numberOfSongs, "start")
-            textFile = self.generateTopOfM3UList(numberOfSongs)
-            playlistFile = "%s Top.m3u"%(str(numberOfSongs))
+        """
+        Generate a M3U list from the top numberOfSongs songs in the music directory sorted by date and track number.
 
-            self.saveToFile(playlistFile, textFile)
-            print("Create Top", numberOfSongs, "end\n")
+        :param numberOfSongs: maximum number of songs to include in the M3U list
+        :type numberOfSongs: int
+        :param isCrLfNeeded: if True, a new line will be added at the end of the file
+        :type isCrLfNeeded: bool
+        :return: None
+        :rtype: None
+        """
+        print("Create Top", numberOfSongs, "start")
+        textFile = self.generateTopOfM3UList(numberOfSongs)
+        playlistFile = "%s Top.m3u"%(str(numberOfSongs))
+
+        self.saveToFile(playlistFile, textFile)
+        print("Create Top", numberOfSongs, "end\n")
 
 
 def main(argv):
