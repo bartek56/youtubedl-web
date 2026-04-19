@@ -1,0 +1,272 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>youtubedlWeb.routes.youtubedlPlaylists_routes &mdash; youtubedl-web 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            youtubedl-web
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">youtubedlWeb</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">youtubedl-web</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../youtubedlWeb.html">youtubedlWeb</a></li>
+      <li class="breadcrumb-item active">youtubedlWeb.routes.youtubedlPlaylists_routes</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for youtubedlWeb.routes.youtubedlPlaylists_routes</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">flash</span><span class="p">,</span> <span class="n">redirect</span><span class="p">,</span> <span class="n">session</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">current_app</span> <span class="k">as</span> <span class="n">app</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">youtubedlWeb.Common.SocketRequests</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArchiveSongRequest</span><span class="p">,</span> <span class="n">DownloadPlaylistsRequest</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">youtubedlWeb.Common.SocketMessages</span><span class="w"> </span><span class="kn">import</span> <span class="n">DownloadPlaylists_finish</span><span class="p">,</span> <span class="n">DownloadMediaFromPlaylist_finish</span><span class="p">,</span> <span class="n">PlaylistInfo</span><span class="p">,</span> <span class="n">PlaylistMediaInfo</span><span class="p">,</span> <span class="n">PlaylistInfo_response</span><span class="p">,</span> <span class="n">MediaFromPlaylist</span><span class="p">,</span> <span class="n">DownloadMediaFromPlaylist_start</span><span class="p">,</span> <span class="n">DownloadMediaFromPlaylistError</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">youtubedlWeb.Common.WebUtils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">WebUtils</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="n">youtubePlaylists_bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">&#39;youtubePlaylists&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="playlists">
+<a class="viewcode-back" href="../../../youtubedlWeb.routes.youtubedlPlaylists_routes.html#youtubedlWeb.routes.youtubedlPlaylists_routes.playlists">[docs]</a>
+<span class="nd">@youtubePlaylists_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/playlists.html&#39;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">playlists</span><span class="p">():</span>
+        <span class="n">remoteAddress</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">remote_addr</span>
+
+        <span class="n">playlistsName</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">youtubeConfig</span><span class="o">.</span><span class="n">getPlaylistsName</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">playlistName</span> <span class="ow">in</span> <span class="n">playlistsName</span><span class="p">:</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span><span class="n">playlistName</span><span class="p">})</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">youtubeConfig</span><span class="o">.</span><span class="n">getPath</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;playlists.html&#39;</span><span class="p">,</span> <span class="n">playlists_data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="playlists_request">
+<a class="viewcode-back" href="../../../youtubedlWeb.routes.youtubedlPlaylists_routes.html#youtubedlWeb.routes.youtubedlPlaylists_routes.playlists_request">[docs]</a>
+<span class="nd">@youtubePlaylists_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/playlists&#39;</span><span class="p">,</span><span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">playlists_request</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;POST&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;add&#39;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">:</span>
+            <span class="n">playlist_name</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;playlist_name&#39;</span><span class="p">]</span>
+            <span class="n">link</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;link&#39;</span><span class="p">]</span>
+            <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;add playlist </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">playlist_name</span><span class="p">,</span> <span class="n">link</span><span class="p">)</span>
+            <span class="n">allPlaylists</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">youtubeConfig</span><span class="o">.</span><span class="n">getPlaylistsName</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">playlist_name</span> <span class="ow">in</span> <span class="n">allPlaylists</span><span class="p">:</span>
+                <span class="n">info</span> <span class="o">=</span> <span class="s2">&quot;Playlist &quot;</span> <span class="o">+</span> <span class="n">playlist_name</span> <span class="o">+</span> <span class="s2">&quot; was updated&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">info</span> <span class="o">=</span> <span class="s2">&quot;Playlist &quot;</span> <span class="o">+</span> <span class="n">playlist_name</span> <span class="o">+</span> <span class="s2">&quot; has been added&quot;</span>
+            <span class="k">if</span> <span class="n">app</span><span class="o">.</span><span class="n">youtubeConfig</span><span class="o">.</span><span class="n">addPlaylist</span><span class="p">({</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="n">playlist_name</span><span class="p">,</span> <span class="s2">&quot;link&quot;</span><span class="p">:</span><span class="n">link</span><span class="p">})</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                 <span class="n">flash</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="s1">&#39;success&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warning</span> <span class="o">=</span> <span class="s2">&quot;Playlist &quot;</span> <span class="o">+</span> <span class="n">playlist_name</span> <span class="o">+</span> <span class="s2">&quot; was not added&quot;</span>
+                <span class="n">flash</span><span class="p">(</span><span class="n">warning</span><span class="p">,</span> <span class="s1">&#39;warning&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;remove&#39;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">:</span>
+            <span class="n">playlistToRemove</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;playlists&#39;</span><span class="p">])</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">youtubeConfig</span><span class="o">.</span><span class="n">removePlaylist</span><span class="p">(</span><span class="n">playlistToRemove</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+                 <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;removed playlist </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">playlistToRemove</span><span class="p">)</span>
+                 <span class="n">info</span> <span class="o">=</span> <span class="s2">&quot;Sucesssful removed playlist </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">playlistToRemove</span><span class="p">)</span>
+                 <span class="n">flash</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="s1">&#39;success&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">info</span> <span class="o">=</span> <span class="s2">&quot;Failed to remove Youtube playlist: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">playlistToRemove</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">WebUtils</span><span class="o">.</span><span class="n">alert_info</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;editPath&#39;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">:</span>
+            <span class="n">newPath</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">newPath</span><span class="p">):</span>
+                <span class="n">app</span><span class="o">.</span><span class="n">youtubeConfig</span><span class="o">.</span><span class="n">setPath</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">newPath</span><span class="p">))</span>
+                <span class="n">flash</span><span class="p">(</span><span class="s2">&quot;Successfull updated download path&quot;</span><span class="p">,</span> <span class="s2">&quot;success&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">flash</span><span class="p">(</span><span class="s2">&quot;wrong path&quot;</span><span class="p">,</span> <span class="s1">&#39;warning&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;playlists.html&#39;</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;error&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;playlists.html&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="getLinkOfPlaylist">
+<a class="viewcode-back" href="../../../youtubedlWeb.routes.youtubedlPlaylists_routes.html#youtubedlWeb.routes.youtubedlPlaylists_routes.getLinkOfPlaylist">[docs]</a>
+<span class="nd">@youtubePlaylists_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/getLinkOfPlaylist&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">getLinkOfPlaylist</span><span class="p">():</span>
+    <span class="n">playlistName</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;playlistName&#39;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">youtubeConfig</span><span class="o">.</span><span class="n">getUrlOfPlaylist</span><span class="p">(</span><span class="n">playlistName</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">url</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="register_socketio_youtubePlaylist">
+<a class="viewcode-back" href="../../../youtubedlWeb.routes.youtubedlPlaylists_routes.html#youtubedlWeb.routes.youtubedlPlaylists_routes.register_socketio_youtubePlaylist">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">register_socketio_youtubePlaylist</span><span class="p">(</span><span class="n">socketio</span><span class="p">):</span>
+    <span class="nd">@socketio</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">DownloadPlaylistsRequest</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_message</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+        <span class="n">playlistsDir</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">youtubeConfig</span><span class="o">.</span><span class="n">getPath</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">playlistsDir</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">DownloadPlaylists_finish</span><span class="p">()</span><span class="o">.</span><span class="n">sendError</span><span class="p">(</span><span class="s2">&quot;Playlist dir doesn&#39;t exist&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;download all playlists&quot;</span><span class="p">)</span>
+            <span class="n">playlists</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">youtubeConfig</span><span class="o">.</span><span class="n">getPlaylists</span><span class="p">()</span>
+            <span class="n">numberOfDownloadedSongs</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">playlists</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">DownloadPlaylists_finish</span><span class="p">()</span><span class="o">.</span><span class="n">sendError</span><span class="p">(</span><span class="s2">&quot;Your music collection is empty&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="k">for</span> <span class="n">playlist</span> <span class="ow">in</span> <span class="n">playlists</span><span class="p">:</span>
+                <span class="n">resultOfPlaylist</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">youtubeManager</span><span class="o">.</span><span class="n">getPlaylistInfo</span><span class="p">(</span><span class="n">playlist</span><span class="o">.</span><span class="n">link</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">resultOfPlaylist</span><span class="o">.</span><span class="n">IsFailed</span><span class="p">():</span>
+                    <span class="n">DownloadPlaylists_finish</span><span class="p">()</span><span class="o">.</span><span class="n">sendError</span><span class="p">(</span><span class="s2">&quot;Failed to get info playlist&quot;</span><span class="p">)</span>
+                    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Error to download media: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">resultOfPlaylist</span><span class="o">.</span><span class="n">error</span><span class="p">())</span>
+                    <span class="k">return</span>
+                <span class="n">ytData</span> <span class="o">=</span> <span class="n">resultOfPlaylist</span><span class="o">.</span><span class="n">data</span><span class="p">()</span>
+                <span class="c1">#TODO validate difference between names of playlist the same as MediaServerDownloader</span>
+                <span class="c1">#playlistName = ytData.playlistName</span>
+                <span class="n">playlistName</span> <span class="o">=</span> <span class="n">playlist</span><span class="o">.</span><span class="n">name</span>
+                <span class="n">PlaylistInfo_response</span><span class="p">()</span><span class="o">.</span><span class="n">sendMessage</span><span class="p">(</span><span class="n">PlaylistInfo</span><span class="p">(</span><span class="n">playlistName</span><span class="p">,</span> <span class="n">ytData</span><span class="o">.</span><span class="n">listOfMedia</span><span class="p">))</span>
+                <span class="n">numberOfDownloadedSongs</span> <span class="o">+=</span> <span class="n">downloadSongsFromPlaylist</span><span class="p">(</span><span class="n">playlistsDir</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">,</span> <span class="n">ytData</span><span class="o">.</span><span class="n">listOfMedia</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">downloadPlaylistRequest</span> <span class="o">=</span> <span class="n">DownloadPlaylistsRequest</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span><span class="o">.</span><span class="n">downloadPlaylists</span>
+            <span class="n">playlistName</span> <span class="o">=</span> <span class="n">downloadPlaylistRequest</span><span class="o">.</span><span class="n">playlistName</span>
+            <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;download playlist &quot;</span> <span class="o">+</span> <span class="n">playlistName</span><span class="p">)</span>
+
+            <span class="n">resultOfPlaylist</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">youtubeManager</span><span class="o">.</span><span class="n">getPlaylistInfo</span><span class="p">(</span><span class="n">downloadPlaylistRequest</span><span class="o">.</span><span class="n">link</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">resultOfPlaylist</span><span class="o">.</span><span class="n">IsFailed</span><span class="p">():</span>
+                <span class="n">DownloadPlaylists_finish</span><span class="p">()</span><span class="o">.</span><span class="n">sendError</span><span class="p">(</span><span class="s2">&quot;Failed to get info playlist&quot;</span><span class="p">)</span>
+                <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Error to download media: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">resultOfPlaylist</span><span class="o">.</span><span class="n">error</span><span class="p">())</span>
+                <span class="k">return</span>
+            <span class="n">ytData</span><span class="p">:</span><span class="n">PlaylistInfo</span> <span class="o">=</span> <span class="n">resultOfPlaylist</span><span class="o">.</span><span class="n">data</span><span class="p">()</span>
+            <span class="n">PlaylistInfo_response</span><span class="p">()</span><span class="o">.</span><span class="n">sendMessage</span><span class="p">(</span><span class="n">PlaylistInfo</span><span class="p">(</span><span class="n">playlistName</span><span class="p">,</span> <span class="n">ytData</span><span class="o">.</span><span class="n">listOfMedia</span><span class="p">))</span>
+            <span class="n">numberOfDownloadedSongs</span> <span class="o">=</span> <span class="n">downloadSongsFromPlaylist</span><span class="p">(</span><span class="n">playlistsDir</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">,</span> <span class="n">ytData</span><span class="o">.</span><span class="n">listOfMedia</span><span class="p">)</span>
+        <span class="n">DownloadPlaylists_finish</span><span class="p">()</span><span class="o">.</span><span class="n">sendMessage</span><span class="p">(</span><span class="n">numberOfDownloadedSongs</span><span class="p">)</span>
+
+    <span class="nd">@socketio</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">ArchiveSongRequest</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">archiveSong</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+        <span class="n">archiveSong</span> <span class="o">=</span> <span class="n">ArchiveSongRequest</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span><span class="o">.</span><span class="n">archiveSong</span>
+        <span class="nb">hash</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">youtubeManager</span><span class="o">.</span><span class="n">getMediaHashFromLink</span><span class="p">(</span><span class="n">archiveSong</span><span class="o">.</span><span class="n">ytHash</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hash</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;failed to get hash&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">playlistsDir</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">youtubeConfig</span><span class="o">.</span><span class="n">getPath</span><span class="p">()</span>
+        <span class="n">archiveFilename</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">youtubeManager</span><span class="o">.</span><span class="n">mp3DownloadedListFileName</span>
+        <span class="n">playlistName</span> <span class="o">=</span> <span class="n">archiveSong</span><span class="o">.</span><span class="n">platlistName</span>
+        <span class="n">archiveFilenameWithPath</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">playlistsDir</span><span class="p">,</span><span class="n">playlistName</span><span class="p">,</span><span class="n">archiveFilename</span><span class="p">)</span>
+        <span class="n">newSongForArchive</span> <span class="o">=</span> <span class="s2">&quot;youtube </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">hash</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;archive song: &quot;</span> <span class="o">+</span> <span class="n">playlistName</span> <span class="o">+</span> <span class="s2">&quot;  &quot;</span><span class="o">+</span> <span class="nb">hash</span> <span class="o">+</span> <span class="s2">&quot; in file &quot;</span> <span class="o">+</span> <span class="n">archiveFilenameWithPath</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">archiveFilenameWithPath</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">newSongForArchive</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="downloadSongsFromPlaylist">
+<a class="viewcode-back" href="../../../youtubedlWeb.routes.youtubedlPlaylists_routes.html#youtubedlWeb.routes.youtubedlPlaylists_routes.downloadSongsFromPlaylist">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">downloadSongsFromPlaylist</span><span class="p">(</span><span class="n">playlistsDir</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">,</span> <span class="n">listOfMedia</span><span class="p">):</span>
+    <span class="n">path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">playlistsDir</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">youtubeManager</span><span class="o">.</span><span class="n">_createDirIfNotExist</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">songCounter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">songData</span> <span class="ow">in</span> <span class="n">listOfMedia</span><span class="p">:</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">songData</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">app</span><span class="o">.</span><span class="n">youtubeManager</span><span class="o">.</span><span class="n">isMusicClipArchived</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">songData</span><span class="o">.</span><span class="n">url</span><span class="p">):</span>
+            <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;clip </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> from link </span><span class="si">%s</span><span class="s2"> is archived&quot;</span><span class="p">,</span> <span class="n">songData</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">songData</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;start download clip from&quot;</span><span class="p">)</span>
+        <span class="n">DownloadMediaFromPlaylist_start</span><span class="p">()</span><span class="o">.</span><span class="n">sendMessage</span><span class="p">(</span><span class="n">PlaylistMediaInfo</span><span class="p">(</span><span class="n">songData</span><span class="o">.</span><span class="n">playlistIndex</span><span class="p">,</span> <span class="n">songData</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+
+        <span class="c1">#TODO rename template request if song was duplicated</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">youtubeManager</span><span class="o">.</span><span class="n">_download_mp3</span><span class="p">(</span><span class="n">songData</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">IsFailed</span><span class="p">():</span>
+            <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Failed to download song from url&quot;</span><span class="p">)</span>
+            <span class="n">DownloadMediaFromPlaylist_finish</span><span class="p">()</span><span class="o">.</span><span class="n">sendError</span><span class="p">(</span><span class="n">DownloadMediaFromPlaylistError</span><span class="p">(</span><span class="n">songData</span><span class="o">.</span><span class="n">playlistIndex</span><span class="p">,</span> <span class="n">songData</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">songData</span><span class="o">.</span><span class="n">title</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="n">songCounter</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="n">songMetadata</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="p">()</span>
+        <span class="n">filenameFullPath</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">youtubeManager</span><span class="o">.</span><span class="n">addMetadataToPlaylist</span><span class="p">(</span><span class="n">playlistsDir</span><span class="p">,</span> <span class="n">songData</span><span class="o">.</span><span class="n">playlistIndex</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">,</span>
+                                                                 <span class="n">songMetadata</span><span class="o">.</span><span class="n">artist</span><span class="p">,</span> <span class="n">songMetadata</span><span class="o">.</span><span class="n">album</span><span class="p">,</span> <span class="n">songMetadata</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">songMetadata</span><span class="o">.</span><span class="n">hash</span><span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">filenameFullPath</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">randomHash</span> <span class="o">=</span> <span class="n">WebUtils</span><span class="o">.</span><span class="n">getRandomString</span><span class="p">()</span>
+        <span class="n">session</span><span class="p">[</span><span class="n">randomHash</span><span class="p">]</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="n">DownloadMediaFromPlaylist_finish</span><span class="p">()</span><span class="o">.</span><span class="n">sendMessage</span><span class="p">(</span><span class="n">PlaylistMediaInfo</span><span class="p">(</span><span class="n">songData</span><span class="o">.</span><span class="n">playlistIndex</span><span class="p">,</span> <span class="n">filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.mp3&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">songCounter</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Bartosz Brzozowski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

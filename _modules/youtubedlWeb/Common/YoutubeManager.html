@@ -1,0 +1,1342 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>youtubedlWeb.Common.YoutubeManager &mdash; youtubedl-web 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            youtubedl-web
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">youtubedlWeb</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">youtubedl-web</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../youtubedlWeb.html">youtubedlWeb</a></li>
+      <li class="breadcrumb-item active">youtubedlWeb.Common.YoutubeManager</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for youtubedlWeb.Common.YoutubeManager</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">yt_dlp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">metadata_mp3</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">metadata_mp3</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mp3Info</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.YoutubeConfig</span><span class="w"> </span><span class="kn">import</span> <span class="n">YoutubeConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.YoutubeTypes</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultOfDownload</span><span class="p">,</span> <span class="n">YoutubeManagerLogs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.YoutubeTypes</span><span class="w"> </span><span class="kn">import</span> <span class="n">AudioData</span><span class="p">,</span> <span class="n">MediaFromPlaylist</span><span class="p">,</span> <span class="n">PlaylistInfo</span><span class="p">,</span> <span class="n">MediaInfo</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.YoutubeTypes</span><span class="w"> </span><span class="kn">import</span> <span class="n">VideoSettings</span><span class="p">,</span> <span class="n">VideoData</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.PlaylistsManager</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlaylistsManager</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Hight4kFormatSettings">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.Hight4kFormatSettings">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Hight4kFormatSettings</span><span class="p">(</span><span class="n">VideoSettings</span><span class="p">):</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;bestvideo[ext=mp4]+bestaudio[ext=m4a]/best&quot;</span>
+    <span class="n">subname</span><span class="o">=</span><span class="s2">&quot;_4k&quot;</span>
+
+<div class="viewcode-block" id="Hight4kFormatSettings.getFormat">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.Hight4kFormatSettings.getFormat">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getFormat</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span></div>
+
+
+<div class="viewcode-block" id="Hight4kFormatSettings.getSubname">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.Hight4kFormatSettings.getSubname">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getSubname</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">subname</span></div>
+</div>
+
+
+<div class="viewcode-block" id="Medium720pFormatSettings">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.Medium720pFormatSettings">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Medium720pFormatSettings</span><span class="p">(</span><span class="n">VideoSettings</span><span class="p">):</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;bestvideo[height=720]/mp4&quot;</span>
+    <span class="n">subname</span><span class="o">=</span><span class="s2">&quot;_720p&quot;</span>
+
+<div class="viewcode-block" id="Medium720pFormatSettings.getFormat">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.Medium720pFormatSettings.getFormat">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getFormat</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span></div>
+
+
+<div class="viewcode-block" id="Medium720pFormatSettings.getSubname">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.Medium720pFormatSettings.getSubname">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getSubname</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">subname</span></div>
+</div>
+
+
+<div class="viewcode-block" id="Low360pFormatSettings">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.Low360pFormatSettings">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Low360pFormatSettings</span><span class="p">(</span><span class="n">VideoSettings</span><span class="p">):</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;worse[height&lt;=360]/mp4&quot;</span>
+    <span class="n">subname</span><span class="o">=</span><span class="s2">&quot;_360p&quot;</span>
+
+<div class="viewcode-block" id="Low360pFormatSettings.getFormat">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.Low360pFormatSettings.getFormat">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getFormat</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span></div>
+
+
+<div class="viewcode-block" id="Low360pFormatSettings.getSubname">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.Low360pFormatSettings.getSubname">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getSubname</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">subname</span></div>
+</div>
+
+
+<div class="viewcode-block" id="YoutubeManager">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.YoutubeManager">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">YoutubeManager</span><span class="p">:</span>
+    <span class="n">MUSIC_PATH</span><span class="o">=</span><span class="s2">&quot;/tmp/quick_download/&quot;</span>
+    <span class="n">VIDEO_PATH</span><span class="o">=</span><span class="s2">&quot;/tmp/quick_download/&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">musicPath</span><span class="o">=</span><span class="s2">&quot;/tmp/quick_download/&quot;</span><span class="p">,</span> <span class="n">videoPath</span><span class="o">=</span><span class="s2">&quot;/tmp/quick_download/&quot;</span><span class="p">,</span> <span class="n">mp3ArchiveFilename</span><span class="o">=</span><span class="s2">&quot;downloaded_songs.txt&quot;</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span> <span class="o">=</span> <span class="n">metadata_mp3</span><span class="o">.</span><span class="n">MetadataManager</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quietSetting</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">quietSetting</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ytDomain</span> <span class="o">=</span> <span class="s2">&quot;https://youtu.be/&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">MUSIC_PATH</span><span class="o">=</span><span class="n">musicPath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">VIDEO_PATH</span><span class="o">=</span><span class="n">videoPath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mp3DownloadedListFileName</span><span class="o">=</span><span class="n">mp3ArchiveFilename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">videoConfig</span> <span class="o">=</span> <span class="p">{</span>
+              <span class="s1">&#39;addmetadata&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+              <span class="s1">&#39;logger&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+              <span class="s1">&#39;no-overwrites&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+              <span class="s1">&#39;noplaylist&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+              <span class="s1">&#39;ignoreerrors&#39;</span><span class="p">:</span> <span class="kc">False</span>
+              <span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">high4kSettings</span> <span class="o">=</span>     <span class="n">Hight4kFormatSettings</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">medium720pSettings</span> <span class="o">=</span> <span class="n">Medium720pFormatSettings</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">low360pSettings</span> <span class="o">=</span>    <span class="n">Low360pFormatSettings</span><span class="p">()</span>
+
+<div class="viewcode-block" id="YoutubeManager.getMediaInfo">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.YoutubeManager.getMediaInfo">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getMediaInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultOfDownload</span><span class="p">:</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get media information from a given url.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            url (str): A youtube url.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ResultOfDownload: A result object containing the media information, or an error message if the download failed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ydl_opts</span> <span class="o">=</span> <span class="p">{</span>
+              <span class="s1">&#39;logger&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+              <span class="s1">&#39;addmetadata&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+              <span class="s1">&#39;ignoreerrors&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+              <span class="s1">&#39;quiet&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span>
+              <span class="s1">&#39;noplaylist&#39;</span><span class="p">:</span><span class="kc">True</span>
+              <span class="p">}</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">yt_dlp</span><span class="o">.</span><span class="n">YoutubeDL</span><span class="p">(</span><span class="n">ydl_opts</span><span class="p">)</span><span class="o">.</span><span class="n">extract_info</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">log</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">EMPTY_RESULT</span> <span class="o">+</span> <span class="s2">&quot;: &quot;</span> <span class="o">+</span> <span class="n">url</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">EMPTY_RESULT</span> <span class="o">+</span> <span class="s2">&quot;: &quot;</span> <span class="o">+</span> <span class="n">url</span><span class="p">)</span>
+
+        <span class="n">title</span><span class="o">=</span><span class="kc">None</span>
+        <span class="n">artist</span><span class="o">=</span><span class="kc">None</span>
+        <span class="n">album</span><span class="o">=</span><span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;title&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;artist&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+            <span class="n">artist</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;artist&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;album&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+            <span class="n">album</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;album&#39;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">MediaInfo</span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="n">artist</span><span class="p">,</span><span class="n">album</span><span class="p">,</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;original_url&#39;</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="YoutubeManager.getPlaylistInfo">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.YoutubeManager.getPlaylistInfo">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getPlaylistInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultOfDownload</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get playlist information from a given url.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            url (str): A youtube url.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ResultOfDownload: A result object containing the playlist information, or an error message if the download failed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Get playlist infor from url: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+
+        <span class="n">ydl_opts</span> <span class="o">=</span> <span class="p">{</span>
+              <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;best/best&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;logger&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+              <span class="s1">&#39;extract_flat&#39;</span><span class="p">:</span> <span class="s1">&#39;in_playlist&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;addmetadata&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+              <span class="s1">&#39;ignoreerrors&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+              <span class="s1">&#39;quiet&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">quietSetting</span>
+              <span class="p">}</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">yt_dlp</span><span class="o">.</span><span class="n">YoutubeDL</span><span class="p">(</span><span class="n">ydl_opts</span><span class="p">)</span><span class="o">.</span><span class="n">extract_info</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">exceptionMsg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">DOWNLOAD_FAILED</span><span class="o">+</span> <span class="s2">&quot;: &quot;</span> <span class="o">+</span> <span class="n">exceptionMsg</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">DOWNLOAD_FAILED</span> <span class="o">+</span> <span class="s2">&quot;: &quot;</span> <span class="o">+</span> <span class="n">exceptionMsg</span><span class="p">)</span>
+
+        <span class="n">resultOfValidate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validateYTResult</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resultOfValidate</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">NOT_ENTRIES</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">NOT_ENTRIES</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">playlistTitle</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span>
+        <span class="n">playlistIndex</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;entries&#39;</span><span class="p">]:</span>
+            <span class="n">mediaFromPlaylist</span> <span class="o">=</span> <span class="n">MediaFromPlaylist</span><span class="p">(</span><span class="n">playlistIndex</span><span class="p">,</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
+            <span class="c1">#logger.debug(str(mediaFromPlaylist))</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mediaFromPlaylist</span><span class="p">)</span>
+            <span class="n">playlistIndex</span><span class="o">+=</span><span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">PlaylistInfo</span><span class="p">(</span><span class="n">playlistTitle</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="YoutubeManager.download_4k">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.YoutubeManager.download_4k">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">download_4k</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultOfDownload</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download video from a given url in high quality (4K).</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            url (str): A youtube url.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ResultOfDownload: A result object containing the downloaded video, or an error message if the download failed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;start download video [high quality] from link </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_downloadVideo</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">high4kSettings</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="YoutubeManager.download_720p">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.YoutubeManager.download_720p">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">download_720p</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultOfDownload</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download video from a given url in medium quality (720p).</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            url (str): A youtube url.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ResultOfDownload: A result object containing the downloaded video, or an error message if the download failed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;start download video [medium quality] from link </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_downloadVideo</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">medium720pSettings</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="YoutubeManager.download_360p">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.YoutubeManager.download_360p">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">download_360p</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultOfDownload</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download video from a given url in low quality (360p).</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            url (str): A youtube url.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ResultOfDownload: A result object containing the downloaded video, or an error message if the download failed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;start download video [low quality] from link </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_downloadVideo</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">low360pSettings</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_downloadVideo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span><span class="n">VideoSettings</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultOfDownload</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download a video from a given url with a given configuration.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            url (str): A youtube url.</span>
+<span class="sd">            config (VideoSettings): A configuration object containing the format and subtitle for the downloaded video.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ResultOfDownload: A result object containing the downloaded video, or an error message if the download failed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">VIDEO_PATH</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_createDirIfNotExist</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">yt_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">videoConfig</span><span class="p">)</span>
+        <span class="n">yt_args</span><span class="p">[</span><span class="s2">&quot;format&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">getFormat</span><span class="p">()</span>
+        <span class="n">yt_args</span><span class="p">[</span><span class="s2">&quot;outtmpl&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">%(title)s</span><span class="s1">&#39;</span><span class="o">+</span><span class="n">config</span><span class="o">.</span><span class="n">getSubname</span><span class="p">()</span><span class="o">+</span><span class="s2">&quot;.</span><span class="si">%(ext)s</span><span class="s2">&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">yt_dlp</span><span class="o">.</span><span class="n">YoutubeDL</span><span class="p">(</span><span class="n">yt_args</span><span class="p">)</span><span class="o">.</span><span class="n">extract_info</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">log</span> <span class="o">=</span> <span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">DOWNLOAD_FAILED</span> <span class="o">+</span> <span class="s2">&quot;: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span> <span class="o">=</span> <span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">EMPTY_RESULT</span> <span class="o">+</span> <span class="s2">&quot;: &quot;</span> <span class="o">+</span> <span class="n">url</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+
+        <span class="n">title</span> <span class="o">=</span> <span class="n">yt_dlp</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">sanitize_filename</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;ext&#39;</span><span class="p">]</span>
+        <span class="n">full_path</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">/</span><span class="si">%s%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">getSubname</span><span class="p">(),</span> <span class="n">ext</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">VideoData</span><span class="p">(</span><span class="n">full_path</span><span class="p">,</span><span class="n">title</span><span class="p">,</span><span class="n">ext</span><span class="p">))</span>
+
+<div class="viewcode-block" id="YoutubeManager.download_mp3">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.YoutubeManager.download_mp3">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">download_mp3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultOfDownload</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download an MP3 from a given url.</span>
+
+<span class="sd">        If the file for the given url already exists, this method will only get information about the media and will not download anything.</span>
+<span class="sd">        If the file does not exist, this method will download the MP3 and add metadata to it.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            url (str): A youtube url.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ResultOfDownload: A result object containing the downloaded MP3, or an error message if the download failed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="s2">&quot;[INFO] start download MP3 from link </span><span class="si">%s</span><span class="s2"> &quot;</span><span class="o">%</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isMusicClipArchived</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">MUSIC_PATH</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+            <span class="c1"># only get information about media, file exists</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;clip exists, only get information about MP3&quot;</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getMetadataFromYTForMp3</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">MUSIC_PATH</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Download MP3&quot;</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_downloadMp3AndAddMetadata</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="YoutubeManager.getListOfDownloadedSongs">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.YoutubeManager.getListOfDownloadedSongs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getListOfDownloadedSongs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a list of all the downloaded songs in the MUSIC_PATH directory.</span>
+
+<span class="sd">        Each element of the list is a tuple containing the full path of the downloaded song and the metadata associated with it.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: A list of tuples containing the full path of the downloaded song and the metadata associated with it.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">listOfDownlodedFiles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dirpath</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">filenames</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">MUSIC_PATH</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.mp3&quot;</span><span class="p">):</span>
+                        <span class="n">filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+                        <span class="n">mp3Metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span><span class="o">.</span><span class="n">getMp3Info</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">mp3Metadata</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">mp3Metadata</span><span class="o">.</span><span class="n">website</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="k">continue</span>
+                        <span class="n">listOfDownlodedFiles</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">filepath</span><span class="p">,</span> <span class="n">mp3Metadata</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">listOfDownlodedFiles</span></div>
+
+
+<div class="viewcode-block" id="YoutubeManager.isMusicClipArchived">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.YoutubeManager.isMusicClipArchived">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">isMusicClipArchived</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span> <span class="c1"># pragma: no cover</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if a music clip from a given url already exists in the given path.</span>
+
+<span class="sd">        The method will return True if the clip exists and False otherwise.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            path (str): The path to check for the music clip.</span>
+<span class="sd">            url (str): The url of the music clip to check.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if the clip exists, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">hash</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getMediaHashFromLink</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">contentOfFile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_openFile</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mp3DownloadedListFileName</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">contentOfFile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hash</span> <span class="ow">in</span> <span class="n">contentOfFile</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_getMetadataFromYTForMp3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultOfDownload</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get metadata from a given youtube url without downloading the file.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            url (str): A youtube url.</span>
+<span class="sd">            path (str): The path to check for the music clip.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ResultOfDownload: A result object containing the metadata of the downloaded MP3, or an error message if the download failed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ydl_opts</span> <span class="o">=</span> <span class="p">{</span>
+              <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;bestaudio/best&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;addmetadata&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+              <span class="s1">&#39;logger&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+              <span class="s1">&#39;outtmpl&#39;</span><span class="p">:</span> <span class="n">path</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">%(title)s</span><span class="s1">.</span><span class="si">%(ext)s</span><span class="s1">&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;ignoreerrors&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+              <span class="s1">&#39;continue&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+              <span class="s1">&#39;no-overwrites&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+              <span class="s1">&#39;noplaylist&#39;</span><span class="p">:</span> <span class="kc">True</span>
+              <span class="p">}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">yt_dlp</span><span class="o">.</span><span class="n">YoutubeDL</span><span class="p">(</span><span class="n">ydl_opts</span><span class="p">)</span><span class="o">.</span><span class="n">extract_info</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">log</span> <span class="o">=</span> <span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">DOWNLOAD_FAILED</span><span class="o">+</span><span class="s2">&quot;: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span> <span class="o">=</span> <span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">EMPTY_RESULT</span><span class="o">+</span><span class="s2">&quot;: &quot;</span><span class="o">+</span><span class="n">url</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Succesfull got information&quot;</span><span class="p">)</span>
+        <span class="n">mp3Data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_metadataForMP3</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mp3Data</span><span class="p">)</span>
+        <span class="n">mp3Data</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span><span class="o">.</span><span class="n">_removeSheetFromSongName</span><span class="p">(</span><span class="n">mp3Data</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="n">mp3Data</span><span class="o">.</span><span class="n">artist</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span><span class="o">.</span><span class="n">_cutLengthAndRemoveDuplicates</span><span class="p">(</span><span class="n">mp3Data</span><span class="o">.</span><span class="n">artist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span><span class="o">.</span><span class="n">maxLenghtOfArtist</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mp3Data</span><span class="o">.</span><span class="n">title</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span><span class="o">.</span><span class="n">maxLenghtOfTitle</span><span class="p">:</span>
+            <span class="n">mp3Data</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span><span class="o">.</span><span class="n">_cutLenght</span><span class="p">(</span><span class="n">mp3Data</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span><span class="o">.</span><span class="n">maxLenghtOfTitle</span><span class="p">)</span>
+
+        <span class="n">full_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lookingForFile</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">mp3Data</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">mp3Data</span><span class="o">.</span><span class="n">artist</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">full_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span> <span class="o">=</span> <span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">NOT_FOUND</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+
+        <span class="n">mp3Data</span><span class="o">.</span><span class="n">setPath</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">mp3Data</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_downloadMp3AndAddMetadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultOfDownload</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download MP3 and add metadata to it.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            url (str): url of the song to download</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ResultOfDownload: result of the operation, containing data about downloaded song</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_download_mp3</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">IsFailed</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="n">mp3Data</span><span class="p">:</span><span class="n">AudioData</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="p">()</span>
+        <span class="n">fileNameWithPath</span> <span class="o">=</span> <span class="n">mp3Data</span><span class="o">.</span><span class="n">path</span>
+        <span class="n">fileName</span> <span class="o">=</span> <span class="n">fileNameWithPath</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fileNameWithPath</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;File </span><span class="si">%s</span><span class="s2"> doesn&#39;t exist. Sanitize is require&quot;</span><span class="p">,</span> <span class="n">fileNameWithPath</span><span class="p">)</span>
+            <span class="n">mp3Data</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">yt_dlp</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">sanitize_filename</span><span class="p">(</span><span class="n">mp3Data</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="n">mp3Data</span><span class="o">.</span><span class="n">artist</span> <span class="o">=</span> <span class="n">yt_dlp</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">sanitize_filename</span><span class="p">(</span><span class="n">mp3Data</span><span class="o">.</span><span class="n">artist</span><span class="p">)</span>
+        <span class="n">website</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ytDomain</span> <span class="o">+</span> <span class="n">mp3Data</span><span class="o">.</span><span class="n">hash</span>
+        <span class="n">full_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span><span class="o">.</span><span class="n">renameAndAddMetadata</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">MUSIC_PATH</span><span class="p">,</span> <span class="n">fileName</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span>
+                                                                    <span class="n">mp3Data</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">mp3Data</span><span class="o">.</span><span class="n">artist</span><span class="p">,</span> <span class="n">mp3Data</span><span class="o">.</span><span class="n">album</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">website</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getDateTimeNowStr</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="n">full_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span> <span class="o">=</span> <span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">NOT_FOUND</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span><span class="o">.</span><span class="n">addCoverOfYtMp3</span><span class="p">(</span><span class="n">full_path</span><span class="p">,</span> <span class="n">mp3Data</span><span class="o">.</span><span class="n">hash</span><span class="p">)</span>
+
+        <span class="n">mp3Data</span><span class="o">.</span><span class="n">setPath</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">mp3Data</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_download_mp3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">MUSIC_PATH</span><span class="p">,</span> <span class="n">titleFormat</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(title)s</span><span class="s1">.</span><span class="si">%(ext)s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultOfDownload</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download a song from YouTube in MP3 format and add metadata to it.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            url (str): url of the song to download</span>
+<span class="sd">            path (str, optional): path to save the song. Defaults to MUSIC_PATH.</span>
+<span class="sd">            titleFormat (str, optional): format of the title of the song. Defaults to &#39;%(title)s.%(ext)s&#39;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ResultOfDownload: result of the operation, containing data about downloaded song</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_createDirIfNotExist</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="n">ydl_opts</span> <span class="o">=</span> <span class="p">{</span>
+              <span class="c1">#&#39;format&#39;: &#39;bestaudio/best&#39;,</span>
+              <span class="s1">&#39;addmetadata&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+              <span class="s1">&#39;logger&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+              <span class="s1">&#39;outtmpl&#39;</span><span class="p">:</span> <span class="n">path</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">titleFormat</span><span class="p">,</span>
+              <span class="s1">&#39;download_archive&#39;</span><span class="p">:</span> <span class="n">path</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">mp3DownloadedListFileName</span><span class="p">,</span>
+              <span class="s1">&#39;ignoreerrors&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+              <span class="s1">&#39;continue&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+              <span class="s1">&#39;no-overwrites&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+              <span class="s1">&#39;noplaylist&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+              <span class="s1">&#39;quiet&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">quietSetting</span><span class="p">,</span>
+              <span class="s1">&#39;postprocessors&#39;</span><span class="p">:</span> <span class="p">[{</span>
+                    <span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="s1">&#39;FFmpegExtractAudio&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;preferredcodec&#39;</span><span class="p">:</span> <span class="s1">&#39;mp3&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;preferredquality&#39;</span><span class="p">:</span> <span class="s1">&#39;192&#39;</span><span class="p">,</span>
+                 <span class="p">}]</span>
+              <span class="p">}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">yt_dlp</span><span class="o">.</span><span class="n">YoutubeDL</span><span class="p">(</span><span class="n">ydl_opts</span><span class="p">)</span><span class="o">.</span><span class="n">extract_info</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">strE</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">log</span> <span class="o">=</span> <span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">DOWNLOAD_FAILED</span><span class="o">+</span><span class="s2">&quot;: &quot;</span><span class="o">+</span><span class="n">strE</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span> <span class="o">=</span> <span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">EMPTY_RESULT</span><span class="o">+</span><span class="s2">&quot;: &quot;</span><span class="o">+</span><span class="n">url</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;succesfull download&quot;</span><span class="p">)</span>
+
+        <span class="n">mp3Data</span><span class="p">:</span><span class="n">AudioData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_metadataForMP3</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mp3Data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">mp3Data</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_metadataForMP3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AudioData</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract metadata from a YouTube video download result and return it as AudioData.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (dict): result of YouTube video download, containing metadata about downloaded song</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            AudioData: extracted metadata as AudioData</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">songTitle</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">artist</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">album</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="nb">hash</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">year</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">filePath</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="s2">&quot;title&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">songTitle</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;artist&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">artist</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;artist&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;album&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">album</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;album&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;id&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="nb">hash</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;requested_downloads&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">filePath</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;requested_downloads&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;filepath&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;release_year&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">year</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;release_year&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">AudioData</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">filePath</span><span class="p">,</span><span class="n">title</span><span class="o">=</span><span class="n">songTitle</span><span class="p">,</span> <span class="nb">hash</span><span class="o">=</span><span class="nb">hash</span><span class="p">,</span> <span class="n">artist</span><span class="o">=</span><span class="n">artist</span><span class="p">,</span> <span class="n">album</span><span class="o">=</span><span class="n">album</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="n">year</span><span class="p">)</span>
+
+<div class="viewcode-block" id="YoutubeManager.downloadPlaylistMp3Fast">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.YoutubeManager.downloadPlaylistMp3Fast">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">downloadPlaylistMp3Fast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">playlistDir</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultOfDownload</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download a YouTube playlist and save all songs as MP3, fast version.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            playlistDir (str): path to the directory where the playlist will be saved</span>
+<span class="sd">            playlistName (str): name of the playlist</span>
+<span class="sd">            url (str): URL of the YouTube playlist</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ResultOfDownload: result of the operation, containing the number of downloaded songs or an error message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_createDirIfNotExist</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="n">ydl_opts</span> <span class="o">=</span> <span class="p">{</span>
+              <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;bestaudio/best&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;download_archive&#39;</span><span class="p">:</span> <span class="n">path</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">mp3DownloadedListFileName</span><span class="p">,</span>
+              <span class="s1">&#39;addmetadata&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+              <span class="s1">&#39;logger&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+              <span class="s1">&#39;outtmpl&#39;</span><span class="p">:</span> <span class="n">path</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">%(title)s</span><span class="s1">.</span><span class="si">%(ext)s</span><span class="s1">&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;postprocessors&#39;</span><span class="p">:</span> <span class="p">[{</span>
+                    <span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="s1">&#39;FFmpegExtractAudio&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;preferredcodec&#39;</span><span class="p">:</span> <span class="s1">&#39;mp3&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;preferredquality&#39;</span><span class="p">:</span> <span class="s1">&#39;192&#39;</span><span class="p">,</span>
+                    <span class="p">}],</span>
+              <span class="s1">&#39;ignoreerrors&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+              <span class="s1">&#39;quiet&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">quietSetting</span>
+              <span class="p">}</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;started download playlist </span><span class="si">%s</span><span class="s2">, url: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">yt_dlp</span><span class="o">.</span><span class="n">YoutubeDL</span><span class="p">(</span><span class="n">ydl_opts</span><span class="p">)</span><span class="o">.</span><span class="n">extract_info</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">log</span> <span class="o">=</span> <span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">DOWNLOAD_FAILED</span><span class="o">+</span><span class="s2">&quot;: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+
+        <span class="n">resultOfValidate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validateYTResult</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resultOfValidate</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">log</span> <span class="o">=</span> <span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">NOT_ENTRIES</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+
+        <span class="n">artistList</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">albumList</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">playlistIndexList</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">songsTitleList</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">hashList</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;entries&#39;</span><span class="p">]:</span>
+            <span class="n">playlistIndexList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;playlist_index&#39;</span><span class="p">])</span>
+            <span class="n">songsTitleList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
+            <span class="n">hashList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="s2">&quot;artist&quot;</span> <span class="ow">in</span> <span class="n">i</span><span class="p">:</span>
+                <span class="n">artistList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;artist&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">artistList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="s2">&quot;album&quot;</span> <span class="ow">in</span> <span class="n">i</span><span class="p">:</span>
+                <span class="n">albumList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;album&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">albumList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">songCounter</span><span class="o">=</span><span class="mi">0</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">songsTitleList</span><span class="p">)):</span>
+            <span class="n">songTitle</span> <span class="o">=</span> <span class="n">songsTitleList</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+            <span class="n">artist</span> <span class="o">=</span> <span class="n">artistList</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+            <span class="n">album</span> <span class="o">=</span> <span class="n">albumList</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+            <span class="n">fileName</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">songTitle</span><span class="p">,</span> <span class="s2">&quot;.mp3&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">fileName</span><span class="p">)):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;File doesn&#39;t exist. Sanitize is require&quot;</span><span class="p">)</span>
+                <span class="n">songTitle</span> <span class="o">=</span> <span class="n">yt_dlp</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">sanitize_filename</span><span class="p">(</span><span class="n">songTitle</span><span class="p">)</span>
+                <span class="n">fileName</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">songTitle</span><span class="p">,</span> <span class="s2">&quot;.mp3&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">fileName</span><span class="p">)):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;File doesn&#39;t exists! </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">fileName</span><span class="p">))</span>
+
+            <span class="n">artist</span> <span class="o">=</span> <span class="n">yt_dlp</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">sanitize_filename</span><span class="p">(</span><span class="n">artist</span><span class="p">)</span>
+            <span class="n">website</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ytDomain</span> <span class="o">+</span> <span class="n">hashList</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span><span class="o">.</span><span class="n">renameAndAddMetadata</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">,</span><span class="n">playlistName</span><span class="p">,</span><span class="n">fileName</span><span class="p">),</span> <span class="n">playlistIndexList</span><span class="p">[</span><span class="n">x</span><span class="p">],</span>
+                                                                <span class="n">songTitle</span><span class="p">,</span> <span class="n">artist</span><span class="p">,</span> <span class="n">album</span><span class="p">,</span> <span class="s2">&quot;YT &quot;</span><span class="o">+</span><span class="n">playlistName</span><span class="p">,</span> <span class="n">website</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getDateTimeNowStr</span><span class="p">())</span>
+
+            <span class="n">songCounter</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Downloaded </span><span class="si">%i</span><span class="s2"> songs&quot;</span><span class="p">,</span> <span class="n">songCounter</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">songCounter</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validateYTResult</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validate the result of YouTube video download.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            results (dict): result of YouTube video download, containing metadata about downloaded song</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if the result is valid, False otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">results</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">EMPTY_RESULT</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="s1">&#39;entries&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">NOT_ENTRIES</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;entries&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">YoutubeManagerLogs</span><span class="o">.</span><span class="n">NOT_EXTRACT_INFO</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="YoutubeManager.addMetadataToPlaylist">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.YoutubeManager.addMetadataToPlaylist">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">addMetadataToPlaylist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">playlistDir</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">,</span> <span class="n">fileName</span><span class="p">,</span> <span class="n">playlistIndex</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">artist</span><span class="p">,</span> <span class="n">album</span><span class="p">,</span> <span class="nb">hash</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add metadata to a song in a playlist.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            playlistDir (str): path to the directory where the playlist is saved</span>
+<span class="sd">            playlistName (str): name of the playlist</span>
+<span class="sd">            fileName (str): name of the song file</span>
+<span class="sd">            playlistIndex (str): index of the song in the playlist</span>
+<span class="sd">            title (str): title of the song</span>
+<span class="sd">            artist (str): artist of the song</span>
+<span class="sd">            album (str): album of the song</span>
+<span class="sd">            hash (str): YouTube hash of the song</span>
+<span class="sd">            year (str): year of the album (optional)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: path to the song file after adding metadata</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">yt_dlp</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">sanitize_filename</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="n">artist</span> <span class="o">=</span> <span class="n">yt_dlp</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">sanitize_filename</span><span class="p">(</span><span class="n">artist</span><span class="p">)</span>
+        <span class="n">website</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">albumArtist</span> <span class="o">=</span> <span class="n">album</span>
+        <span class="n">album</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">playlistName</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">album</span> <span class="o">=</span> <span class="s2">&quot;YT &quot;</span><span class="o">+</span><span class="n">playlistName</span>
+        <span class="k">if</span> <span class="nb">hash</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="nb">hash</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">website</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ytDomain</span> <span class="o">+</span> <span class="nb">hash</span>
+        <span class="n">album_date</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">year</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">year</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">album_date</span> <span class="o">=</span> <span class="n">year</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">album_date</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getDateTimeNowStr</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span><span class="o">.</span><span class="n">renameAndAddMetadata</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">,</span> <span class="n">fileName</span><span class="p">),</span> <span class="n">playlistIndex</span><span class="p">,</span>
+                                                                   <span class="n">title</span><span class="p">,</span> <span class="n">artist</span><span class="p">,</span> <span class="n">album</span><span class="p">,</span> <span class="n">albumArtist</span><span class="p">,</span> <span class="n">website</span><span class="p">,</span> <span class="n">album_date</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_getSongsOfDir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">playlistDir</span><span class="p">):</span> <span class="c1"># pragma: no cover</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all songs from a given directory.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            playlistDir (str): path to the directory where the songs are saved</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: list of Mp3Info objects, each containing metadata about a song</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Wrong dir path: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">playlistDir</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">)</span>
+        <span class="n">listMp3</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">isTrackNumber</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;.mp3&quot;</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+                <span class="n">fullPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+                <span class="n">audio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span><span class="o">.</span><span class="n">getMp3Info</span><span class="p">(</span><span class="n">fullPath</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">audio</span><span class="o">.</span><span class="n">trackNumber</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">isTrackNumber</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">audio</span><span class="o">.</span><span class="n">fileName</span> <span class="o">=</span> <span class="n">file</span>
+                <span class="n">listMp3</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">audio</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">isTrackNumber</span><span class="p">:</span>
+            <span class="n">listMp3</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">listMp3</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">trackNumber</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">listMp3</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_getIndexOfMediaFromPlaylistList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the index of a MediaFromPlaylist object in a list by its url.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            list (list): list of MediaFromPlaylist objects</span>
+<span class="sd">            url (str): url of the song to find</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: index of the song in the list, or None if not found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="n">x</span><span class="p">:</span><span class="n">MediaFromPlaylist</span>
+            <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">url</span> <span class="o">==</span> <span class="n">url</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">index</span>
+            <span class="n">index</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Song with url:</span><span class="si">%s</span><span class="s2"> was not found!&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_getIndexOfMp3InfoList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">website</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the index of a Mp3Info object in a list by its website.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            list (list): list of Mp3Info objects</span>
+<span class="sd">            website (str): website of the song to find</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: index of the song in the list, or None if not found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="n">x</span><span class="p">:</span><span class="n">Mp3Info</span>
+            <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">website</span> <span class="o">==</span> <span class="n">website</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">index</span>
+            <span class="n">index</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Song with website:</span><span class="si">%s</span><span class="s2"> was not found!&quot;</span><span class="p">,</span> <span class="n">website</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_getDateTimeNowStr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get current date in the format YYYY-MM-DD.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: current date in the format YYYY-MM-DD</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_createDirIfNotExist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a directory if it doesn&#39;t exist.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path (str): path to the directory to create</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span> <span class="c1"># pragma: no cover</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Directory </span><span class="si">%s</span><span class="s2"> was created&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_lookingForFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">songTitle</span><span class="p">,</span> <span class="n">artist</span><span class="p">):</span> <span class="c1"># pragma: no cover</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Look for a file with the given song title and artist in the given path.</span>
+
+<span class="sd">        It first looks for a file with the given song title, then looks for a file with</span>
+<span class="sd">        the song title without the sheet name, then looks for a file with the song</span>
+<span class="sd">        title and artist without the sheet name, and finally looks for a file with</span>
+<span class="sd">        the song title and artist sanitized.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path (str): path to look for the file</span>
+<span class="sd">            songTitle (str): title of the song to look for</span>
+<span class="sd">            artist (str): artist of the song to look for</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: path to the file if found, otherwise None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">lookingForFileAccordWithYTFilename</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">songName</span><span class="p">,</span> <span class="n">artist</span><span class="p">):</span>
+            <span class="n">songName</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span><span class="o">.</span><span class="n">_removeSheetFromSongName</span><span class="p">(</span><span class="n">songName</span><span class="p">)</span>
+            <span class="n">fileName</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">songName</span><span class="p">,</span><span class="s2">&quot;.mp3&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fileName</span><span class="p">)):</span>
+                <span class="k">return</span> <span class="n">songName</span>
+            <span class="n">songName</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> - </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">artist</span><span class="p">,</span> <span class="n">songName</span><span class="p">)</span>
+            <span class="n">fileName</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">songName</span><span class="p">,</span><span class="s2">&quot;.mp3&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fileName</span><span class="p">)):</span>
+             <span class="k">return</span> <span class="n">songName</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">fileName</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.mp3&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">songTitle</span><span class="p">)</span>
+        <span class="n">full_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">fileName</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">full_path</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">full_path</span>
+        <span class="n">songName</span> <span class="o">=</span> <span class="n">lookingForFileAccordWithYTFilename</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">songTitle</span><span class="p">,</span> <span class="n">artist</span><span class="p">)</span>
+        <span class="n">fileName</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.mp3&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">songName</span><span class="p">)</span>
+        <span class="n">full_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">fileName</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">full_path</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">full_path</span>
+        <span class="n">songTitleTemp</span> <span class="o">=</span> <span class="n">yt_dlp</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">sanitize_filename</span><span class="p">(</span><span class="n">songTitle</span><span class="p">)</span>
+        <span class="n">songName</span> <span class="o">=</span> <span class="n">lookingForFileAccordWithYTFilename</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">songTitleTemp</span><span class="p">,</span> <span class="n">artist</span><span class="p">)</span>
+        <span class="n">fileName</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.mp3&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">songName</span><span class="p">)</span>
+        <span class="n">full_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fileName</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">full_path</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">full_path</span>
+        <span class="n">artistTemp</span> <span class="o">=</span> <span class="n">yt_dlp</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">sanitize_filename</span><span class="p">(</span><span class="n">artist</span><span class="p">)</span>
+        <span class="n">songName</span> <span class="o">=</span> <span class="n">lookingForFileAccordWithYTFilename</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">songTitleTemp</span><span class="p">,</span> <span class="n">artistTemp</span><span class="p">)</span>
+        <span class="n">fileName</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.mp3&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">songName</span><span class="p">)</span>
+        <span class="n">full_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fileName</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">full_path</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">full_path</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;clip is archived, but doesn&#39;t exists in server&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="YoutubeManager.getMediaHashFromLink">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.YoutubeManager.getMediaHashFromLink">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getMediaHashFromLink</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the media hash from the given youtube link.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            url (str): the youtube link to get the media hash from</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: the media hash if found, otherwise None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mediaData</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.com/&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">parametersFromLink</span> <span class="o">=</span> <span class="n">mediaData</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;&amp;&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">parametersFromLink</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;watch&quot;</span> <span class="ow">in</span> <span class="n">param</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">param</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;error with getting hash from link&quot;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_openFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">fileName</span><span class="p">):</span> <span class="c1"># pragma: no cover</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Open a file and return its content.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path (str): the path to the directory where the file is located</span>
+<span class="sd">            fileName (str): the name of the file to open</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: the content of the file if found, otherwise None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">fileName</span><span class="p">):</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">fileName</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                    <span class="n">content</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">content</span></div>
+
+
+
+<div class="viewcode-block" id="MediaServerDownloader">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.MediaServerDownloader">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MediaServerDownloader</span><span class="p">(</span><span class="n">YoutubeManager</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configFile</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ytConfig</span> <span class="o">=</span> <span class="n">YoutubeConfig</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">configFile</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MediaServerDownloader.download_playlists">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.MediaServerDownloader.download_playlists">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">download_playlists</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isDirForPlaylists</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;wrong path for playlists&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="n">downloadedSongs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">songsCounter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">playlists</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">getPlaylists</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">playlist</span> <span class="ow">in</span> <span class="n">playlists</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;--------------- </span><span class="si">%s</span><span class="s2"> ------------------&quot;</span><span class="p">,</span> <span class="n">playlist</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">playlist</span><span class="o">.</span><span class="n">link</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">downloadPlaylistMp3</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">getPath</span><span class="p">(),</span> <span class="n">playlist</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">playlist</span><span class="o">.</span><span class="n">link</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">checkPlaylistStatus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">getPath</span><span class="p">(),</span> <span class="n">playlist</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">playlist</span><span class="o">.</span><span class="n">link</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">IsFailed</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Failed to download playlist </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">playlist</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="n">downloadedFiles</span><span class="p">:</span><span class="nb">list</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="p">()</span>
+            <span class="n">numberOfDownloadedSongs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">downloadedFiles</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;--------------- downloaded </span><span class="si">%s</span><span class="s2"> songs from </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> playlist ------------------&quot;</span><span class="p">,</span> <span class="n">numberOfDownloadedSongs</span><span class="p">,</span> <span class="n">playlist</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">numberOfDownloadedSongs</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">downloadedSongs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">downloadedFiles</span><span class="p">)</span>
+                <span class="n">songsCounter</span> <span class="o">+=</span> <span class="n">numberOfDownloadedSongs</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[SUMMARY] downloaded </span><span class="si">%s</span><span class="s2"> songs&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">songsCounter</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">downloadedSongs</span></div>
+
+
+<div class="viewcode-block" id="MediaServerDownloader.downloadPlaylistMp3">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.MediaServerDownloader.downloadPlaylistMp3">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">downloadPlaylistMp3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">playlistDir</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultOfDownload</span><span class="p">:</span>
+        <span class="n">path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_createDirIfNotExist</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getPlaylistInfo</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">IsFailed</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="n">playlistInfo</span><span class="p">:</span><span class="n">PlaylistInfo</span>
+        <span class="n">playlistInfo</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="p">()</span>
+        <span class="n">downloadedSongs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">numberOfDownloadedSongsLocally</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getNumberOfDownloadedSongs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">playlistInfo</span><span class="o">.</span><span class="n">listOfMedia</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">isFirstClipArchive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">isMusicClipArchived</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">playlistInfo</span><span class="o">.</span><span class="n">listOfMedia</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+            <span class="n">isLastClipArchive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">isMusicClipArchived</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">playlistInfo</span><span class="o">.</span><span class="n">listOfMedia</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">playlistInfo</span><span class="o">.</span><span class="n">listOfMedia</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">isFirstClipArchive</span> <span class="ow">and</span> <span class="n">isLastClipArchive</span><span class="p">:</span>
+                <span class="n">playlistInfo</span><span class="o">.</span><span class="n">listOfMedia</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">songData</span> <span class="ow">in</span> <span class="n">playlistInfo</span><span class="o">.</span><span class="n">listOfMedia</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">songData</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isMusicClipArchived</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">songData</span><span class="o">.</span><span class="n">url</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;clip </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> from link </span><span class="si">%s</span><span class="s2"> is archived&quot;</span><span class="p">,</span> <span class="n">songData</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">songData</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;start download clip from&quot;</span><span class="p">)</span>
+            <span class="n">fileToCheck</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.mp3&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">songData</span><span class="o">.</span><span class="n">title</span><span class="p">))</span>
+            <span class="n">titleFormat</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(title)s</span><span class="s1">.</span><span class="si">%(ext)s</span><span class="s1">&#39;</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fileToCheck</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;File </span><span class="si">%s</span><span class="s2"> was downloaded before&quot;</span><span class="p">,</span> <span class="n">fileToCheck</span><span class="p">)</span>
+                <span class="n">titleFormat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_changeTitleTemplate</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">songData</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">titleFormat</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;File </span><span class="si">%s</span><span class="s2"> exists and new song can not be downloaded!&quot;</span><span class="p">,</span> <span class="n">fileToCheck</span><span class="p">)</span>
+                    <span class="k">continue</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_download_mp3</span><span class="p">(</span><span class="n">songData</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">titleFormat</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">IsFailed</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Failed to download song from url: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">songData</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="n">songMetadata</span><span class="p">:</span><span class="n">AudioData</span>
+            <span class="n">songMetadata</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="p">()</span>
+            <span class="n">numberOfDownloadedSongsLocally</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="n">filenameWithPath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">addMetadataToPlaylist</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">,</span> <span class="n">songMetadata</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="nb">str</span><span class="p">(</span><span class="n">numberOfDownloadedSongsLocally</span><span class="p">),</span> <span class="n">songMetadata</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">songMetadata</span><span class="o">.</span><span class="n">artist</span><span class="p">,</span> <span class="n">songMetadata</span><span class="o">.</span><span class="n">album</span><span class="p">,</span> <span class="n">songMetadata</span><span class="o">.</span><span class="n">hash</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span><span class="o">.</span><span class="n">addCoverOfYtMp3</span><span class="p">(</span><span class="n">filenameWithPath</span><span class="p">,</span> <span class="n">songMetadata</span><span class="o">.</span><span class="n">hash</span><span class="p">)</span>
+            <span class="n">downloadedSongs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filenameWithPath</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">downloadedSongs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MediaServerDownloader.checkPlaylistStatus">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.MediaServerDownloader.checkPlaylistStatus">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">checkPlaylistStatus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">playlistDir</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+        <span class="n">directory</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">)</span>
+        <span class="n">localFiles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getSongsOfDir</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+        <span class="n">localFilesTemp</span> <span class="o">=</span> <span class="n">localFiles</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">localFiles</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Failed to get songs&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">playlistInfoResponse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getPlaylistInfo</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">playlistInfoResponse</span><span class="o">.</span><span class="n">IsFailed</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Failed to get info about playlists&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">playlistInfo</span><span class="p">:</span><span class="n">PlaylistInfo</span> <span class="o">=</span> <span class="n">playlistInfoResponse</span><span class="o">.</span><span class="n">data</span><span class="p">()</span>
+        <span class="n">ytSongsTemp</span> <span class="o">=</span> <span class="n">playlistInfo</span><span class="o">.</span><span class="n">listOfMedia</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">ytSong</span> <span class="ow">in</span> <span class="n">playlistInfo</span><span class="o">.</span><span class="n">listOfMedia</span><span class="p">:</span>
+
+            <span class="n">ytHash</span> <span class="o">=</span> <span class="n">ytSong</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;?v=&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">localFile</span> <span class="ow">in</span> <span class="n">localFiles</span><span class="p">:</span>
+                <span class="n">localFile</span><span class="p">:</span><span class="n">Mp3Info</span>
+                <span class="k">if</span> <span class="n">localFile</span><span class="o">.</span><span class="n">website</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">localFile</span><span class="o">.</span><span class="n">website</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Local song: </span><span class="si">%s</span><span class="s2"> doesn&#39;t have website link !!!&quot;</span><span class="p">,</span> <span class="n">localFile</span><span class="o">.</span><span class="n">fileName</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="n">localHash</span> <span class="o">=</span> <span class="n">localFile</span><span class="o">.</span><span class="n">website</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.be/&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">ytHash</span> <span class="o">==</span> <span class="n">localHash</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;------&quot;</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;file from yt: </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ytSong</span><span class="o">.</span><span class="n">playlistIndex</span><span class="p">,</span> <span class="n">ytSong</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">ytSong</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;file locally: </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">localFile</span><span class="o">.</span><span class="n">trackNumber</span><span class="p">,</span> <span class="n">localFile</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">localFile</span><span class="o">.</span><span class="n">website</span><span class="p">,</span> <span class="n">localFile</span><span class="o">.</span><span class="n">fileName</span><span class="p">)</span>
+
+                    <span class="n">indexToRemove</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getIndexOfMp3InfoList</span><span class="p">(</span><span class="n">localFilesTemp</span><span class="p">,</span> <span class="n">localFile</span><span class="o">.</span><span class="n">website</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">indexToRemove</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Local file </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2"> was not found! This song was added twice on the Youtube playlist&quot;</span><span class="p">,</span> <span class="n">localFile</span><span class="o">.</span><span class="n">fileName</span><span class="p">,</span> <span class="n">localFile</span><span class="o">.</span><span class="n">trackNumber</span><span class="p">,</span> <span class="n">localFile</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">localFile</span><span class="o">.</span><span class="n">website</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">localFilesTemp</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">indexToRemove</span><span class="p">)</span>
+
+                    <span class="n">indexToRemove</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getIndexOfMediaFromPlaylistList</span><span class="p">(</span><span class="n">ytSongsTemp</span><span class="p">,</span> <span class="n">ytSong</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">indexToRemove</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;YT song </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2"> was not found! It is duplication locally&quot;</span><span class="p">,</span> <span class="n">ytSong</span><span class="o">.</span><span class="n">playlistIndex</span><span class="p">,</span> <span class="n">ytSong</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">ytSong</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">ytSongsTemp</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">indexToRemove</span><span class="p">)</span>
+
+        <span class="n">countOfLocalFiles</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">localFiles</span><span class="p">)</span>
+        <span class="n">countOfPlaylistSongs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">playlistInfo</span><span class="o">.</span><span class="n">listOfMedia</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">countOfLocalFiles</span> <span class="o">!=</span> <span class="n">countOfPlaylistSongs</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Locally is </span><span class="si">%s</span><span class="s2"> songs, but in playlist is </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">countOfLocalFiles</span><span class="p">,</span> <span class="n">countOfPlaylistSongs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">localFilesTemp</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Files exists in local, but was not found in youtube&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">localFilesTemp</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ytSongsTemp</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Files exists in Youtube, but was not found locally&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ytSongsTemp</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ytSongsTemp</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">localFilesTemp</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Playlist </span><span class="si">%s</span><span class="s2"> is perfect synchonized!&quot;</span><span class="p">,</span> <span class="n">playlistInfo</span><span class="o">.</span><span class="n">playlistName</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">localFilesTemp</span><span class="p">,</span> <span class="n">ytSongsTemp</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MediaServerDownloader.checkPlaylistsSync">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.MediaServerDownloader.checkPlaylistsSync">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">checkPlaylistsSync</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isDirForPlaylists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">getPath</span><span class="p">()):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;wrong path for playlists&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">playlists</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">getPlaylists</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">playlist</span> <span class="ow">in</span> <span class="n">playlists</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;--------------- </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">------------------&quot;</span><span class="p">,</span> <span class="n">playlist</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">playlist</span><span class="o">.</span><span class="n">link</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">checkPlaylistStatus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">getPath</span><span class="p">(),</span> <span class="n">playlist</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">playlist</span><span class="o">.</span><span class="n">link</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MediaServerDownloader.updateTrackNumberAllPlaylists">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.MediaServerDownloader.updateTrackNumberAllPlaylists">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">updateTrackNumberAllPlaylists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indexOfPlaylist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">isSave</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isDirForPlaylists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">getPath</span><span class="p">()):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;wrong path for playlists&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">playlists</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">getPlaylists</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">indexOfPlaylist</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">playlist</span> <span class="o">=</span> <span class="n">playlists</span><span class="p">[</span><span class="n">indexOfPlaylist</span><span class="p">]</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;--------------- </span><span class="si">%s</span><span class="s2"> ------------------&quot;</span><span class="p">,</span> <span class="n">playlist</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> &quot;</span><span class="p">,</span> <span class="n">playlist</span><span class="o">.</span><span class="n">link</span><span class="p">)</span>
+            <span class="n">playlistDir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">getPath</span><span class="p">(),</span> <span class="n">playlist</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">updateTrackNumber</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">,</span><span class="n">playlist</span><span class="o">.</span><span class="n">link</span><span class="p">,</span> <span class="n">isSave</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">playlist</span> <span class="ow">in</span> <span class="n">playlists</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;--------------- </span><span class="si">%s</span><span class="s2"> ------------------&quot;</span><span class="p">,</span> <span class="n">playlist</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> &quot;</span><span class="p">,</span> <span class="n">playlist</span><span class="o">.</span><span class="n">link</span><span class="p">)</span>
+                <span class="n">playlistDir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">getPath</span><span class="p">(),</span> <span class="n">playlist</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">updateTrackNumber</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">,</span><span class="n">playlist</span><span class="o">.</span><span class="n">link</span><span class="p">,</span> <span class="n">isSave</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MediaServerDownloader.updateMetadataForPlaylists">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.MediaServerDownloader.updateMetadataForPlaylists">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">updateMetadataForPlaylists</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">playlists</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">getPlaylists</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">playlist</span> <span class="ow">in</span> <span class="n">playlists</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;--------------- </span><span class="si">%s</span><span class="s2"> ------------------&quot;</span><span class="p">,</span> <span class="n">playlist</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> &quot;</span><span class="p">,</span> <span class="n">playlist</span><span class="o">.</span><span class="n">link</span><span class="p">)</span>
+            <span class="n">playlistDir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">getPath</span><span class="p">(),</span> <span class="n">playlist</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span><span class="o">.</span><span class="n">updateMetadata</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">,</span> <span class="s2">&quot;YT &quot;</span><span class="o">+</span><span class="n">playlist</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MediaServerDownloader.updateTrackNumber">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.MediaServerDownloader.updateTrackNumber">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">updateTrackNumber</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">playlistDir</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">isSave</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">songs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getSongsOfDir</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">)</span>
+
+<span class="c1">#        songsSorted = sorted(songs, key=lambda x: (int(x.trackNumber), x.date))</span>
+        <span class="n">songs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">songs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">trackNumber</span><span class="p">)))</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;all songs: </span><span class="si">%i</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">songs</span><span class="p">))</span>
+
+        <span class="n">counter</span><span class="o">=</span><span class="mi">0</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">songs</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">x</span><span class="p">:</span><span class="n">Mp3Info</span>
+            <span class="n">x</span><span class="o">.</span><span class="n">trackNumber</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">counter</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">counter</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="k">if</span> <span class="n">isSave</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span><span class="o">.</span><span class="n">setMetadataMp3Info</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">fileName</span><span class="p">),</span> <span class="n">x</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;------------------------------&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MediaServerDownloader.addCoversToPlaylistSongs">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.MediaServerDownloader.addCoversToPlaylistSongs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">addCoversToPlaylistSongs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">playlistDir</span><span class="p">):</span>
+        <span class="n">playlistsPath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">getPath</span><span class="p">()</span>
+        <span class="n">playlistFullPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">playlistsPath</span><span class="p">,</span><span class="n">playlistDir</span><span class="p">)</span>
+        <span class="n">songs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getSongsOfDir</span><span class="p">(</span><span class="n">playlistFullPath</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">songs</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">for</span> <span class="n">song</span> <span class="ow">in</span> <span class="n">songs</span><span class="p">:</span>
+            <span class="n">song</span><span class="p">:</span><span class="n">Mp3Info</span>
+            <span class="k">if</span> <span class="n">song</span><span class="o">.</span><span class="n">website</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Song </span><span class="si">%s</span><span class="s2"> doesn&#39;t contain website&quot;</span><span class="p">,</span> <span class="n">song</span><span class="o">.</span><span class="n">fileName</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="nb">hash</span> <span class="o">=</span> <span class="n">song</span><span class="o">.</span><span class="n">website</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span><span class="o">.</span><span class="n">addCoverOfYtMp3</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">playlistFullPath</span><span class="p">,</span> <span class="n">song</span><span class="o">.</span><span class="n">fileName</span><span class="p">),</span> <span class="nb">hash</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MediaServerDownloader.removeCoversToPlaylistSongs">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.MediaServerDownloader.removeCoversToPlaylistSongs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">removeCoversToPlaylistSongs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">playlistDir</span><span class="p">):</span>
+        <span class="n">playlistsPath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">getPath</span><span class="p">()</span>
+        <span class="n">playlistFullPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">playlistsPath</span><span class="p">,</span><span class="n">playlistDir</span><span class="p">)</span>
+        <span class="n">songs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getSongsOfDir</span><span class="p">(</span><span class="n">playlistFullPath</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">songs</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">for</span> <span class="n">song</span> <span class="ow">in</span> <span class="n">songs</span><span class="p">:</span>
+            <span class="n">song</span><span class="p">:</span><span class="n">Mp3Info</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metadataManager</span><span class="o">.</span><span class="n">removeCoverOfMp3</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">playlistFullPath</span><span class="p">,</span> <span class="n">song</span><span class="o">.</span><span class="n">fileName</span><span class="p">))</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_changeTitleTemplate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">songData</span><span class="p">):</span>
+        <span class="n">fileToCheck</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.mp3&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">songData</span><span class="o">.</span><span class="n">title</span><span class="p">))</span>
+        <span class="n">i</span><span class="o">=</span><span class="mi">1</span>
+        <span class="n">titleFormat</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%(title)s</span><span class="s1">.</span><span class="si">%(ext)s</span><span class="s1">&#39;</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="p">(</span><span class="n">i</span><span class="o">&gt;</span><span class="mi">5</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fileToCheck</span><span class="p">)):</span>
+            <span class="n">newFilenameWithNumber</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">).mp3&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">songData</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+            <span class="n">titleFormat</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%(title)s</span><span class="s1"> (&#39;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;).</span><span class="si">%(ext)s</span><span class="s1">&#39;</span>
+            <span class="n">fileToCheck</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">newFilenameWithNumber</span><span class="p">)</span>
+            <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="c1">#self.metadataManager.showMp3Info(fileToCheck)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fileToCheck</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;File </span><span class="si">%s</span><span class="s2"> exists!&quot;</span><span class="p">,</span> <span class="n">fileToCheck</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;New version of file: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">titleFormat</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_getDateTimeNowStr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">yesterday</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">yesterday</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_getNumberOfDownloadedSongs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span> <span class="c1"># pragma: no cover</span>
+        <span class="n">filesInPlaylistDir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">numberOfDownloadedSongs</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">filesInPlaylistDir</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;.mp3&quot;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+                <span class="n">numberOfDownloadedSongs</span> <span class="o">+=</span><span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">numberOfDownloadedSongs</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_isDirForPlaylists</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="c1"># pragma: no cover</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">getPath</span><span class="p">()):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;wrong path for playlists&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeManager.html#youtubedlWeb.Common.YoutubeManager.main">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span> <span class="c1"># pragma: no cover</span>
+    <span class="n">my_parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+    <span class="n">my_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-t&#39;</span><span class="p">,</span><span class="s1">&#39;--type&#39;</span><span class="p">,</span>
+                       <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store&#39;</span><span class="p">,</span>
+                       <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;360&#39;</span><span class="p">,</span> <span class="s1">&#39;720&#39;</span><span class="p">,</span> <span class="s1">&#39;4k&#39;</span><span class="p">,</span> <span class="s1">&#39;mp3&#39;</span><span class="p">],</span>
+                       <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;mode&#39;</span><span class="p">,</span>
+                       <span class="n">help</span><span class="o">=</span><span class="s1">&#39;what do you want download&#39;</span><span class="p">)</span>
+    <span class="n">my_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-l&#39;</span><span class="p">,</span><span class="s1">&#39;--link&#39;</span><span class="p">,</span>
+                       <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store&#39;</span><span class="p">,</span>
+                       <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;link&#39;</span><span class="p">,</span>
+                       <span class="n">help</span><span class="o">=</span><span class="s1">&#39;link to youtube&#39;</span><span class="p">)</span>
+
+    <span class="n">my_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-u&#39;</span><span class="p">,</span><span class="s1">&#39;--update&#39;</span><span class="p">,</span>
+                       <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store&#39;</span><span class="p">,</span>
+                       <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;playlistUpdate&#39;</span><span class="p">,</span>
+                       <span class="n">help</span><span class="o">=</span><span class="s1">&#39;name playlist which you want update&#39;</span><span class="p">)</span>
+
+    <span class="n">my_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-c&#39;</span><span class="p">,</span><span class="s1">&#39;--config&#39;</span><span class="p">,</span>
+                       <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store&#39;</span><span class="p">,</span>
+                       <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;configFile&#39;</span><span class="p">,</span>
+                       <span class="n">help</span><span class="o">=</span><span class="s1">&#39;download all playlists from config file&#39;</span><span class="p">)</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">my_parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">playlistUpdate</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">configFile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;non arguments&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">configFile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">configFile</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;configuration file </span><span class="si">%s</span><span class="s2"> doesn&#39;t exists&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">configFile</span><span class="p">)</span>
+            <span class="n">exit</span><span class="p">()</span>
+        <span class="n">yt</span> <span class="o">=</span> <span class="n">MediaServerDownloader</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">configFile</span><span class="p">)</span>
+        <span class="n">downloadedFiles</span><span class="p">:</span><span class="nb">list</span> <span class="o">=</span> <span class="n">yt</span><span class="o">.</span><span class="n">download_playlists</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">downloadedFiles</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Downloaded songs:&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">downloadedFiles</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Updating playlists&quot;</span><span class="p">)</span>
+            <span class="n">playlistsCreator</span> <span class="o">=</span> <span class="n">PlaylistsManager</span><span class="p">(</span><span class="n">yt</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">getPath</span><span class="p">())</span>
+            <span class="n">updatedPlaylists</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">downloadedFiles</span><span class="p">:</span>
+                <span class="n">downloadedFile</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">playlistDir</span> <span class="o">=</span> <span class="n">downloadedFile</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">playlistsCreator</span><span class="o">.</span><span class="n">createPlaylist</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">)</span>
+                <span class="n">updatedPlaylists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">)</span>
+            <span class="n">playlistsCreator</span><span class="o">.</span><span class="n">createTopOfMusic</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+            <span class="n">playlistsCreator</span><span class="o">.</span><span class="n">createTopOfMusic</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+            <span class="n">playlistsCreator</span><span class="o">.</span><span class="n">createTopOfMusic</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+
+
+            <span class="n">folders</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;imprezka&quot;</span><span class="p">,</span><span class="s2">&quot;techno&quot;</span><span class="p">,</span><span class="s2">&quot;Rock-Electronic&quot;</span><span class="p">,</span><span class="s2">&quot;relaks&quot;</span><span class="p">,</span><span class="s2">&quot;stare hity&quot;</span><span class="p">]</span>
+            <span class="n">common</span> <span class="o">=</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">folders</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">updatedPlaylists</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">common</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">playlistsCreator</span><span class="o">.</span><span class="n">createGroupOfPlaylists</span><span class="p">(</span><span class="s2">&quot;trening&quot;</span><span class="p">,</span> <span class="n">folders</span><span class="p">)</span>
+
+            <span class="n">folders</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relaks&quot;</span><span class="p">,</span><span class="s2">&quot;chillout&quot;</span><span class="p">,</span><span class="s2">&quot;spokojne-sad&quot;</span><span class="p">,</span><span class="s2">&quot;cafe&quot;</span><span class="p">,</span><span class="s2">&quot;positive chill&quot;</span><span class="p">,</span><span class="s2">&quot;polskie hity&quot;</span><span class="p">,</span><span class="s2">&quot;muzyka filmowa&quot;</span><span class="p">]</span>
+            <span class="n">common</span> <span class="o">=</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">folders</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">updatedPlaylists</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">common</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">playlistsCreator</span><span class="o">.</span><span class="n">createGroupOfPlaylists</span><span class="p">(</span><span class="s2">&quot;praca&quot;</span><span class="p">,</span> <span class="n">folders</span><span class="p">)</span>
+
+            <span class="n">folders</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Bachata&quot;</span><span class="p">,</span><span class="s2">&quot;Bachata Dominikana&quot;</span><span class="p">,</span><span class="s2">&quot;Kizomba&quot;</span><span class="p">,</span><span class="s2">&quot;latino&quot;</span><span class="p">,</span><span class="s2">&quot;Semba&quot;</span><span class="p">]</span>
+            <span class="n">common</span> <span class="o">=</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">folders</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">updatedPlaylists</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">common</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">playlistsCreator</span><span class="o">.</span><span class="n">createGroupOfPlaylists</span><span class="p">(</span><span class="s2">&quot;taniec&quot;</span><span class="p">,</span> <span class="n">folders</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">playlistUpdate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">my_parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;choose only one purpose&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">yt</span> <span class="o">=</span> <span class="n">YoutubeManager</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">link</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">my_parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;-l (--link) is require&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;360&#39;</span><span class="p">:</span>
+                <span class="n">yt</span><span class="o">.</span><span class="n">download_360p</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">link</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;720&quot;</span><span class="p">:</span>
+                <span class="n">yt</span><span class="o">.</span><span class="n">download_720p</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">link</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;4k&quot;</span><span class="p">:</span>
+                <span class="n">yt</span><span class="o">.</span><span class="n">download_4k</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">link</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;mp3&quot;</span><span class="p">:</span>
+                <span class="n">yt</span><span class="o">.</span><span class="n">download_mp3</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">link</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">playlistUpdate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">yt</span> <span class="o">=</span> <span class="n">MediaServerDownloader</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">playlistUpdate</span><span class="p">)</span>
+            <span class="n">yt</span><span class="o">.</span><span class="n">updateMetadataForPlaylists</span><span class="p">()</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span> <span class="c1"># pragma: no cover</span>
+    <span class="c1">#logging.basicConfig(format=&quot;%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s&quot;, level=logging.DEBUG, filename=&quot;/tmp/youtubeLogs&quot;, filemode=&#39;w&#39;)</span>
+    <span class="c1">#logging.basicConfig(format=&quot;%(asctime)s-%(levelname)s-%(filename)s:%(lineno)d - %(message)s&quot;, level=logging.DEBUG)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> - </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+    <span class="n">main</span><span class="p">()</span>
+    <span class="c1">#yt = YoutubeManager(musicPath=&quot;/mnt/kingston/media/muzyka/Youtube list&quot;)</span>
+    <span class="c1">#yt.setDateAccordingToTrackNumber(&quot;/tmp/music/techno&quot;, &quot;https://www.youtube.com/playlist?list=PL6uhlddQJkfiC8LyEB92IEsBFlbBjxCj0&quot;)</span>
+    <span class="c1">#yt.downloadPlaylistMp3(&quot;/tmp/music&quot;, &quot;test2&quot;, &quot;https://www.youtube.com/playlist?list=PL6uhlddQJkfig0OO1fsQA9ZbBvH35QViF&quot;)</span>
+    <span class="c1">#yt.checkPlaylistStatus(&quot;https://www.youtube.com/playlist?list=PL6uhlddQJkfgHTfI_P_BaACTGN2Km_4Yk&quot;, &quot;/mnt/kingston/media/muzyka/Youtube list/Bachata&quot;)</span>
+
+    <span class="c1">#downloader = MediaServerDownloader(&quot;/etc/mediaserver/youtubedl.ini&quot;)</span>
+    <span class="c1">#downloader.addCoversToPlaylistSongs(&quot;easyTest&quot;)</span>
+    <span class="c1">#downloader.removeCoversToPlaylistSongs(&quot;easyTest&quot;)</span>
+    <span class="c1">#downloader.setDateAccordingToTrackNumberAllPlaylists(6, False)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Bartosz Brzozowski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

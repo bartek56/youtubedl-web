@@ -1,0 +1,326 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>youtubedlWeb.Common.AlarmManager &mdash; youtubedl-web 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            youtubedl-web
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">youtubedlWeb</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">youtubedl-web</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../youtubedlWeb.html">youtubedlWeb</a></li>
+      <li class="breadcrumb-item active">youtubedlWeb.Common.AlarmManager</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for youtubedlWeb.Common.AlarmManager</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">.AlarmEnums</span><span class="w"> </span><span class="kn">import</span> <span class="n">AlarmConfigFlask</span><span class="p">,</span> <span class="n">AlarmConfigLinux</span><span class="p">,</span> <span class="n">SystemdCommand</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AlarmManager">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmManager.html#youtubedlWeb.Common.AlarmManager.AlarmManager">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AlarmManager</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subprocess</span><span class="p">,</span> <span class="n">alarmTimer</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">alarmScript</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ALARM_TIMER</span> <span class="o">=</span> <span class="n">alarmTimer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ALARM_SCRIPT</span> <span class="o">=</span> <span class="n">alarmScript</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subprocess</span> <span class="o">=</span> <span class="n">subprocess</span>
+
+<div class="viewcode-block" id="AlarmManager.loadAlarmConfig">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmManager.html#youtubedlWeb.Common.AlarmManager.AlarmManager.loadAlarmConfig">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">loadAlarmConfig</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mondayChecked</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">tuesdayChecked</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">wednesdayChecked</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">thursdayChecked</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">fridayChecked</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">saturdayChecked</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">sundayChecked</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="n">content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loadConfig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ALARM_TIMER</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;OnCalendar&quot;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+                <span class="n">parameter</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
+                <span class="n">parameter2</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+                <span class="n">weekDays</span> <span class="o">=</span> <span class="n">parameter2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">time</span> <span class="o">=</span> <span class="n">parameter2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+
+                <span class="k">if</span> <span class="s2">&quot;Mon&quot;</span> <span class="ow">in</span> <span class="n">weekDays</span><span class="p">:</span>
+                    <span class="n">mondayChecked</span> <span class="o">=</span> <span class="s2">&quot;checked&quot;</span>
+                <span class="k">if</span> <span class="s2">&quot;Tue&quot;</span> <span class="ow">in</span> <span class="n">weekDays</span><span class="p">:</span>
+                    <span class="n">tuesdayChecked</span> <span class="o">=</span> <span class="s2">&quot;checked&quot;</span>
+                <span class="k">if</span> <span class="s2">&quot;Wed&quot;</span> <span class="ow">in</span> <span class="n">weekDays</span><span class="p">:</span>
+                    <span class="n">wednesdayChecked</span> <span class="o">=</span> <span class="s2">&quot;checked&quot;</span>
+                <span class="k">if</span> <span class="s2">&quot;Thu&quot;</span> <span class="ow">in</span> <span class="n">weekDays</span><span class="p">:</span>
+                    <span class="n">thursdayChecked</span> <span class="o">=</span> <span class="s2">&quot;checked&quot;</span>
+                <span class="k">if</span> <span class="s2">&quot;Fri&quot;</span> <span class="ow">in</span> <span class="n">weekDays</span><span class="p">:</span>
+                    <span class="n">fridayChecked</span> <span class="o">=</span> <span class="s2">&quot;checked&quot;</span>
+                <span class="k">if</span> <span class="s2">&quot;Sat&quot;</span> <span class="ow">in</span> <span class="n">weekDays</span><span class="p">:</span>
+                    <span class="n">saturdayChecked</span> <span class="o">=</span> <span class="s2">&quot;checked&quot;</span>
+                <span class="k">if</span> <span class="s2">&quot;Sun&quot;</span> <span class="ow">in</span> <span class="n">weekDays</span><span class="p">:</span>
+                    <span class="n">sundayChecked</span> <span class="o">=</span> <span class="s2">&quot;checked&quot;</span>
+
+        <span class="n">content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loadConfig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ALARM_SCRIPT</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">MIN_VOLUME</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+                    <span class="n">parameter</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
+                    <span class="n">minVolume</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+                <span class="k">elif</span> <span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">MAX_VOLUME</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+                    <span class="n">parameter</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
+                    <span class="n">maxVolume</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+                <span class="k">elif</span> <span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">DEFAULT_VOLUME</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+                    <span class="n">parameter</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
+                    <span class="n">defaultVolume</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+                <span class="k">elif</span> <span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">GROWING_VOLUME</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+                    <span class="n">parameter</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
+                    <span class="n">growingVolume</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">parameter</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">())</span>
+                <span class="k">elif</span> <span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">GROWING_SPEED</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+                    <span class="n">parameter</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
+                    <span class="n">growingSpeed</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">parameter</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">())</span>
+                <span class="k">elif</span> <span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">PLAYLIST</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+                    <span class="n">parameter</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
+                    <span class="n">alarmPlaylistName</span> <span class="o">=</span> <span class="n">parameter</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+                    <span class="n">alarmPlaylistName</span><span class="o">=</span><span class="n">alarmPlaylistName</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">THE_NEWEST_SONG</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+                    <span class="n">parameter</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="s2">&quot;true&quot;</span> <span class="ow">in</span> <span class="n">parameter</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                        <span class="n">theNewestSongCheckBox</span> <span class="o">=</span> <span class="s2">&quot;checked&quot;</span>
+                        <span class="n">playlistCheckbox</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">theNewestSongCheckBox</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                        <span class="n">playlistCheckbox</span> <span class="o">=</span> <span class="s2">&quot;checked&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="n">isMpcSupported</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">playlists</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="s2">&quot;mpc lsplaylists | grep -v m3u&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">isMpcSupported</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">isMpcSupported</span><span class="p">:</span>
+            <span class="n">musicPlaylistName</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">out</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">:</span>
+                    <span class="n">musicPlaylistName</span> <span class="o">+=</span> <span class="n">x</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">playlists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">musicPlaylistName</span><span class="p">)</span>
+                    <span class="n">musicPlaylistName</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+
+        <span class="n">alarmIsOn</span> <span class="o">=</span> <span class="s2">&quot;unchecked&quot;</span>
+        <span class="n">nextAlarm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nextAlarmCheck</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nextAlarm</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">alarmIsOn</span> <span class="o">=</span> <span class="s2">&quot;checked&quot;</span>
+
+        <span class="n">nextSnooze</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nextSnoozeCheck</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">ALARM_TIME</span><span class="p">:</span> <span class="n">time</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">THE_NEWEST_SONG</span><span class="p">:</span><span class="n">theNewestSongCheckBox</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">PLAYLIST_CHECKED</span><span class="p">:</span><span class="n">playlistCheckbox</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">ALARM_PLAYLISTS</span><span class="p">:</span><span class="n">playlists</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">ALARM_PLATLIST_NAME</span><span class="p">:</span><span class="n">alarmPlaylistName</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">ALARM_ACTIVE</span><span class="p">:</span><span class="n">alarmIsOn</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">MONDAY</span><span class="p">:</span><span class="n">mondayChecked</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">TUESDAY</span><span class="p">:</span><span class="n">tuesdayChecked</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">WEDNESDEY</span><span class="p">:</span><span class="n">wednesdayChecked</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">THURSDAY</span><span class="p">:</span><span class="n">thursdayChecked</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">FRIDAY</span><span class="p">:</span><span class="n">fridayChecked</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">SATURDAY</span><span class="p">:</span><span class="n">saturdayChecked</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">SUNDAY</span><span class="p">:</span><span class="n">sundayChecked</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">MIN_VOLUME</span><span class="p">:</span><span class="n">minVolume</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">MAX_VOLUME</span><span class="p">:</span><span class="n">maxVolume</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">DEFAULT_VOLUME</span><span class="p">:</span><span class="n">defaultVolume</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">GROWING_VOLUME</span><span class="p">:</span><span class="n">growingVolume</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">GROWING_SPEED</span><span class="p">:</span><span class="n">growingSpeed</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">NEXT_ALARM</span><span class="p">:</span><span class="n">nextAlarm</span><span class="p">,</span>
+                <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">NEXT_SNOOZE</span><span class="p">:</span><span class="n">nextSnooze</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="AlarmManager.loadConfig">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmManager.html#youtubedlWeb.Common.AlarmManager.AlarmManager.loadConfig">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">loadConfig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configFile</span><span class="p">):</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">configFile</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">content</span></div>
+
+
+<div class="viewcode-block" id="AlarmManager.nextSnoozeCheck">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmManager.html#youtubedlWeb.Common.AlarmManager.AlarmManager.nextSnoozeCheck">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">nextSnoozeCheck</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">nextSnooze</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">SystemdCommand</span><span class="o">.</span><span class="n">IS_ACTIVE_ALARM_SNOOZE_TIMER</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1">#exception is called when alarm is disabled</span>
+            <span class="k">if</span> <span class="s2">&quot;in&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">output</span><span class="p">:</span>
+                <span class="n">nextSnooze</span><span class="o">=</span> <span class="s2">&quot;The next snooze alarm for:&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">getTimeOfService</span><span class="p">(</span><span class="n">SystemdCommand</span><span class="o">.</span><span class="n">STATUS_ALARM_SNOOZE_TIMER</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="bp">self</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span> <span class="k">as</span> <span class="n">grepexc</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Exception - alarm_snooze is disabled&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">nextSnooze</span></div>
+
+
+<div class="viewcode-block" id="AlarmManager.nextAlarmCheck">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmManager.html#youtubedlWeb.Common.AlarmManager.AlarmManager.nextAlarmCheck">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">nextAlarmCheck</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">nextAlarm</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">SystemdCommand</span><span class="o">.</span><span class="n">IS_ACTIVE_ALARM_TIMER</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1">#exception is called when alarm is disabled</span>
+            <span class="k">if</span> <span class="s2">&quot;in&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">output</span><span class="p">:</span>
+                <span class="n">nextAlarm</span> <span class="o">=</span> <span class="s2">&quot;The next alarm for:&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">getTimeOfService</span><span class="p">(</span><span class="n">SystemdCommand</span><span class="o">.</span><span class="n">STATUS_ALARM_TIMER</span><span class="p">)</span>
+        <span class="k">except</span> <span class="bp">self</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span> <span class="k">as</span> <span class="n">grepexc</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Exception - alarm is disabled&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">nextAlarm</span></div>
+
+
+<div class="viewcode-block" id="AlarmManager.getTimeOfService">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmManager.html#youtubedlWeb.Common.AlarmManager.AlarmManager.getTimeOfService">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getTimeOfService</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">systemdService</span><span class="p">:</span><span class="n">SystemdCommand</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">systemdService</span> <span class="o">+</span> <span class="s2">&quot; | grep </span><span class="se">\&quot;</span><span class="s2">Trigger:</span><span class="se">\&quot;</span><span class="s2"> | cut -d&#39;;&#39; -f2- | sed -e </span><span class="se">\&quot;</span><span class="s2">s/ left//</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="AlarmManager.updateAlarmConfig">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmManager.html#youtubedlWeb.Common.AlarmManager.AlarmManager.updateAlarmConfig">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">updateAlarmConfig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alarmDays</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">minVolume</span><span class="p">,</span> <span class="n">maxVolume</span><span class="p">,</span> <span class="n">defaultVolume</span><span class="p">,</span>
+              <span class="n">growingVolume</span><span class="p">,</span> <span class="n">growingSpeed</span><span class="p">,</span> <span class="n">alarmPlaylist</span><span class="p">,</span> <span class="n">alarmMode</span><span class="p">):</span>
+
+        <span class="n">content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loadConfig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ALARM_TIMER</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="s2">&quot;OnCalendar&quot;</span> <span class="ow">in</span> <span class="n">content</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="n">content</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;OnCalendar=</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">alarmDays</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">saveConfig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ALARM_TIMER</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
+
+        <span class="n">content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loadConfig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ALARM_SCRIPT</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">&gt;</span><span class="mi">0</span> <span class="ow">and</span> <span class="n">i</span><span class="o">&lt;</span><span class="mi">8</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">MIN_VOLUME</span> <span class="ow">in</span> <span class="n">content</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                    <span class="n">content</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">=</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">MIN_VOLUME</span><span class="p">,</span> <span class="n">minVolume</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">MAX_VOLUME</span> <span class="ow">in</span> <span class="n">content</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                    <span class="n">content</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">=</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">MAX_VOLUME</span><span class="p">,</span> <span class="n">maxVolume</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">DEFAULT_VOLUME</span> <span class="ow">in</span> <span class="n">content</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                    <span class="n">content</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">=</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">DEFAULT_VOLUME</span><span class="p">,</span> <span class="n">defaultVolume</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">GROWING_VOLUME</span> <span class="ow">in</span> <span class="n">content</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                    <span class="n">content</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">=</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">GROWING_VOLUME</span><span class="p">,</span> <span class="n">growingVolume</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">GROWING_SPEED</span> <span class="ow">in</span> <span class="n">content</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                    <span class="n">content</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">=</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">GROWING_SPEED</span><span class="p">,</span> <span class="n">growingSpeed</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">PLAYLIST</span> <span class="ow">in</span> <span class="n">content</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                    <span class="n">content</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;\n</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">PLAYLIST</span><span class="p">,</span> <span class="n">alarmPlaylist</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">THE_NEWEST_SONG</span> <span class="ow">in</span> <span class="n">content</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                    <span class="n">alarmNewestModeIsEnable</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="k">if</span> <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">ALARM_MODE_PLAYLIST</span> <span class="ow">in</span> <span class="n">alarmMode</span><span class="p">:</span>
+                        <span class="n">alarmNewestModeIsEnable</span> <span class="o">=</span> <span class="s2">&quot;false&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">alarmNewestModeIsEnable</span> <span class="o">=</span> <span class="s2">&quot;true&quot;</span>
+                    <span class="n">content</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">=</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">AlarmConfigLinux</span><span class="o">.</span><span class="n">THE_NEWEST_SONG</span><span class="p">,</span> <span class="n">alarmNewestModeIsEnable</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">i</span> <span class="o">&gt;=</span><span class="mi">8</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">saveConfig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ALARM_SCRIPT</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AlarmManager.saveConfig">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmManager.html#youtubedlWeb.Common.AlarmManager.AlarmManager.saveConfig">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">saveConfig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configFile</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span><span class="nb">list</span><span class="p">):</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">configFile</span><span class="p">,</span><span class="s2">&quot;w&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+</div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+    <span class="n">alarmManager</span> <span class="o">=</span> <span class="n">AlarmManager</span><span class="p">(</span><span class="n">subprocess</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">alarmManager</span><span class="o">.</span><span class="n">getTimeOfService</span><span class="p">(</span><span class="n">SystemdCommand</span><span class="o">.</span><span class="n">STATUS_ALARM_TIMER</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Bartosz Brzozowski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

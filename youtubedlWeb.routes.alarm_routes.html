@@ -1,0 +1,239 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>youtubedlWeb.routes.alarm_routes module &mdash; youtubedl-web 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="youtubedlWeb.routes.mail_routes module" href="youtubedlWeb.routes.mail_routes.html" />
+    <link rel="prev" title="youtubedlWeb.routes package" href="youtubedlWeb.routes.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            youtubedl-web
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">youtubedlWeb</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="youtubedlWeb.html">youtubedlWeb package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="youtubedlWeb.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="youtubedlWeb.Common.html">youtubedlWeb.Common package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="youtubedlWeb.routes.html">youtubedlWeb.routes package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="youtubedlWeb.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="youtubedlWeb.html#module-youtubedlWeb">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">youtubedl-web</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">youtubedlWeb</a></li>
+          <li class="breadcrumb-item"><a href="youtubedlWeb.html">youtubedlWeb package</a></li>
+          <li class="breadcrumb-item"><a href="youtubedlWeb.routes.html">youtubedlWeb.routes package</a></li>
+      <li class="breadcrumb-item active">youtubedlWeb.routes.alarm_routes module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/youtubedlWeb.routes.alarm_routes.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-youtubedlWeb.routes.alarm_routes">
+<span id="youtubedlweb-routes-alarm-routes-module"></span><h1>youtubedlWeb.routes.alarm_routes module<a class="headerlink" href="#module-youtubedlWeb.routes.alarm_routes" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="youtubedlWeb.routes.alarm_routes.alarm">
+<span class="sig-prename descclassname"><span class="pre">youtubedlWeb.routes.alarm_routes.</span></span><span class="sig-name descname"><span class="pre">alarm</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/routes/alarm_routes.html#alarm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.routes.alarm_routes.alarm" title="Link to this definition"></a></dt>
+<dd><p>Renders the alarm.html page with the alarm settings.</p>
+<p>This function is used to render the alarm.html page with the alarm
+settings. It will check if the remote address is in the local
+network (192.168 or 127.0.0.1) and if so, it will render the
+page with the alarm settings. If the remote address is not in the
+local network, it will return an alert info page with the message
+“You do not have access to alarm settings”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A rendered HTML page with the alarm settings if the remote address
+is in the local network, otherwise an alert info page with the
+message “You do not have access to alarm settings”.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="youtubedlWeb.routes.alarm_routes.alarmOff">
+<span class="sig-prename descclassname"><span class="pre">youtubedlWeb.routes.alarm_routes.</span></span><span class="sig-name descname"><span class="pre">alarmOff</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/routes/alarm_routes.html#alarmOff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.routes.alarm_routes.alarmOff" title="Link to this definition"></a></dt>
+<dd><p>Disables and stops the alarm timer.</p>
+<p>This function is used to disable and stop the alarm timer. It will
+disable the alarm timer, stop the alarm timer, and return an empty
+JSON object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>An empty JSON object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="youtubedlWeb.routes.alarm_routes.alarmOn">
+<span class="sig-prename descclassname"><span class="pre">youtubedlWeb.routes.alarm_routes.</span></span><span class="sig-name descname"><span class="pre">alarmOn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/routes/alarm_routes.html#alarmOn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.routes.alarm_routes.alarmOn" title="Link to this definition"></a></dt>
+<dd><p>Enables and starts the alarm timer.</p>
+<p>This function is used to enable and start the alarm timer. It will
+enable the alarm timer, start the alarm timer, and return the next
+alarm time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A JSON object containing the next alarm time.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="youtubedlWeb.routes.alarm_routes.alarmSnoozeOff">
+<span class="sig-prename descclassname"><span class="pre">youtubedlWeb.routes.alarm_routes.</span></span><span class="sig-name descname"><span class="pre">alarmSnoozeOff</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/routes/alarm_routes.html#alarmSnoozeOff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.routes.alarm_routes.alarmSnoozeOff" title="Link to this definition"></a></dt>
+<dd><p>Disables and stops the alarm snooze timer.</p>
+<p>This function is used to disable and stop the alarm snooze timer. It will
+disable the alarm snooze timer, stop the alarm snooze timer, and return an
+empty JSON object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>An empty JSON object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="youtubedlWeb.routes.alarm_routes.alarmTestStart">
+<span class="sig-prename descclassname"><span class="pre">youtubedlWeb.routes.alarm_routes.</span></span><span class="sig-name descname"><span class="pre">alarmTestStart</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/routes/alarm_routes.html#alarmTestStart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.routes.alarm_routes.alarmTestStart" title="Link to this definition"></a></dt>
+<dd><p>Starts the alarm service.</p>
+<p>This function is used for testing the alarm service. It will start the
+alarm service and return “Nothing”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A string containing “Nothing”.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="youtubedlWeb.routes.alarm_routes.alarmTestStop">
+<span class="sig-prename descclassname"><span class="pre">youtubedlWeb.routes.alarm_routes.</span></span><span class="sig-name descname"><span class="pre">alarmTestStop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/routes/alarm_routes.html#alarmTestStop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.routes.alarm_routes.alarmTestStop" title="Link to this definition"></a></dt>
+<dd><p>Stops the alarm service.</p>
+<p>This function is used for testing the alarm service. It will stop the
+alarm service and return the contents of the alarm web page.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The contents of the alarm web page.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="youtubedlWeb.routes.alarm_routes.manifest">
+<span class="sig-prename descclassname"><span class="pre">youtubedlWeb.routes.alarm_routes.</span></span><span class="sig-name descname"><span class="pre">manifest</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/routes/alarm_routes.html#manifest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.routes.alarm_routes.manifest" title="Link to this definition"></a></dt>
+<dd><p>Returns the manifest file for the alarm web page.</p>
+<p>This file is used by browsers to determine how to handle the web page
+when it is added to the home screen.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The contents of the manifest file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="youtubedlWeb.routes.alarm_routes.save_alarm_html">
+<span class="sig-prename descclassname"><span class="pre">youtubedlWeb.routes.alarm_routes.</span></span><span class="sig-name descname"><span class="pre">save_alarm_html</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/routes/alarm_routes.html#save_alarm_html"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.routes.alarm_routes.save_alarm_html" title="Link to this definition"></a></dt>
+<dd><p>Saves the alarm settings.</p>
+<p>This function is used to save the alarm settings. It will get the alarm
+settings from the request form and update the alarm configuration. If the
+alarm is enabled, it will stop the alarm timer, daemon-reload, and start
+the alarm timer. If any of the above steps fails, it will flash an error
+message and return the alarm.html page with the current alarm settings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A rendered HTML page with the alarm settings.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="youtubedlWeb.routes.html" class="btn btn-neutral float-left" title="youtubedlWeb.routes package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="youtubedlWeb.routes.mail_routes.html" class="btn btn-neutral float-right" title="youtubedlWeb.routes.mail_routes module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Bartosz Brzozowski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

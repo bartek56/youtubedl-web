@@ -1,0 +1,334 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>youtubedlWeb.routes.alarm_routes &mdash; youtubedl-web 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            youtubedl-web
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">youtubedlWeb</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">youtubedl-web</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../youtubedlWeb.html">youtubedlWeb</a></li>
+      <li class="breadcrumb-item active">youtubedlWeb.routes.alarm_routes</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for youtubedlWeb.routes.alarm_routes</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">youtubedlWeb.Common.AlarmEnums</span><span class="w"> </span><span class="kn">import</span> <span class="n">SystemdCommand</span><span class="p">,</span> <span class="n">AlarmConfigFlask</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">jsonify</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">current_app</span> <span class="k">as</span> <span class="n">app</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">flash</span><span class="p">,</span> <span class="n">send_from_directory</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">youtubedlWeb.Common</span><span class="w"> </span><span class="kn">import</span> <span class="n">WebUtils</span>
+
+<span class="n">alarm_bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">&#39;alarm&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="manifest">
+<a class="viewcode-back" href="../../../youtubedlWeb.routes.alarm_routes.html#youtubedlWeb.routes.alarm_routes.manifest">[docs]</a>
+<span class="nd">@alarm_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/alarm/manifest.json&#39;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">manifest</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the manifest file for the alarm web page.</span>
+
+<span class="sd">    This file is used by browsers to determine how to handle the web page</span>
+<span class="sd">    when it is added to the home screen.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The contents of the manifest file.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">send_from_directory</span><span class="p">(</span><span class="s1">&#39;static&#39;</span><span class="p">,</span> <span class="s1">&#39;alarm_manifest.json&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="alarmTestStart">
+<a class="viewcode-back" href="../../../youtubedlWeb.routes.alarm_routes.html#youtubedlWeb.routes.alarm_routes.alarmTestStart">[docs]</a>
+<span class="nd">@alarm_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/alarm_test_start&#39;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">alarmTestStart</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Starts the alarm service.</span>
+
+<span class="sd">    This function is used for testing the alarm service. It will start the</span>
+<span class="sd">    alarm service and return &quot;Nothing&quot;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A string containing &quot;Nothing&quot;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;alarm test start&#39;</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">SystemdCommand</span><span class="o">.</span><span class="n">START_ALARM_SERVICE</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;Nothing&quot;</span></div>
+
+
+<div class="viewcode-block" id="alarmTestStop">
+<a class="viewcode-back" href="../../../youtubedlWeb.routes.alarm_routes.html#youtubedlWeb.routes.alarm_routes.alarmTestStop">[docs]</a>
+<span class="nd">@alarm_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/alarm_test_stop&#39;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">alarmTestStop</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stops the alarm service.</span>
+
+<span class="sd">    This function is used for testing the alarm service. It will stop the</span>
+<span class="sd">    alarm service and return the contents of the alarm web page.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The contents of the alarm web page.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;alarm test stop&#39;</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">SystemdCommand</span><span class="o">.</span><span class="n">STOP_ALARM_SERVICE</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;/usr/bin/mpc stop&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;alarm.html&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">app</span><span class="o">.</span><span class="n">alarmManager</span><span class="o">.</span><span class="n">loadAlarmConfig</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="alarmOn">
+<a class="viewcode-back" href="../../../youtubedlWeb.routes.alarm_routes.html#youtubedlWeb.routes.alarm_routes.alarmOn">[docs]</a>
+<span class="nd">@alarm_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/alarm_on&#39;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">alarmOn</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Enables and starts the alarm timer.</span>
+
+<span class="sd">    This function is used to enable and start the alarm timer. It will</span>
+<span class="sd">    enable the alarm timer, start the alarm timer, and return the next</span>
+<span class="sd">    alarm time.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A JSON object containing the next alarm time.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;alarm on&quot;</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">SystemdCommand</span><span class="o">.</span><span class="n">ENABLE_ALARM_TIMER</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">SystemdCommand</span><span class="o">.</span><span class="n">START_ALARM_TIMER</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">nextAlarm</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">alarmManager</span><span class="o">.</span><span class="n">nextAlarmCheck</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">nextAlarm</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="alarmOff">
+<a class="viewcode-back" href="../../../youtubedlWeb.routes.alarm_routes.html#youtubedlWeb.routes.alarm_routes.alarmOff">[docs]</a>
+<span class="nd">@alarm_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/alarm_off&#39;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">alarmOff</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Disables and stops the alarm timer.</span>
+
+<span class="sd">    This function is used to disable and stop the alarm timer. It will</span>
+<span class="sd">    disable the alarm timer, stop the alarm timer, and return an empty</span>
+<span class="sd">    JSON object.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        An empty JSON object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;alarm off&#39;</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">SystemdCommand</span><span class="o">.</span><span class="n">STOP_ALARM_TIMER</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">SystemdCommand</span><span class="o">.</span><span class="n">DISABLE_ALARM_TIMER</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="alarmSnoozeOff">
+<a class="viewcode-back" href="../../../youtubedlWeb.routes.alarm_routes.html#youtubedlWeb.routes.alarm_routes.alarmSnoozeOff">[docs]</a>
+<span class="nd">@alarm_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/alarm_snooze_off&#39;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">alarmSnoozeOff</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Disables and stops the alarm snooze timer.</span>
+
+<span class="sd">    This function is used to disable and stop the alarm snooze timer. It will</span>
+<span class="sd">    disable the alarm snooze timer, stop the alarm snooze timer, and return an</span>
+<span class="sd">    empty JSON object.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        An empty JSON object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;alarm_snooze_off&#39;</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">SystemdCommand</span><span class="o">.</span><span class="n">STOP_ALARM_SNOOZE_TIMER</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="alarm">
+<a class="viewcode-back" href="../../../youtubedlWeb.routes.alarm_routes.html#youtubedlWeb.routes.alarm_routes.alarm">[docs]</a>
+<span class="nd">@alarm_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/alarm.html&#39;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">alarm</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Renders the alarm.html page with the alarm settings.</span>
+
+<span class="sd">    This function is used to render the alarm.html page with the alarm</span>
+<span class="sd">    settings. It will check if the remote address is in the local</span>
+<span class="sd">    network (192.168 or 127.0.0.1) and if so, it will render the</span>
+<span class="sd">    page with the alarm settings. If the remote address is not in the</span>
+<span class="sd">    local network, it will return an alert info page with the message</span>
+<span class="sd">    &quot;You do not have access to alarm settings&quot;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A rendered HTML page with the alarm settings if the remote address</span>
+<span class="sd">        is in the local network, otherwise an alert info page with the</span>
+<span class="sd">        message &quot;You do not have access to alarm settings&quot;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">remoteAddress</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">remote_addr</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;192.168&quot;</span> <span class="ow">in</span> <span class="n">remoteAddress</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="s2">&quot;127.0.0.1&quot;</span> <span class="ow">in</span> <span class="n">remoteAddress</span><span class="p">):</span>
+        <span class="c1">#if os.path.isfile(&quot;/etc/mediaserver/alarm.timer&quot;) == False:</span>
+        <span class="c1">#    return WebUtils.alert_info(&quot;Alarm timer doesn&#39;t exist&quot;)</span>
+        <span class="c1">#elif os.path.isfile(&quot;/etc/mediaserver/alarm.sh&quot;) == False:</span>
+        <span class="c1">#    return WebUtils.alert_info(&quot;Alarm script doesn&#39;t exist&quot;)</span>
+        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;alarm.html&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">app</span><span class="o">.</span><span class="n">alarmManager</span><span class="o">.</span><span class="n">loadAlarmConfig</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">WebUtils</span><span class="o">.</span><span class="n">alert_info</span><span class="p">(</span><span class="s2">&quot;You do not have access to alarm settings&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="save_alarm_html">
+<a class="viewcode-back" href="../../../youtubedlWeb.routes.alarm_routes.html#youtubedlWeb.routes.alarm_routes.save_alarm_html">[docs]</a>
+<span class="nd">@alarm_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/save_alarm&#39;</span><span class="p">,</span> <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">save_alarm_html</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Saves the alarm settings.</span>
+
+<span class="sd">    This function is used to save the alarm settings. It will get the alarm</span>
+<span class="sd">    settings from the request form and update the alarm configuration. If the</span>
+<span class="sd">    alarm is enabled, it will stop the alarm timer, daemon-reload, and start</span>
+<span class="sd">    the alarm timer. If any of the above steps fails, it will flash an error</span>
+<span class="sd">    message and return the alarm.html page with the current alarm settings.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A rendered HTML page with the alarm settings.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;POST&#39;</span><span class="p">:</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">ALARM_TIME</span><span class="p">]</span>
+        <span class="n">alarmMode</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">ALARM_MODE</span><span class="p">]</span>
+        <span class="n">alarmPlaylist</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">ALARM_MODE_PLAYLIST</span> <span class="ow">in</span> <span class="n">alarmMode</span><span class="p">:</span>
+            <span class="n">alarmPlaylist</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;playlists&#39;</span><span class="p">]</span>
+        <span class="n">alarmDays</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s1">&#39;monday&#39;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">alarmDays</span> <span class="o">+=</span> <span class="s2">&quot;Mon,&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s1">&#39;tueday&#39;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">alarmDays</span> <span class="o">+=</span> <span class="s2">&quot;Tue,&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s1">&#39;wedday&#39;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">alarmDays</span> <span class="o">+=</span> <span class="s2">&quot;Wed,&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s1">&#39;thuday&#39;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">alarmDays</span> <span class="o">+=</span> <span class="s2">&quot;Thu,&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s1">&#39;friday&#39;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">alarmDays</span> <span class="o">+=</span> <span class="s2">&quot;Fri,&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s1">&#39;satday&#39;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">alarmDays</span> <span class="o">+=</span> <span class="s2">&quot;Sat,&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s1">&#39;sunday&#39;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">alarmDays</span> <span class="o">+=</span> <span class="s2">&quot;Sun,&quot;</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">alarmDays</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">alarmDays</span> <span class="o">=</span> <span class="n">alarmDays</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">minVolume</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">MIN_VOLUME</span><span class="p">]</span>
+        <span class="n">maxVolume</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">MAX_VOLUME</span><span class="p">]</span>
+        <span class="n">defaultVolume</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">DEFAULT_VOLUME</span><span class="p">]</span>
+
+        <span class="n">growingVolume</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">GROWING_VOLUME</span><span class="p">]</span>
+        <span class="n">growingSpeed</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">GROWING_SPEED</span><span class="p">]</span>
+        <span class="n">alarmIsEnable</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;alarm_active&quot;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">:</span>
+            <span class="n">alarmIsEnable</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">app</span><span class="o">.</span><span class="n">alarmManager</span><span class="o">.</span><span class="n">updateAlarmConfig</span><span class="p">(</span><span class="n">alarmDays</span><span class="p">,</span><span class="n">time</span><span class="p">,</span><span class="n">minVolume</span><span class="p">,</span><span class="n">maxVolume</span><span class="p">,</span><span class="n">defaultVolume</span><span class="p">,</span><span class="n">growingVolume</span><span class="p">,</span><span class="n">growingSpeed</span><span class="p">,</span>
+                        <span class="n">alarmPlaylist</span><span class="p">,</span><span class="n">alarmMode</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">alarmIsEnable</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">SystemdCommand</span><span class="o">.</span><span class="n">STOP_ALARM_TIMER</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">flash</span><span class="p">(</span><span class="s2">&quot;Failed to restart alarm timer&quot;</span><span class="p">,</span> <span class="s1">&#39;danger&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;alarm.html&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">app</span><span class="o">.</span><span class="n">alarmManager</span><span class="o">.</span><span class="n">loadAlarmConfig</span><span class="p">())</span>
+
+        <span class="n">p</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">SystemdCommand</span><span class="o">.</span><span class="n">DAEMON_RELOAD</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">flash</span><span class="p">(</span><span class="s2">&quot;Failed to daemon-reload&quot;</span><span class="p">,</span> <span class="s1">&#39;danger&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;alarm.html&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">app</span><span class="o">.</span><span class="n">alarmManager</span><span class="o">.</span><span class="n">loadAlarmConfig</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="n">alarmIsEnable</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">SystemdCommand</span><span class="o">.</span><span class="n">START_ALARM_TIMER</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">flash</span><span class="p">(</span><span class="s2">&quot;Failed to start alarm timer&quot;</span><span class="p">,</span> <span class="s1">&#39;danger&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;alarm.html&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">app</span><span class="o">.</span><span class="n">alarmManager</span><span class="o">.</span><span class="n">loadAlarmConfig</span><span class="p">())</span>
+
+        <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;alarm saved, systemctl daemon-reload&quot;</span><span class="p">)</span>
+
+        <span class="n">flash</span><span class="p">(</span><span class="s2">&quot;Successfull saved alarm&quot;</span><span class="p">,</span> <span class="s1">&#39;success&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;alarm.html&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">app</span><span class="o">.</span><span class="n">alarmManager</span><span class="o">.</span><span class="n">loadAlarmConfig</span><span class="p">())</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Bartosz Brzozowski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
