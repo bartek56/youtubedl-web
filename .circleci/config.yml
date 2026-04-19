@@ -1,4 +1,5 @@
 version: 2.1
+
 jobs:
   build:
     docker:
@@ -13,6 +14,18 @@ jobs:
           command: |
             coverage run -m pytest --junitxml=results/TestsReport.xml --html=results/TestsReport.html --self-contained-html tests/*
             coverage html
+      - run:
+          name: Build Sphinx documentation
+          command: |
+            cd docs
+            make html
+      - run:
+          name: Deploy docs to GitHub Pages
+          command: |
+            pip install ghp-import
+            git remote set-url origin https://$GITHUB_TOKEN@github.com/bartek56/youtubedl-web.git
+            ghp-import -n -p -f docs/build/html
+
       - store_test_results:
           path: results
       - store_artifacts:

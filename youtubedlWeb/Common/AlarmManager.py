@@ -5,11 +5,25 @@ logger = logging.getLogger(__name__)
 
 class AlarmManager:
     def __init__(self, subprocess, alarmTimer:str, alarmScript:str):
+        """
+        Initializes the AlarmManager with the given subprocess, alarmTimer and alarmScript.
+
+        Parameters:
+        subprocess (subprocess): the subprocess module
+        alarmTimer (str): the name of the alarm timer
+        alarmScript (str): the name of the alarm script
+        """
         self.ALARM_TIMER = alarmTimer
         self.ALARM_SCRIPT = alarmScript
         self.subprocess = subprocess
 
     def loadAlarmConfig(self):
+        """
+        Loads the alarm configuration from the timer and script.
+
+        Returns:
+            A dictionary with the alarm configuration.
+        """
         mondayChecked = ""
         tuesdayChecked = ""
         wednesdayChecked = ""
@@ -121,12 +135,35 @@ class AlarmManager:
                 AlarmConfigFlask.NEXT_SNOOZE:nextSnooze}
 
     def loadConfig(self, configFile):
+        """
+        Loads the alarm configuration from a file.
+
+        This function opens the specified file and reads it line by line. It then returns
+        the list of lines.
+
+        Args:
+            configFile (str): The file path to the alarm configuration file.
+
+        Returns:
+            content (list): A list of strings representing the alarm configuration file.
+        """
         f = open(configFile, "r")
         content = f.readlines()
         f.close()
         return content
 
     def nextSnoozeCheck(self):
+        """
+        Checks the status of the alarm snooze timer.
+
+        This function checks if the alarm snooze timer is active. If it is active,
+        it will return the time of the next snooze alarm. If the alarm snooze timer
+        is disabled, it will return an empty string.
+
+        Returns:
+            nextSnooze (str): The time of the next snooze alarm, or an empty string if
+                the alarm snooze timer is disabled.
+        """
         nextSnooze = ""
         try:
             output = self.subprocess.check_output(SystemdCommand.IS_ACTIVE_ALARM_SNOOZE_TIMER, shell=True, text=True)
@@ -139,6 +176,17 @@ class AlarmManager:
         return nextSnooze
 
     def nextAlarmCheck(self):
+        """
+        Checks the status of the alarm timer.
+
+        This function checks if the alarm timer is active. If it is active,
+        it will return the time of the next alarm. If the alarm timer is disabled,
+        it will return an empty string.
+
+        Returns:
+            nextAlarm (str): The time of the next alarm, or an empty string if
+                the alarm timer is disabled.
+        """
         nextAlarm=""
         try:
             output = self.subprocess.check_output(SystemdCommand.IS_ACTIVE_ALARM_TIMER, shell=True, text=True)
@@ -150,11 +198,44 @@ class AlarmManager:
         return nextAlarm
 
     def getTimeOfService(self, systemdService:SystemdCommand):
+        """
+        Gets the time of a given systemd service.
+
+        This function gets the time of a given systemd service. It will run a
+        command to get the time of the service and return it as a string.
+
+        Parameters:
+            systemdService (SystemdCommand): The systemd service to get the time of.
+
+        Returns:
+            str: The time of the given systemd service.
+        """
         return str(self.subprocess.check_output(systemdService + " | grep \"Trigger:\" | cut -d';' -f2- | sed -e \"s/ left//\"", shell=True, text=True))
 
     def updateAlarmConfig(self, alarmDays, time, minVolume, maxVolume, defaultVolume,
               growingVolume, growingSpeed, alarmPlaylist, alarmMode):
 
+        """
+        Updates the alarm configuration.
+
+        This function updates the alarm configuration. It will take the new alarm
+        settings and update the alarm timer and alarm script. It will then save
+        the updated configuration.
+
+        Parameters:
+            alarmDays (str): The days of the week to trigger the alarm.
+            time (str): The time of the day to trigger the alarm.
+            minVolume (int): The minimum volume of the alarm.
+            maxVolume (int): The maximum volume of the alarm.
+            defaultVolume (int): The default volume of the alarm.
+            growingVolume (int): The growing volume of the alarm.
+            growingSpeed (int): The growing speed of the alarm.
+            alarmPlaylist (str): The playlist to play during the alarm.
+            alarmMode (str): The mode of the alarm.
+
+        Returns:
+            None
+        """
         content = self.loadConfig(self.ALARM_TIMER)
         for i in range(len(content)):
             if "OnCalendar" in content[i]:
@@ -190,6 +271,16 @@ class AlarmManager:
         self.saveConfig(self.ALARM_SCRIPT, content)
 
     def saveConfig(self, configFile:str, content:list):
+        """
+        Saves the content to the config file.
+
+        Args:
+            configFile (str): The name of the config file.
+            content (list): The content to be saved.
+
+        Returns:
+            None
+        """
         f = open(configFile,"w")
         for x in content:
             f.write(x)
