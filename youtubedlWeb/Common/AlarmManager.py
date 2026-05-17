@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class AlarmManager:
-    def __init__(self, subprocess, alarmTimer:str, alarmScript:str):
+    def __init__(self, subprocess, alarmTimer:str, alarmScript:str, alarmConfig:str):
         """
         Initializes the AlarmManager with the given subprocess, alarmTimer and alarmScript.
 
@@ -15,6 +15,7 @@ class AlarmManager:
         """
         self.ALARM_TIMER = alarmTimer
         self.ALARM_SCRIPT = alarmScript
+        self.ALARM_CONFIG = alarmConfig
         self.subprocess = subprocess
 
     def loadAlarmConfig(self):
@@ -56,7 +57,7 @@ class AlarmManager:
                 if "Sun" in weekDays:
                     sundayChecked = "checked"
 
-        content = self.loadConfig(self.ALARM_SCRIPT)
+        content = self.loadConfig(self.ALARM_CONFIG)
 
         for x in content:
             if len(x)>1:
@@ -243,7 +244,7 @@ class AlarmManager:
 
         self.saveConfig(self.ALARM_TIMER, content)
 
-        content = self.loadConfig(self.ALARM_SCRIPT)
+        content = self.loadConfig(self.ALARM_CONFIG)
         for i in range(len(content)):
             if i>0 and i<8:
                 if AlarmConfigLinux.MIN_VOLUME in content[i]:
@@ -268,7 +269,7 @@ class AlarmManager:
             elif i >=8:
                 break
 
-        self.saveConfig(self.ALARM_SCRIPT, content)
+        self.saveConfig(self.ALARM_CONFIG, content)
 
     def saveConfig(self, configFile:str, content:list):
         """

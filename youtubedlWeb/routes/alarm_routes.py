@@ -127,7 +127,7 @@ def alarm():
     if ("192.168" in remoteAddress) or ("127.0.0.1" in remoteAddress):
         #if os.path.isfile("/etc/mediaserver/alarm.timer") == False:
         #    return WebUtils.alert_info("Alarm timer doesn't exist")
-        #elif os.path.isfile("/etc/mediaserver/alarm.sh") == False:
+        #elif os.path.isfile("/etc/mediaserver/alarm") == False:
         #    return WebUtils.alert_info("Alarm script doesn't exist")
         return render_template("alarm.html", **app.alarmManager.loadAlarmConfig())
     else:
