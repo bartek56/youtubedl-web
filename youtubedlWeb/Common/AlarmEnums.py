@@ -25,13 +25,13 @@ class AlarmConfigFlask():
     NEXT_SNOOZE = "next_snooze"
 
 class AlarmConfigLinux():
-    THE_NEWEST_SONG =     "theNewestSongs"
+    THE_NEWEST_SONG =     "the_newest_songs"
     PLAYLIST =            "playlist"
-    MIN_VOLUME =   "minVolume"
-    MAX_VOLUME =   "maxVolume"
-    DEFAULT_VOLUME = "defaultVolume"
-    GROWING_VOLUME = "growingVolume"
-    GROWING_SPEED =  "growingSpeed"
+    MIN_VOLUME =   "min_volume"
+    MAX_VOLUME =   "max_volume"
+    DEFAULT_VOLUME = "default_volume"
+    GROWING_VOLUME = "growing_volume"
+    GROWING_SPEED =  "growing_speed"
 
 class SystemdCommand():
     START_ALARM_TIMER =     "sudo /bin/systemctl start alarm.timer"

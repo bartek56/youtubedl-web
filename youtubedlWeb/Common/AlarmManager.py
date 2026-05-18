@@ -1,6 +1,7 @@
 from .AlarmEnums import AlarmConfigFlask, AlarmConfigLinux, SystemdCommand
 
 import logging
+import configparser
 logger = logging.getLogger(__name__)
 
 class AlarmManager:
@@ -56,44 +57,47 @@ class AlarmManager:
                 if "Sun" in weekDays:
                     sundayChecked = "checked"
 
-        content = self.loadConfig(self.ALARM_CONFIG)
+        minVolume = 7
+        maxVolume = 69
+        defaultVolume = 11
+        growingVolume = 5
+        growingSpeed = 55
+        alarmPlaylistName = ""
+        theNewestSong = True
 
-        for x in content:
-            if len(x)>1:
-                if AlarmConfigLinux.MIN_VOLUME in x:
-                    parameter = x.split("=")
-                    minVolume = parameter[1].rstrip()
-                elif AlarmConfigLinux.MAX_VOLUME in x:
-                    parameter = x.split("=")
-                    maxVolume = parameter[1].rstrip()
-                elif AlarmConfigLinux.DEFAULT_VOLUME in x:
-                    parameter = x.split("=")
-                    defaultVolume = parameter[1].rstrip()
-                elif AlarmConfigLinux.GROWING_VOLUME in x:
-                    parameter = x.split("=")
-                    growingVolume = int(parameter[1].rstrip())
-                elif AlarmConfigLinux.GROWING_SPEED in x:
-                    parameter = x.split("=")
-                    growingSpeed = int(parameter[1].rstrip())
-                elif AlarmConfigLinux.PLAYLIST in x:
-                    parameter = x.split("=")
-                    alarmPlaylistName = parameter[1].rstrip()
-                    alarmPlaylistName=alarmPlaylistName.replace('"','')
-                elif AlarmConfigLinux.THE_NEWEST_SONG in x:
-                    parameter = x.split("=")
-                    if "true" in parameter[1]:
-                        theNewestSongCheckBox = "checked"
-                        playlistCheckbox = ""
-                    else:
-                        theNewestSongCheckBox = ""
-                        playlistCheckbox = "checked"
+        theNewestSongCheckBox = "checked"
+        playlistCheckbox = ""
+
+        config = configparser.ConfigParser()
+        fileIsCorrect = False
+        try:
+            config.read(self.ALARM_CONFIG)
+            fileIsCorrect = True
+        except:
+            logger.error("Config file \"%s\" doesn't exist", self.ALARM_CONFIG)
+
+        if fileIsCorrect and "alarm" in config:
+            cfg = config["alarm"]
+
+            minVolume = cfg.getint("min_volume", fallback=7)
+            maxVolume = cfg.getint("max_volume", fallback=69)
+            defaultVolume = cfg.getint("default_volume", fallback=11)
+            growingVolume = cfg.getint("growing_volume", fallback=5)
+            growingSpeed = cfg.getint("growing_speed", fallback=55)
+            alarmPlaylistName = cfg.get("playlist", fallback="")
+            theNewestSong = cfg.getboolean("the_newest_songs", fallback=True)
+            if theNewestSong:
+                theNewestSongCheckBox = "checked"
+                playlistCheckbox = ""
             else:
-                break
+                theNewestSongCheckBox = ""
+                playlistCheckbox = "checked"
 
         isMpcSupported = True
 
         playlists = []
         try:
+            #TODO use python-mpc2 library
             out = self.subprocess.check_output("mpc lsplaylists | grep -v m3u", shell=True, text=True)
         except:
             isMpcSupported = False
@@ -243,32 +247,25 @@ class AlarmManager:
 
         self.saveConfig(self.ALARM_TIMER, content)
 
-        content = self.loadConfig(self.ALARM_CONFIG)
-        for i in range(len(content)):
-            if i>0 and i<8:
-                if AlarmConfigLinux.MIN_VOLUME in content[i]:
-                    content[i] = "%s=%s\n"%(AlarmConfigLinux.MIN_VOLUME, minVolume)
-                elif AlarmConfigLinux.MAX_VOLUME in content[i]:
-                    content[i] = "%s=%s\n"%(AlarmConfigLinux.MAX_VOLUME, maxVolume)
-                elif AlarmConfigLinux.DEFAULT_VOLUME in content[i]:
-                    content[i] = "%s=%s\n"%(AlarmConfigLinux.DEFAULT_VOLUME, defaultVolume)
-                elif AlarmConfigLinux.GROWING_VOLUME in content[i]:
-                    content[i] = "%s=%s\n"%(AlarmConfigLinux.GROWING_VOLUME, growingVolume)
-                elif AlarmConfigLinux.GROWING_SPEED in content[i]:
-                    content[i] = "%s=%s\n"%(AlarmConfigLinux.GROWING_SPEED, growingSpeed)
-                elif AlarmConfigLinux.PLAYLIST in content[i]:
-                    content[i] = "%s=\"%s\"\n"%(AlarmConfigLinux.PLAYLIST, alarmPlaylist)
-                elif AlarmConfigLinux.THE_NEWEST_SONG in content[i]:
-                    alarmNewestModeIsEnable = ""
-                    if AlarmConfigFlask.ALARM_MODE_PLAYLIST in alarmMode:
-                        alarmNewestModeIsEnable = "false"
-                    else:
-                        alarmNewestModeIsEnable = "true"
-                    content[i] = "%s=%s\n"%(AlarmConfigLinux.THE_NEWEST_SONG, alarmNewestModeIsEnable)
-            elif i >=8:
-                break
+        if AlarmConfigFlask.ALARM_MODE_PLAYLIST in alarmMode:
+            alarmNewestModeIsEnable = "false"
+        else:
+            alarmNewestModeIsEnable = "true"
 
-        self.saveConfig(self.ALARM_CONFIG, content)
+        config = configparser.ConfigParser()
+        config["alarm"] = {
+            AlarmConfigLinux.MIN_VOLUME: str(minVolume),
+            AlarmConfigLinux.MAX_VOLUME: str(maxVolume),
+            AlarmConfigLinux.DEFAULT_VOLUME: str(defaultVolume),
+            AlarmConfigLinux.GROWING_VOLUME: str(growingVolume),
+            AlarmConfigLinux.GROWING_SPEED: str(growingSpeed),
+            AlarmConfigLinux.PLAYLIST: alarmPlaylist,
+            AlarmConfigLinux.THE_NEWEST_SONG: alarmNewestModeIsEnable
+            if AlarmConfigFlask.ALARM_MODE_PLAYLIST in alarmMode
+            else "true",
+        }
+        with open(self.ALARM_CONFIG, "w") as f:
+            config.write(f)
 
     def saveConfig(self, configFile:str, content:list):
         """
