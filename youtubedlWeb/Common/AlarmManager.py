@@ -4,17 +4,16 @@ import logging
 logger = logging.getLogger(__name__)
 
 class AlarmManager:
-    def __init__(self, subprocess, alarmTimer:str, alarmScript:str, alarmConfig:str):
+    def __init__(self, subprocess, alarmTimer:str, alarmConfig:str):
         """
         Initializes the AlarmManager with the given subprocess, alarmTimer and alarmScript.
 
         Parameters:
         subprocess (subprocess): the subprocess module
         alarmTimer (str): the name of the alarm timer
-        alarmScript (str): the name of the alarm script
+        alarmConfig (str): the name of the alarm script
         """
         self.ALARM_TIMER = alarmTimer
-        self.ALARM_SCRIPT = alarmScript
         self.ALARM_CONFIG = alarmConfig
         self.subprocess = subprocess
 

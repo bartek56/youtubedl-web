@@ -12,7 +12,7 @@ socketio = SocketIO(manage_session=False)
 
 CONFIG_FILE="/etc/mediaserver/youtubedl.ini"
 ALARM_TIMER="/etc/mediaserver/alarm.timer"
-ALARM_SCRIPT="/etc/mediaserver/alarm.sh"
+ALARM_CONFIG="/etc/mediaserver/alarm.ini"
 
 def create_app(config=Config):
     app = Flask(__name__)
@@ -38,7 +38,7 @@ def create_app(config=Config):
     app.youtubeConfig.initialize(CONFIG_FILE)
 
     app.youtubeManager = YoutubeManager()
-    app.alarmManager = AlarmManager(subprocess, ALARM_TIMER, ALARM_SCRIPT)
+    app.alarmManager = AlarmManager(subprocess, ALARM_TIMER, ALARM_CONFIG)
 
     if len(app.logger.handlers) == 1:
         handler = app.logger.handlers[0]
