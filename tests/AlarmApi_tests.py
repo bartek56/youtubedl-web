@@ -5,6 +5,9 @@ import unittest
 import unittest.mock as mock
 from unittest.mock import MagicMock
 import logging
+import tempfile
+import os
+import subprocess
 from youtubedlWeb import create_app, ALARM_CONFIG, ALARM_TIMER
 from youtubedlWeb.config import ConfigTesting
 
@@ -188,6 +191,71 @@ class AlarmTestCase(unittest.TestCase):
         self.alarmManager._saveAlarmConfig.assert_called_with(minVolume, maxVolume, defaultVolume, growingVolume, growingSpeed, alarmPlaylist, 'true')
 
 
+
+class AlarmConfigsFilesTestCase(unittest.TestCase):
+
+    def __init__(self, *args, **kwargs):
+        super(AlarmConfigsFilesTestCase, self).__init__(*args, **kwargs)
+        logging.disable(logging.CRITICAL)
+        self.checked="checked"
+        self.unchecked="unchecked"
+        self.empty=""
+
+    def setUp(self):
+        self.subprocessMock = MagicMock()
+        self.alarmManager = AlarmManager(self.subprocessMock, ALARM_TIMER, ALARM_CONFIG)
+
+    def tearDown(self):
+        pass
+
+    def test_get_time_of_service(self):
+        """_getTimeOfService should return the exact output from subprocess.check_output as string."""
+        # simulate systemd status output
+        status_output = " 3h"
+        self.subprocessMock.check_output.configure_mock(return_value=status_output)
+
+        result = self.alarmManager._getTimeOfService(SystemdCommand.STATUS_ALARM_TIMER)
+        self.assertEqual(result, status_output)
+
+    def test_next_alarm_check_inactive(self):
+        """If subprocess.check_output raises CalledProcessError, nextAlarmCheck returns empty string."""
+        # ensure the manager's subprocess module has the CalledProcessError attribute
+        self.subprocessMock.CalledProcessError = subprocess.CalledProcessError
+        # simulate CalledProcessError when checking active status
+        self.subprocessMock.check_output.configure_mock(side_effect=subprocess.CalledProcessError(1, 'cmd'))
+
+        result = self.alarmManager.nextAlarmCheck()
+        self.assertEqual(result, "")
+
+    def test_save_and_load_alarm_config_file_roundtrip(self):
+        """Write alarm config to a temp file via _saveAlarmConfig and read it back with _loadAlarmConfig."""
+        fd, path = tempfile.mkstemp(prefix="test_alarm_", suffix=".ini")
+        os.close(fd)
+        try:
+            # create a fresh manager that uses the temp path for ALARM_CONFIG
+            manager = AlarmManager(self.subprocessMock, ALARM_TIMER, path)
+
+            minV, maxV, defV, growV, growS = 3, 77, 33, 8, 12
+            playlist = "MyList"
+            newest = 'true'
+
+            manager._saveAlarmConfig(minV, maxV, defV, growV, growS, playlist, newest)
+
+            loaded = manager._loadAlarmConfig()
+            self.assertIsNotNone(loaded)
+            self.assertEqual(loaded.min_volume, minV)
+            self.assertEqual(loaded.max_volume, maxV)
+            self.assertEqual(loaded.default_volume, defV)
+            self.assertEqual(loaded.growing_volume, growV)
+            self.assertEqual(loaded.growing_speed, growS)
+            self.assertEqual(loaded.playlist, playlist)
+            # configparser stores booleans and _loadAlarmConfig returns boolean
+            self.assertTrue(isinstance(loaded.newest_song_mode, bool))
+        finally:
+            try:
+                os.remove(path)
+            except Exception:
+                pass
 
 class FlaskClientAlarmTestCase(unittest.TestCase):
 
@@ -464,6 +532,115 @@ class FlaskClientAlarmTestCase(unittest.TestCase):
         assert str('value="'+str(defaultVolume)+'" name="'+AlarmConfigFlask.DEFAULT_VOLUME+'">').encode() in rv.data
         assert b'<title>Media Server</title>' in rv.data
 
+    @mock.patch('subprocess.check_output', side_effect=["Favorites\nAlarm\n", "inactive", " for 4h", "inactive"])
+    @mock.patch('subprocess.run')
+    def test_save_alarm_inactive(self, mock_subprocess_run, mock_subprocess_checkoutput):
+        """Save alarm when systemd reports timer inactive: ALARM_ACTIVE should not be checked."""
+        alarmDays="Mon,Tue,Wed"
+        time="06:30"
+        minVolume=5
+        maxVolume=50
+        defaultVolume=10
+        growingVolume=5
+        growingSpeed=45
+        alarmPlaylist="Alarm"
+        alarmMode=AlarmConfigFlask.ALARM_MODE_PLAYLIST
+
+        returnCode = mock.MagicMock()
+        returnCode.returncode = 0
+        mock_subprocess_run.configure_mock(return_value=returnCode)
+
+        self.mainApp.alarmManager._loadConfig.configure_mock(side_effect=[
+                ["[Unit]","Description=Alarm","",
+                "[Timer]","OnCalendar="+alarmDays+" "+time,"",
+                "[Install]","WantedBy=multi-user.target",""]
+                ])
+
+        self.mainApp.alarmManager._loadAlarmConfig.configure_mock(side_effect=[
+            AlarmConfig(minVolume, maxVolume, defaultVolume, growingVolume,
+                       growingSpeed, "", True)
+        ])
+
+        rv = self.app.post('/save_alarm',
+                            data=dict(alarm_time=time, alarm_mode=alarmMode, playlists=alarmPlaylist,
+                                    min_volume=str(minVolume), max_volume=str(maxVolume), default_volume=str(defaultVolume),
+                                    growing_volume=str(growingVolume), growing_speed=str(growingSpeed),
+                                    monday=['monday'], tueday=['tueday'], wedday=['wedday']),
+                            follow_redirects=True)
+
+        self.assertEqual(rv.status_code, 200)
+        # since subprocess returned "inactive", the alarm active checkbox should not be rendered as checked
+        assert str('name="'+AlarmConfigFlask.ALARM_ACTIVE+'" value="checked" checked>').encode() not in rv.data
+
+    @mock.patch('subprocess.check_output', side_effect=["Favorites\nAlarm\n", "inactive", " for 4h", "inactive"])
+    @mock.patch('subprocess.run')
+    def test_save_alarm_playlist_mode(self, mock_subprocess_run, mock_subprocess_checkoutput):
+        """Save alarm in playlist mode and ensure playlist radio is selected (playlist mode checked)."""
+        alarmDays="Mon,Tue,Wed"
+        time="07:15"
+        minVolume=6
+        maxVolume=45
+        defaultVolume=12
+        growingVolume=4
+        growingSpeed=30
+        alarmPlaylist="Alarm"
+        alarmMode=AlarmConfigFlask.ALARM_MODE_PLAYLIST
+
+        returnCode = mock.MagicMock()
+        returnCode.returncode = 0
+        mock_subprocess_run.configure_mock(return_value=returnCode)
+
+        self.mainApp.alarmManager._loadConfig.configure_mock(side_effect=[
+                ["[Unit]","Description=Alarm","",
+                "[Timer]","OnCalendar="+alarmDays+" "+time,"",
+                "[Install]","WantedBy=multi-user.target",""]
+                ])
+
+        self.mainApp.alarmManager._loadAlarmConfig.configure_mock(side_effect=[
+            AlarmConfig(minVolume, maxVolume, defaultVolume, growingVolume,
+                       growingSpeed, "", True)
+        ])
+
+        rv = self.app.post('/save_alarm',
+                            data=dict(alarm_time=time, alarm_mode=alarmMode, playlists=alarmPlaylist,
+                                    min_volume=str(minVolume), max_volume=str(maxVolume), default_volume=str(defaultVolume),
+                                    growing_volume=str(growingVolume), growing_speed=str(growingSpeed),
+                                    alarm_active="true", monday=['monday'], tueday=['tueday'], wedday=['wedday']),
+                            follow_redirects=True)
+
+        self.assertEqual(rv.status_code, 200)
+        # verify the manager was asked to save playlist-mode (last arg 'false')
+        self.mainApp.alarmManager._saveAlarmConfig.assert_called_once_with(str(minVolume), str(maxVolume), str(defaultVolume), str(growingVolume), str(growingSpeed), alarmPlaylist, 'false')
+        # playlist option must be present in the resulting page
+        assert b'<option value="Alarm">Alarm</option>' in rv.data
+
+    @mock.patch('subprocess.check_output')
+    def test_load_alarm_html_playlist_selected(self, mock_proc_check_output):
+        """Load alarm page when stored config is in playlist mode: playlist radio should be checked."""
+        alarm_time="06:50"
+        minVolume=10
+        maxVolume=60
+        defaultVolume=20
+        growingVolume=5
+        growingSpeed=15
+
+        mock_proc_check_output.configure_mock(side_effect=["Favorites\nAlarm\n", "inactive", " 8h", "inactive"])
+        self.mainApp.alarmManager._loadConfig.configure_mock(side_effect=[
+                    ["[Unit]","Description=Alarm","",
+                    "[Timer]","OnCalendar=Mon,Tue,Wed,Thu,Fri,Sat,Sun "+alarm_time,"",
+                    "[Install]","WantedBy=multi-user.target",""]
+                    ])
+        # AlarmConfig: last parameter False means playlist mode (not newest)
+        self.mainApp.alarmManager._loadAlarmConfig.configure_mock(side_effect=[
+            AlarmConfig(minVolume, maxVolume, defaultVolume, growingVolume,
+                           growingSpeed, "Alarm", False)
+        ])
+
+        rv = self.app.get('/alarm.html')
+        assert rv.status_code == 200
+        # playlist mode should be checked, newest should not
+        assert str('name="'+AlarmConfigFlask.ALARM_MODE+'" value="'+AlarmConfigFlask.ALARM_MODE_PLAYLIST+'" checked>').encode() in rv.data
+        assert str('name="'+AlarmConfigFlask.ALARM_MODE+'" value="'+AlarmConfigFlask.ALARM_MODE_NEWEST+'" >').encode() in rv.data
 
 
 if __name__ == "__main__":
