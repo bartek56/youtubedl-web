@@ -69,10 +69,9 @@
            <div itemprop="articleBody">
              
   <h1>Source code for youtubedlWeb.Common.AlarmManager</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">.AlarmEnums</span><span class="w"> </span><span class="kn">import</span> <span class="n">AlarmConfigFlask</span><span class="p">,</span> <span class="n">AlarmConfigLinux</span><span class="p">,</span> <span class="n">SystemdCommand</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">.AlarmEnums</span><span class="w"> </span><span class="kn">import</span> <span class="n">AlarmConfigFlask</span><span class="p">,</span> <span class="n">AlarmConfigLinux</span><span class="p">,</span> <span class="n">SystemdCommand</span><span class="p">,</span> <span class="n">ALARM_SYSTEMD_TIMER_TEMPLATE</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">string</span><span class="w"> </span><span class="kn">import</span> <span class="n">Template</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">configparser</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -91,15 +90,6 @@
     <span class="n">newest_song_mode</span><span class="p">:</span> <span class="nb">bool</span></div>
 
 
-<span class="n">SYSTEMD_ALARM_TEMPLATE</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;[Unit]</span>
-<span class="s2">Description=Alarm</span>
-
-<span class="s2">[Timer]</span>
-<span class="s2">OnCalendar=$days $time</span>
-
-<span class="s2">[Install]</span>
-<span class="s2">WantedBy=multi-user.target</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="AlarmManager">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmManager.html#youtubedlWeb.Common.AlarmManager.AlarmManager">[docs]</a>
@@ -317,7 +307,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_saveConfig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ALARM_TIMER</span><span class="p">,</span> <span class="n">SYSTEMD_ALARM_TEMPLATE</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">alarmDays</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_saveConfig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ALARM_TIMER</span><span class="p">,</span> <span class="n">ALARM_SYSTEMD_TIMER_TEMPLATE</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">alarmDays</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">())</span>
 
         <span class="k">if</span> <span class="n">AlarmConfigFlask</span><span class="o">.</span><span class="n">ALARM_MODE_PLAYLIST</span> <span class="ow">in</span> <span class="n">alarmMode</span><span class="p">:</span>
             <span class="n">alarmNewestModeIsEnable</span> <span class="o">=</span> <span class="s2">&quot;false&quot;</span>
