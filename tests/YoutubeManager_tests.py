@@ -1512,7 +1512,6 @@ class MediaServerDownloaderPlaylistsTestCase(unittest.TestCase):
         self.downloader.downloadPlaylistMp3.configure_mock(side_effect=lisOfResults)
 
         result = self.downloader.download_playlists()
-        print(result)
 
         self.assertCountEqual(result, listOfPlaylistResult)
         self.assertListEqual(result[0], listOfPlaylistResult[0])

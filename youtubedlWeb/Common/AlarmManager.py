@@ -1,8 +1,31 @@
 from .AlarmEnums import AlarmConfigFlask, AlarmConfigLinux, SystemdCommand
 
+from dataclasses import dataclass
+from string import Template
 import logging
 import configparser
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class AlarmConfig:
+    min_volume: int
+    max_volume: int
+    default_volume: int
+    growing_volume: int
+    growing_speed: int
+    playlist: str
+    newest_song_mode: bool
+
+SYSTEMD_ALARM_TEMPLATE = Template("""[Unit]
+Description=Alarm
+
+[Timer]
+OnCalendar=$days $time
+
+[Install]
+WantedBy=multi-user.target
+""")
 
 class AlarmManager:
     def __init__(self, subprocess, alarmTimer:str, alarmConfig:str):
@@ -33,7 +56,7 @@ class AlarmManager:
         saturdayChecked = ""
         sundayChecked = ""
 
-        content = self.loadConfig(self.ALARM_TIMER)
+        content = self._loadConfig(self.ALARM_TIMER)
 
         for x in content:
             if "OnCalendar" in x:
@@ -63,30 +86,19 @@ class AlarmManager:
         growingVolume = 5
         growingSpeed = 55
         alarmPlaylistName = ""
-        theNewestSong = True
-
         theNewestSongCheckBox = "checked"
         playlistCheckbox = ""
 
-        config = configparser.ConfigParser()
-        fileIsCorrect = False
-        try:
-            config.read(self.ALARM_CONFIG)
-            fileIsCorrect = True
-        except:
-            logger.error("Config file \"%s\" doesn't exist", self.ALARM_CONFIG)
+        alarmConfig = self._loadAlarmConfig()
+        if alarmConfig is not None:
+            minVolume = alarmConfig.min_volume
+            maxVolume = alarmConfig.max_volume
+            defaultVolume = alarmConfig.default_volume
+            growingVolume = alarmConfig.growing_volume
+            growingSpeed = alarmConfig.growing_speed
+            alarmPlaylistName = alarmConfig.playlist
 
-        if fileIsCorrect and "alarm" in config:
-            cfg = config["alarm"]
-
-            minVolume = cfg.getint("min_volume", fallback=7)
-            maxVolume = cfg.getint("max_volume", fallback=69)
-            defaultVolume = cfg.getint("default_volume", fallback=11)
-            growingVolume = cfg.getint("growing_volume", fallback=5)
-            growingSpeed = cfg.getint("growing_speed", fallback=55)
-            alarmPlaylistName = cfg.get("playlist", fallback="")
-            theNewestSong = cfg.getboolean("the_newest_songs", fallback=True)
-            if theNewestSong:
+            if alarmConfig.newest_song_mode:
                 theNewestSongCheckBox = "checked"
                 playlistCheckbox = ""
             else:
@@ -94,7 +106,6 @@ class AlarmManager:
                 playlistCheckbox = "checked"
 
         isMpcSupported = True
-
         playlists = []
         try:
             #TODO use python-mpc2 library
@@ -115,7 +126,7 @@ class AlarmManager:
         if len(nextAlarm) > 0:
             alarmIsOn = "checked"
 
-        nextSnooze = self.nextSnoozeCheck()
+        nextSnooze = self._nextSnoozeCheck()
 
         return {AlarmConfigFlask.ALARM_TIME: time,
                 AlarmConfigFlask.THE_NEWEST_SONG:theNewestSongCheckBox,
@@ -138,25 +149,7 @@ class AlarmManager:
                 AlarmConfigFlask.NEXT_ALARM:nextAlarm,
                 AlarmConfigFlask.NEXT_SNOOZE:nextSnooze}
 
-    def loadConfig(self, configFile):
-        """
-        Loads the alarm configuration from a file.
-
-        This function opens the specified file and reads it line by line. It then returns
-        the list of lines.
-
-        Args:
-            configFile (str): The file path to the alarm configuration file.
-
-        Returns:
-            content (list): A list of strings representing the alarm configuration file.
-        """
-        f = open(configFile, "r")
-        content = f.readlines()
-        f.close()
-        return content
-
-    def nextSnoozeCheck(self):
+    def _nextSnoozeCheck(self):
         """
         Checks the status of the alarm snooze timer.
 
@@ -173,7 +166,7 @@ class AlarmManager:
             output = self.subprocess.check_output(SystemdCommand.IS_ACTIVE_ALARM_SNOOZE_TIMER, shell=True, text=True)
             #exception is called when alarm is disabled
             if "in" not in output:
-                nextSnooze= "The next snooze alarm for:" + self.getTimeOfService(SystemdCommand.STATUS_ALARM_SNOOZE_TIMER)
+                nextSnooze= "The next snooze alarm for:" + self._getTimeOfService(SystemdCommand.STATUS_ALARM_SNOOZE_TIMER)
 
         except self.subprocess.CalledProcessError as grepexc:
             logger.info("Exception - alarm_snooze is disabled")
@@ -196,12 +189,12 @@ class AlarmManager:
             output = self.subprocess.check_output(SystemdCommand.IS_ACTIVE_ALARM_TIMER, shell=True, text=True)
             #exception is called when alarm is disabled
             if "in" not in output:
-                nextAlarm = "The next alarm for:" + self.getTimeOfService(SystemdCommand.STATUS_ALARM_TIMER)
+                nextAlarm = "The next alarm for:" + self._getTimeOfService(SystemdCommand.STATUS_ALARM_TIMER)
         except self.subprocess.CalledProcessError as grepexc:
             logger.info("Exception - alarm is disabled")
         return nextAlarm
 
-    def getTimeOfService(self, systemdService:SystemdCommand):
+    def _getTimeOfService(self, systemdService:SystemdCommand):
         """
         Gets the time of a given systemd service.
 
@@ -240,34 +233,35 @@ class AlarmManager:
         Returns:
             None
         """
-        content = self.loadConfig(self.ALARM_TIMER)
-        for i in range(len(content)):
-            if "OnCalendar" in content[i]:
-                content[i] = "OnCalendar=%s %s \n"%(alarmDays, time)
-
-        self.saveConfig(self.ALARM_TIMER, content)
+        self._saveConfig(self.ALARM_TIMER, SYSTEMD_ALARM_TEMPLATE.substitute(days=alarmDays, time=time).splitlines())
 
         if AlarmConfigFlask.ALARM_MODE_PLAYLIST in alarmMode:
             alarmNewestModeIsEnable = "false"
         else:
             alarmNewestModeIsEnable = "true"
 
-        config = configparser.ConfigParser()
-        config["alarm"] = {
-            AlarmConfigLinux.MIN_VOLUME: str(minVolume),
-            AlarmConfigLinux.MAX_VOLUME: str(maxVolume),
-            AlarmConfigLinux.DEFAULT_VOLUME: str(defaultVolume),
-            AlarmConfigLinux.GROWING_VOLUME: str(growingVolume),
-            AlarmConfigLinux.GROWING_SPEED: str(growingSpeed),
-            AlarmConfigLinux.PLAYLIST: alarmPlaylist,
-            AlarmConfigLinux.THE_NEWEST_SONG: alarmNewestModeIsEnable
-            if AlarmConfigFlask.ALARM_MODE_PLAYLIST in alarmMode
-            else "true",
-        }
-        with open(self.ALARM_CONFIG, "w") as f:
-            config.write(f)
+        self._saveAlarmConfig(minVolume, maxVolume, defaultVolume, growingVolume,
+                                  growingSpeed, alarmPlaylist, alarmNewestModeIsEnable)
 
-    def saveConfig(self, configFile:str, content:list):
+    def _loadConfig(self, configFile):
+        """
+        Loads the alarm configuration from a file.
+
+        This function opens the specified file and reads it line by line. It then returns
+        the list of lines.
+
+        Args:
+            configFile (str): The file path to the alarm configuration file.
+
+        Returns:
+            content (list): A list of strings representing the alarm configuration file.
+        """
+        f = open(configFile, "r")
+        content = f.readlines()
+        f.close()
+        return content
+
+    def _saveConfig(self, configFile:str, content:list):
         """
         Saves the content to the config file.
 
@@ -281,7 +275,47 @@ class AlarmManager:
         f = open(configFile,"w")
         for x in content:
             f.write(x)
+            f.write("\n")
         f.close()
+
+
+    def _loadAlarmConfig(self) -> AlarmConfig:
+        config = configparser.ConfigParser()
+        try:
+            config.read(self.ALARM_CONFIG)
+        except:
+            logger.error("Config file \"%s\" doesn't exist", self.ALARM_CONFIG)
+            return None
+
+        if "alarm" not in config:
+            return None
+        cfg = config["alarm"]
+
+        minVolume = cfg.getint(AlarmConfigLinux.MIN_VOLUME, fallback=7)
+        maxVolume = cfg.getint(AlarmConfigLinux.MAX_VOLUME, fallback=69)
+        defaultVolume = cfg.getint(AlarmConfigLinux.DEFAULT_VOLUME, fallback=11)
+        growingVolume = cfg.getint(AlarmConfigLinux.GROWING_VOLUME, fallback=5)
+        growingSpeed = cfg.getint(AlarmConfigLinux.GROWING_SPEED, fallback=55)
+        alarmPlaylistName = cfg.get(AlarmConfigLinux.PLAYLIST, fallback="")
+        theNewestSong = cfg.getboolean(AlarmConfigLinux.THE_NEWEST_SONG, fallback=True)
+
+        return AlarmConfig(minVolume, maxVolume, defaultVolume, growingVolume,
+                               growingSpeed, alarmPlaylistName, theNewestSong)
+
+    def _saveAlarmConfig(self, minVolume, maxVolume, defaultVolume, growingVolume,
+                             growingSpeed, alarmPlaylist, alarmNewestModeIsEnable):
+        config = configparser.ConfigParser()
+        config["alarm"] = {
+            AlarmConfigLinux.MIN_VOLUME: str(minVolume),
+            AlarmConfigLinux.MAX_VOLUME: str(maxVolume),
+            AlarmConfigLinux.DEFAULT_VOLUME: str(defaultVolume),
+            AlarmConfigLinux.GROWING_VOLUME: str(growingVolume),
+            AlarmConfigLinux.GROWING_SPEED: str(growingSpeed),
+            AlarmConfigLinux.PLAYLIST: alarmPlaylist,
+            AlarmConfigLinux.THE_NEWEST_SONG: alarmNewestModeIsEnable
+        }
+        with open(self.ALARM_CONFIG, "w") as f:
+            config.write(f)
 
 if __name__ == "__main__":
     import subprocess
