@@ -88,28 +88,50 @@
   <section id="module-youtubedlWeb.Common.AlarmManager">
 <span id="youtubedlweb-common-alarmmanager-module"></span><h1>youtubedlWeb.Common.AlarmManager module<a class="headerlink" href="#module-youtubedlWeb.Common.AlarmManager" title="Link to this heading"></a></h1>
 <dl class="py class">
-<dt class="sig sig-object py" id="youtubedlWeb.Common.AlarmManager.AlarmManager">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">youtubedlWeb.Common.AlarmManager.</span></span><span class="sig-name descname"><span class="pre">AlarmManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subprocess</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alarmTimer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alarmScript</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/AlarmManager.html#AlarmManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.AlarmManager.AlarmManager" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="youtubedlWeb.Common.AlarmManager.AlarmConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">youtubedlWeb.Common.AlarmManager.</span></span><span class="sig-name descname"><span class="pre">AlarmConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_volume</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_volume</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_volume</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">growing_volume</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">growing_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">playlist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">newest_song_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/AlarmManager.html#AlarmConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.AlarmManager.AlarmConfig" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="youtubedlWeb.Common.AlarmManager.AlarmManager.getTimeOfService">
-<span class="sig-name descname"><span class="pre">getTimeOfService</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">systemdService</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="youtubedlWeb.Common.AlarmEnums.html#youtubedlWeb.Common.AlarmEnums.SystemdCommand" title="youtubedlWeb.Common.AlarmEnums.SystemdCommand"><span class="pre">SystemdCommand</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/AlarmManager.html#AlarmManager.getTimeOfService"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.AlarmManager.AlarmManager.getTimeOfService" title="Link to this definition"></a></dt>
-<dd><p>Gets the time of a given systemd service.</p>
-<p>This function gets the time of a given systemd service. It will run a
-command to get the time of the service and return it as a string.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>systemdService</strong> (<a class="reference internal" href="youtubedlWeb.Common.AlarmEnums.html#youtubedlWeb.Common.AlarmEnums.SystemdCommand" title="youtubedlWeb.Common.AlarmEnums.SystemdCommand"><em>SystemdCommand</em></a>) – The systemd service to get the time of.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The time of the given systemd service.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.AlarmManager.AlarmConfig.default_volume">
+<span class="sig-name descname"><span class="pre">default_volume</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#youtubedlWeb.Common.AlarmManager.AlarmConfig.default_volume" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.AlarmManager.AlarmConfig.growing_speed">
+<span class="sig-name descname"><span class="pre">growing_speed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#youtubedlWeb.Common.AlarmManager.AlarmConfig.growing_speed" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.AlarmManager.AlarmConfig.growing_volume">
+<span class="sig-name descname"><span class="pre">growing_volume</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#youtubedlWeb.Common.AlarmManager.AlarmConfig.growing_volume" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.AlarmManager.AlarmConfig.max_volume">
+<span class="sig-name descname"><span class="pre">max_volume</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#youtubedlWeb.Common.AlarmManager.AlarmConfig.max_volume" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.AlarmManager.AlarmConfig.min_volume">
+<span class="sig-name descname"><span class="pre">min_volume</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#youtubedlWeb.Common.AlarmManager.AlarmConfig.min_volume" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.AlarmManager.AlarmConfig.newest_song_mode">
+<span class="sig-name descname"><span class="pre">newest_song_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#youtubedlWeb.Common.AlarmManager.AlarmConfig.newest_song_mode" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.AlarmManager.AlarmConfig.playlist">
+<span class="sig-name descname"><span class="pre">playlist</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#youtubedlWeb.Common.AlarmManager.AlarmConfig.playlist" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.AlarmManager.AlarmManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">youtubedlWeb.Common.AlarmManager.</span></span><span class="sig-name descname"><span class="pre">AlarmManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subprocess</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alarmTimer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alarmConfig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/AlarmManager.html#AlarmManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.AlarmManager.AlarmManager" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.AlarmManager.AlarmManager.loadAlarmConfig">
 <span class="sig-name descname"><span class="pre">loadAlarmConfig</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/AlarmManager.html#AlarmManager.loadAlarmConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.AlarmManager.AlarmManager.loadAlarmConfig" title="Link to this definition"></a></dt>
@@ -117,25 +139,6 @@ command to get the time of the service and return it as a string.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>A dictionary with the alarm configuration.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="youtubedlWeb.Common.AlarmManager.AlarmManager.loadConfig">
-<span class="sig-name descname"><span class="pre">loadConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configFile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/AlarmManager.html#AlarmManager.loadConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.AlarmManager.AlarmManager.loadConfig" title="Link to this definition"></a></dt>
-<dd><p>Loads the alarm configuration from a file.</p>
-<p>This function opens the specified file and reads it line by line. It then returns
-the list of lines.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>configFile</strong> (<em>str</em>) – The file path to the alarm configuration file.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A list of strings representing the alarm configuration file.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>content (list)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -157,44 +160,6 @@ it will return an empty string.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>nextAlarm (str)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="youtubedlWeb.Common.AlarmManager.AlarmManager.nextSnoozeCheck">
-<span class="sig-name descname"><span class="pre">nextSnoozeCheck</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/AlarmManager.html#AlarmManager.nextSnoozeCheck"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.AlarmManager.AlarmManager.nextSnoozeCheck" title="Link to this definition"></a></dt>
-<dd><p>Checks the status of the alarm snooze timer.</p>
-<p>This function checks if the alarm snooze timer is active. If it is active,
-it will return the time of the next snooze alarm. If the alarm snooze timer
-is disabled, it will return an empty string.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><dl class="simple">
-<dt>The time of the next snooze alarm, or an empty string if</dt><dd><p>the alarm snooze timer is disabled.</p>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>nextSnooze (str)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="youtubedlWeb.Common.AlarmManager.AlarmManager.saveConfig">
-<span class="sig-name descname"><span class="pre">saveConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configFile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/AlarmManager.html#AlarmManager.saveConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.AlarmManager.AlarmManager.saveConfig" title="Link to this definition"></a></dt>
-<dd><p>Saves the content to the config file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>configFile</strong> (<em>str</em>) – The name of the config file.</p></li>
-<li><p><strong>content</strong> (<em>list</em>) – The content to be saved.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>

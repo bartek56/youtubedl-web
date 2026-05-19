@@ -218,7 +218,7 @@
     <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;192.168&quot;</span> <span class="ow">in</span> <span class="n">remoteAddress</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="s2">&quot;127.0.0.1&quot;</span> <span class="ow">in</span> <span class="n">remoteAddress</span><span class="p">):</span>
         <span class="c1">#if os.path.isfile(&quot;/etc/mediaserver/alarm.timer&quot;) == False:</span>
         <span class="c1">#    return WebUtils.alert_info(&quot;Alarm timer doesn&#39;t exist&quot;)</span>
-        <span class="c1">#elif os.path.isfile(&quot;/etc/mediaserver/alarm.sh&quot;) == False:</span>
+        <span class="c1">#elif os.path.isfile(&quot;/etc/mediaserver/alarm&quot;) == False:</span>
         <span class="c1">#    return WebUtils.alert_info(&quot;Alarm script doesn&#39;t exist&quot;)</span>
         <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;alarm.html&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">app</span><span class="o">.</span><span class="n">alarmManager</span><span class="o">.</span><span class="n">loadAlarmConfig</span><span class="p">())</span>
     <span class="k">else</span><span class="p">:</span>
