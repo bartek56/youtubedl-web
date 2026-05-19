@@ -1,7 +1,6 @@
-from .AlarmEnums import AlarmConfigFlask, AlarmConfigLinux, SystemdCommand
+from .AlarmEnums import AlarmConfigFlask, AlarmConfigLinux, SystemdCommand, ALARM_SYSTEMD_TIMER_TEMPLATE
 
 from dataclasses import dataclass
-from string import Template
 import logging
 import configparser
 logger = logging.getLogger(__name__)
@@ -17,15 +16,6 @@ class AlarmConfig:
     playlist: str
     newest_song_mode: bool
 
-SYSTEMD_ALARM_TEMPLATE = Template("""[Unit]
-Description=Alarm
-
-[Timer]
-OnCalendar=$days $time
-
-[Install]
-WantedBy=multi-user.target
-""")
 
 class AlarmManager:
     def __init__(self, subprocess, alarmTimer:str, alarmConfig:str):
@@ -233,7 +223,7 @@ class AlarmManager:
         Returns:
             None
         """
-        self._saveConfig(self.ALARM_TIMER, SYSTEMD_ALARM_TEMPLATE.substitute(days=alarmDays, time=time).splitlines())
+        self._saveConfig(self.ALARM_TIMER, ALARM_SYSTEMD_TIMER_TEMPLATE.substitute(days=alarmDays, time=time).splitlines())
 
         if AlarmConfigFlask.ALARM_MODE_PLAYLIST in alarmMode:
             alarmNewestModeIsEnable = "false"

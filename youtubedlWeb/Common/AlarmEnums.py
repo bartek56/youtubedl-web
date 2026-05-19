@@ -1,3 +1,15 @@
+from string import Template
+
+ALARM_SYSTEMD_TIMER_TEMPLATE = Template("""[Unit]
+Description=Alarm
+
+[Timer]
+OnCalendar=$days $time
+
+[Install]
+WantedBy=multi-user.target
+""")
+
 
 class AlarmConfigFlask():
     ALARM_TIME =          "alarm_time"
