@@ -149,12 +149,15 @@ class YoutubeManager:
 
         data = []
         playlistTitle = results['title']
-        playlistIndex = 1
+        playlistIndex = 0
         for i in results['entries']:
-            mediaFromPlaylist = MediaFromPlaylist(playlistIndex, i['url'], i['title'])
-            #logger.debug(str(mediaFromPlaylist))
-            data.append(mediaFromPlaylist)
             playlistIndex+=1
+            if i['url'] is None or i['title'] is None:
+                logger.error("No url or title in playlist entry")
+                continue
+            mediaFromPlaylist = MediaFromPlaylist(playlistIndex, i['url'], i['title'])
+            logger.debug(str(mediaFromPlaylist))
+            data.append(mediaFromPlaylist)
 
         return ResultOfDownload(PlaylistInfo(playlistTitle, data))
 

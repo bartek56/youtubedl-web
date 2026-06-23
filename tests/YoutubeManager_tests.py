@@ -334,6 +334,9 @@ class YouTubeManagerDlTestCase(unittest.TestCase, YoutubeTestParams):
 
     ytPlaylistInfoResponse2 = {"title": "testPlaylist","entries":[{"playlist_name":"testPlaylist", "playlist_index":"1", "url":"https://www.youtube.com/watch?v=1111", "title":"firstTitle"},
                                                                      {"playlist_name":"testPlaylist", "playlist_index":"2", "url":"https://www.youtube.com/watch?v=2222", "title":"secondTitle"}]}
+    ytPlaylistInfoResponse3 = {"title": "testPlaylist","entries":[{"playlist_name":"testPlaylist", "playlist_index":"1", "url":"https://www.youtube.com/watch?v=1111", "title":None},
+                                                                     {"playlist_name":"testPlaylist", "playlist_index":"2", "url":"https://www.youtube.com/watch?v=2222", "title":"secondTitle"}]}
+    ytPlaylistInfoResponse3Expected = {"title": "testPlaylist","entries":[{"playlist_name":"testPlaylist", "playlist_index":"2", "url":"https://www.youtube.com/watch?v=2222", "title":"secondTitle"}]}
     ytMediaInfoResponse = {"original_url":YoutubeTestParams.ytLink, "title":"firstTitle", "title":"testTitle", "artist":"testArtist", "album":"testAlbum"}
     ytMp3DownloadResponse ={"title":YoutubeTestParams.title, "artist":YoutubeTestParams.artist, "album":YoutubeTestParams.album, "id":YoutubeTestParams.hash, "requested_downloads":[{'filepath':foundMp3File}]}
     ytMp3DownloadWithoutArtistResponse = {"title":YoutubeTestParams.title, "artist":YoutubeTestParams.empty, "album":YoutubeTestParams.album, "id":YoutubeTestParams.hash, "requested_downloads":[{'filepath':foundMp3File}]}
@@ -443,6 +446,16 @@ class YouTubeManagerDlTestCase(unittest.TestCase, YoutubeTestParams):
         mock_extractInfo.assert_called_once_with(self.ytLink, download=False)
         self.assertTrue(result.IsSuccess())
         self.checkPlaylist(result.data(), self.ytPlaylistInfoResponse2)
+
+    @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
+    def test_getPlaylistInfoEmptyTitle(self, mock_extractInfo):
+        mock_extractInfo.configure_mock(return_value=self.ytPlaylistInfoResponse3)
+
+        result = self.ytManager.getPlaylistInfo(self.ytLink)
+
+        mock_extractInfo.assert_called_once_with(self.ytLink, download=False)
+        self.assertTrue(result.IsSuccess())
+        self.checkPlaylist(result.data(), self.ytPlaylistInfoResponse3Expected)
 
     @mock.patch.object(yt_dlp.YoutubeDL, "extract_info")
     def test_getPlaylistInfoEmptyResult(self, mock_extractInfo):
