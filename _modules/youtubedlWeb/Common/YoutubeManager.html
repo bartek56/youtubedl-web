@@ -254,12 +254,15 @@
 
         <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">playlistTitle</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span>
-        <span class="n">playlistIndex</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">playlistIndex</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;entries&#39;</span><span class="p">]:</span>
-            <span class="n">mediaFromPlaylist</span> <span class="o">=</span> <span class="n">MediaFromPlaylist</span><span class="p">(</span><span class="n">playlistIndex</span><span class="p">,</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
-            <span class="c1">#logger.debug(str(mediaFromPlaylist))</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mediaFromPlaylist</span><span class="p">)</span>
             <span class="n">playlistIndex</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No url or title in playlist entry&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="n">mediaFromPlaylist</span> <span class="o">=</span> <span class="n">MediaFromPlaylist</span><span class="p">(</span><span class="n">playlistIndex</span><span class="p">,</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mediaFromPlaylist</span><span class="p">))</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mediaFromPlaylist</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">ResultOfDownload</span><span class="p">(</span><span class="n">PlaylistInfo</span><span class="p">(</span><span class="n">playlistTitle</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span></div>
 
