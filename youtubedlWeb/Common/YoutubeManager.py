@@ -11,7 +11,7 @@ from .YoutubeConfig import YoutubeConfig
 from .YoutubeTypes import ResultOfDownload, YoutubeManagerLogs
 from .YoutubeTypes import AudioData, MediaFromPlaylist, PlaylistInfo, MediaInfo
 from .YoutubeTypes import VideoSettings, VideoData
-from .PlaylistsManager import PlaylistsManager
+from .PlaylistsManager.PlaylistsManager import PlaylistsManager
 
 logger = logging.getLogger(__name__)
 

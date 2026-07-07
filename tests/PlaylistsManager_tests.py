@@ -2,7 +2,7 @@ import os
 import tempfile
 import unittest
 
-from youtubedlWeb.Common.PlaylistsManager import PlaylistsManager
+from youtubedlWeb.Common.PlaylistsManager.PlaylistsManager import PlaylistsManager
 
 
 class PlaylistsManagerTestCase(unittest.TestCase):
