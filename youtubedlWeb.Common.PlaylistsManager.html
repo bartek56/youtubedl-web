@@ -89,8 +89,32 @@
 <span id="youtubedlweb-common-playlistsmanager-module"></span><h1>youtubedlWeb.Common.PlaylistsManager module<a class="headerlink" href="#module-youtubedlWeb.Common.PlaylistsManager" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">youtubedlWeb.Common.PlaylistsManager.</span></span><span class="sig-name descname"><span class="pre">PlaylistsManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">playlistsDir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isCrLfNeeded</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">youtubedlWeb.Common.PlaylistsManager.</span></span><span class="sig-name descname"><span class="pre">PlaylistsManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">playlistsDir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isCrLfNeeded</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">windowsSlash</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.checkCovers">
+<span class="sig-name descname"><span class="pre">checkCovers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">skip_dirs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.checkCovers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.checkCovers" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.checkDuplicates">
+<span class="sig-name descname"><span class="pre">checkDuplicates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.checkDuplicates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.checkDuplicates" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Sprawdza:</dt><dd><ul class="simple">
+<li><p>duplikaty nazw plików,</p></li>
+<li><p>duplikaty tagu website,</p></li>
+<li><p>pliki bez tagu website.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.check_missing_website">
+<span class="sig-name descname"><span class="pre">check_missing_website</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.check_missing_website"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.check_missing_website" title="Link to this definition"></a></dt>
+<dd><p>Wypisuje wszystkie MP3, które nie mają tagu ‘website’</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.clean_filename">
 <span class="sig-name descname"><span class="pre">clean_filename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.clean_filename"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.clean_filename" title="Link to this definition"></a></dt>
@@ -205,19 +229,15 @@ and generate a M3U list from them.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createPlaylist">
-<span class="sig-name descname"><span class="pre">createPlaylist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirName</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.createPlaylist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createPlaylist" title="Link to this definition"></a></dt>
-<dd><p>Create a playlist from a given directory.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>dirName</strong> (<em>str</em>) – name of the directory to collect songs from</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
+<span class="sig-name descname"><span class="pre">createPlaylist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">playlistName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.createPlaylist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createPlaylist" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createPlaylistAsGarmin">
+<span class="sig-name descname"><span class="pre">createPlaylistAsGarmin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sourcePlaylist</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.createPlaylistAsGarmin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createPlaylistAsGarmin" title="Link to this definition"></a></dt>
+<dd><p>sourcePlaylist - ścieżka do istniejącej playlisty m3u
+musicDir       - katalog z całą muzyką</p>
+<p>Tworzy nową playlistę w katalogu musicDir.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -235,24 +255,14 @@ and generate a M3U list from them.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createPlaylistsAsGarmin">
+<span class="sig-name descname"><span class="pre">createPlaylistsAsGarmin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">garminRootDir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.createPlaylistsAsGarmin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createPlaylistsAsGarmin" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createTopOfMusic">
 <span class="sig-name descname"><span class="pre">createTopOfMusic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">numberOfSongs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isCrLfNeeded</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.createTopOfMusic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createTopOfMusic" title="Link to this definition"></a></dt>
-<dd><p>Generate a M3U list from the top numberOfSongs songs in the music directory sorted by date and track number.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>numberOfSongs</strong> (<em>int</em>) – maximum number of songs to include in the M3U list</p></li>
-<li><p><strong>isCrLfNeeded</strong> (<em>bool</em>) – if True, a new line will be added at the end of the file</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.generateHeaderOfM3u">
@@ -303,6 +313,12 @@ and generate a M3U list from them.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.getTotalSize">
+<span class="sig-name descname"><span class="pre">getTotalSize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.getTotalSize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.getTotalSize" title="Link to this definition"></a></dt>
+<dd><p>Zwraca łączny rozmiar wszystkich plików MP3 w MB.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.get_date">
 <span class="sig-name descname"><span class="pre">get_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.get_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.get_date" title="Link to this definition"></a></dt>
 <dd><p>Get date from a given file.</p>
@@ -339,6 +355,11 @@ If the file doesn’t have a track number, returns 1.</p>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.get_website">
+<span class="sig-name descname"><span class="pre">get_website</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.get_website"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.get_website" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.removeCovers">
@@ -382,11 +403,35 @@ If the file doesn’t have a track number, returns 1.</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.showId3Data">
+<span class="sig-name descname"><span class="pre">showId3Data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.showId3Data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.showId3Data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.syncFilesWithoutWebsite">
+<span class="sig-name descname"><span class="pre">syncFilesWithoutWebsite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sourceDir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destinationDir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#PlaylistsManager.syncFilesWithoutWebsite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.syncFilesWithoutWebsite" title="Link to this definition"></a></dt>
+<dd><p>sourceDir      - katalog z poprawnymi plikami (np. Muzyka)
+destinationDir - katalog do synchronizacji (np. Muzyka Sandisk)</p>
+<p>Jeżeli plik w destination nie ma tagu website, zostaje
+zastąpiony plikiem z source o tej samej nazwie.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.main">
 <span class="sig-prename descclassname"><span class="pre">youtubedlWeb.Common.PlaylistsManager.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.main" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.test">
+<span class="sig-prename descclassname"><span class="pre">youtubedlWeb.Common.PlaylistsManager.</span></span><span class="sig-name descname"><span class="pre">test</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.test" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="youtubedlWeb.Common.PlaylistsManager.testCover">
+<span class="sig-prename descclassname"><span class="pre">youtubedlWeb.Common.PlaylistsManager.</span></span><span class="sig-name descname"><span class="pre">testCover</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/youtubedlWeb/Common/PlaylistsManager.html#testCover"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#youtubedlWeb.Common.PlaylistsManager.testCover" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </section>
