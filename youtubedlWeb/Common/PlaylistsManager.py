@@ -37,128 +37,6 @@ class PlaylistsManager:
         f.write(text)
         f.close()
 
-    def check_missing_website(self):
-        """
-        Wypisuje wszystkie MP3, które nie mają tagu 'website'
-        """
-        def get_website(file_path):
-            try:
-                audio = EasyID3(file_path)
-                return audio.get("website", [None])[0]
-            except Exception:
-                return None
-
-
-        missing = []
-
-        for root, _, files in os.walk(self.dir):
-            for file in files:
-                if not file.lower().endswith(".mp3"):
-                    continue
-
-                path = os.path.join(root, file)
-                website = get_website(path)
-
-                if not website:
-                    missing.append(path)
-
-        if not missing:
-            return []
-
-        print(f"Brak 'website' w {len(missing)} plikach:\n")
-
-        for path in missing:
-            print(path)
-
-        return missing
-
-    def getTotalSize(self):
-        """
-        Zwraca łączny rozmiar wszystkich plików MP3 w MB.
-        """
-
-        total_size = 0
-
-        for root, dirs, files in os.walk(self.dir):
-            for file in files:
-                if not file.lower().endswith(".mp3"):
-                    continue
-
-                try:
-                    total_size += os.path.getsize(os.path.join(root, file))
-                except OSError as e:
-                    print(f"Cannot read size of {file}: {e}")
-        totalSizeMb = total_size / (1024 * 1024)
-        return round(totalSizeMb, 2)
-
-    def syncFilesWithoutWebsite(self, sourceDir, destinationDir):
-        """
-        sourceDir      - katalog z poprawnymi plikami (np. Muzyka)
-        destinationDir - katalog do synchronizacji (np. Muzyka Sandisk)
-
-        Jeżeli plik w destination nie ma tagu website, zostaje
-        zastąpiony plikiem z source o tej samej nazwie.
-        """
-
-        print("Synchronizing files without website tag")
-
-        # indeks plików źródłowych
-        sourceFiles = {}
-
-        for root, dirs, files in os.walk(sourceDir):
-            for file in files:
-                if file.lower().endswith(".mp3"):
-                    sourceFiles[file.lower()] = os.path.join(root, file)
-
-        copied = 0
-        missing = 0
-
-        for root, dirs, files in os.walk(destinationDir):
-            for file in files:
-                if not file.lower().endswith(".mp3"):
-                    continue
-
-                dstPath = os.path.join(root, file)
-
-                try:
-                    audio = EasyID3(dstPath)
-                    website = audio.get("website", [""])[0].strip()
-                except Exception:
-                    website = ""
-
-                # wszystko OK
-                if website:
-                    continue
-
-                srcPath = sourceFiles.get(file.lower())
-
-                if srcPath is None:
-                    print(f"Not found in source: {file}")
-                    missing += 1
-                    continue
-
-                try:
-                    shutil.copy2(srcPath, dstPath)
-                    copied += 1
-                    print(f"Copied: {srcPath} -> {dstPath}")
-
-                except Exception as e:
-                    print(f"Error copying {file}: {e}")
-
-        print(f"\nCopied: {copied}")
-        print(f"Missing: {missing}")
-
-    def get_website(self, file_path):
-        if not os.path.isfile(file_path):
-            return ""
-
-        try:
-            audio = EasyID3(file_path)
-            #print(audio)
-            return audio.get("website", [""])[0].strip()
-        except Exception:
-            return ""
-
     def showId3Data(self, file_path):
         if not os.path.isfile(file_path):
             return f"ShowId2Data:File {file_path} is not exist"
@@ -170,197 +48,6 @@ class PlaylistsManager:
         except Exception:
             print("Excetpion to read id3 data")
             return ""
-
-    def createPlaylistsAsGarmin(self, garminRootDir):
-        count = 0
-
-        for root, dirs, files in os.walk(garminRootDir):
-            for file in files:
-                if not file.lower().endswith(".m3u"):
-                    continue
-
-                playlist = os.path.join(root, file)
-
-                print(f"\nProcessing: {playlist}")
-
-                self.createPlaylistAsGarmin(playlist)
-
-                count += 1
-
-        print(f"\nFinished. Recreated {count} playlists.")
-
-    def checkDuplicates(self):
-        """
-        Sprawdza:
-          - duplikaty nazw plików,
-          - duplikaty tagu website,
-          - pliki bez tagu website.
-        """
-
-        filename_index = defaultdict(list)
-        website_index = defaultdict(list)
-
-        duplicate_filenames = {}
-        duplicate_websites = {}
-        missing_websites = []
-
-        # ------------------------------------------------------
-        # Indeksowanie plików
-        # ------------------------------------------------------
-        for root, dirs, files in os.walk(self.dir):
-            for file in files:
-                if not file.lower().endswith(".mp3"):
-                    continue
-
-                fullpath = os.path.join(root, file)
-
-                filename_index[file.lower()].append(fullpath)
-
-                website = self.get_website(fullpath)
-
-                if website:
-                    website_index[website].append(fullpath)
-                else:
-                    missing_websites.append(fullpath)
-
-        # ------------------------------------------------------
-        # Wyszukanie duplikatów nazw plików
-        # ------------------------------------------------------
-        for filename, paths in filename_index.items():
-            if len(paths) > 1:
-                duplicate_filenames[filename] = paths
-
-        # ------------------------------------------------------
-        # Wyszukanie duplikatów website
-        # ------------------------------------------------------
-        for website, paths in website_index.items():
-            if len(paths) > 1:
-                duplicate_websites[website] = paths
-
-        # ------------------------------------------------------
-        # Wyświetlenie wyników
-        # ------------------------------------------------------
-
-        if missing_websites:
-            print("\n========== FILES WITHOUT WEBSITE ==========")
-            for path in sorted(missing_websites):
-                print(path)
-
-        if duplicate_filenames:
-            print("\n========== DUPLICATE FILENAMES ==========")
-            for filename in sorted(duplicate_filenames):
-                print(f"\n{filename}")
-                for path in duplicate_filenames[filename]:
-                    print(f"    {path}")
-
-        if duplicate_websites:
-            print("\n========== DUPLICATE WEBSITE ==========")
-            for website in sorted(duplicate_websites):
-                print(f"\n{website}")
-                for path in duplicate_websites[website]:
-                    print(f"    {path}")
-
-        return duplicate_filenames, duplicate_websites, missing_websites
-
-
-    def createPlaylistAsGarmin(self, sourcePlaylist):
-        """
-        sourcePlaylist - ścieżka do istniejącej playlisty m3u
-        musicDir       - katalog z całą muzyką
-
-        Tworzy nową playlistę w katalogu musicDir.
-        """
-
-        print("Creating playlists according to:", sourcePlaylist)
-
-        # ---------------------------------------------------------
-        # 1. Odczyt playlisty
-        # ---------------------------------------------------------
-        songs = []
-
-        with codecs.open(sourcePlaylist, "r", "utf-8") as f:
-            for line in f:
-                line = line.strip()
-
-                if not line:
-                    continue
-
-                if line.startswith("#"):
-                    continue
-
-                songs.append(line)
-
-        print("Songs in playlist:", len(songs))
-
-        # ---------------------------------------------------------
-        # 2. Budowa indeksu muzyki
-        # ---------------------------------------------------------
-        print("Indexing music...")
-
-        website_index = {}
-        filename_index = {}
-
-        for root, dirs, files in os.walk(self.dir):
-            for file in files:
-                if not file.lower().endswith(".mp3"):
-                    continue
-
-                fullpath = os.path.join(root, file)
-
-                website = self.get_website(fullpath)
-
-                if website:
-                    website_index[website] = fullpath
-
-                filename_index[file.lower()] = fullpath
-
-
-        print("Looking for te same songs...")
-        # ---------------------------------------------------------
-        # 3. Szukanie odpowiedników
-        # ---------------------------------------------------------
-        foundSongs = []
-
-        for song in songs:
-
-            oldSong = os.path.join(os.path.dirname(sourcePlaylist), song)
-
-            website = self.get_website(oldSong)
-
-            found = None
-
-            # najpierw website
-            if website:
-                found = website_index.get(website)
-
-            # później nazwa pliku
-            if found is None:
-                found = filename_index.get(os.path.basename(song).lower())
-
-            if found:
-                rel = os.path.relpath(found, self.dir)
-                rel = rel.replace("\\", "/")
-                foundSongs.append(rel)
-                #print("FOUND:", os.path.basename(song))
-            else:
-                print("NOT FOUND:", oldSong, self.showId3Data(oldSong))
-
-        # ---------------------------------------------------------
-        # 4. Zapis playlisty
-        # ---------------------------------------------------------
-        text = self.generateHeaderOfM3u()
-        text += self.generateM3UList(foundSongs)
-
-        outputPlaylist = "Garmin_" + os.path.basename(sourcePlaylist)
-        output = os.path.join(
-            self.dir,
-            outputPlaylist
-        )
-
-        self.saveToFile(outputPlaylist, text)
-
-        print("Created:", outputPlaylist)
-
 
     def generateHeaderOfM3u(self):
         """
@@ -527,96 +214,6 @@ class PlaylistsManager:
         print("Create playlists for dirs end\n")
 
 # -------------------------------------------------------------------------
-    def removeCovers(self):
-        """
-        Remove all covers from all .mp3 files in all subdirectories of the given path.
-
-        :return: None
-        :rtype: None
-        """
-        print("Remove covers start")
-        metadataMng = metadata_mp3.MetadataManager()
-        folders = [f for f in os.listdir(self.dir) if os.path.isdir(os.path.join(self.dir, f))]
-        for folder in folders:
-            files = [g for g in os.listdir(os.path.join(self.dir, folder)) if os.path.isfile(os.path.join(self.dir,folder, g))]
-            for file in files:
-                if ".mp3" in file:
-                    metadataMng.removeCoverOfMp3(os.path.join(self.dir, folder, file))
-        print("Remove covers end\n")
-
-    def checkCovers(self, skip_dirs = []):
-        metadataMng = metadata_mp3.MetadataManager()
-        filesWithoutCovers = []
-
-        for root, dirs, files in os.walk(self.dir):
-            dirs[:] = [d for d in dirs if d not in skip_dirs]
-            for file in files:
-                if not file.lower().endswith(".mp3"):
-                    continue
-
-                file_path = os.path.join(root, file)
-
-                hasCover = metadataMng.isCoverOfMp3(file_path)
-                if not hasCover:
-                    filesWithoutCovers.append(file_path)
-                    print("No cover:", file_path)
-
-        return filesWithoutCovers
-
-    def clean_filename(self, name):
-        """
-        Clean a filename by removing diacritics, combining characters, non-ASCII characters, and replacing spaces with underscores.
-
-        :param name: the filename to clean
-        :return: a cleaned filename
-        :rtype: str
-        """
-        new_name = unicodedata.normalize('NFKD', name)
-        # Usuń znaki diakrytyczne (łączone)
-        new_name = ''.join(c for c in new_name if not unicodedata.combining(c))
-        # Zamień znaki, które nie są rozkładane (np. ł → l)
-        new_name = new_name.replace('ł', 'l').replace('Ł', 'L')
-        # 2. Usuwanie niedozwolonych znaków
-        # Znaki zabronione w nazwach plików w Windows
-        invalid_chars = r'[^a-zA-Z0-9 _\-.,()]'
-        new_name = re.sub(invalid_chars, '', new_name)
-
-        # 3. Usuwanie nadmiarowych spacji
-        new_name = re.sub(r'\s+', ' ', new_name).strip()
-        return new_name
-
-    def removePolishChars(self):
-        """
-        Remove polish characters from all files and directories in the given path.
-
-        :return: None
-        :rtype: None
-        """
-        print("Remove polish chars start")
-        for root, dirs, files in os.walk(self.dir):
-            for name in files:
-                new_name = self.clean_filename(name)
-                if new_name != name:
-                    src = os.path.join(root, name)
-                    dst = os.path.join(root, new_name)
-                    try:
-                        os.rename(src, dst)
-                        print(f"Renamed: {name} -> {new_name}")
-                    except Exception as e:
-                        print(f"Error renaming {name}: {e}")
-            for name in dirs:
-                new_name = self.clean_filename(name)
-                if new_name != name:
-                    src = os.path.join(root, name)
-                    dst = os.path.join(root, new_name)
-                    try:
-                        os.rename(src, dst)
-                        print(f"Renamed folder: {name} -> {new_name}")
-                    except Exception as e:
-                        print(f"Error renaming folder {name}: {e}")
-        print("Remove polish chars end\n")
-
-# -------------------------------------------------------------------------
     def collectAndGenerateGroupOfPlaylists(self, folders:list, limitOfSongs=None):
         """
         Collect all MP3 files in a given list of directories, sort them by date and track number,
@@ -703,6 +300,346 @@ class PlaylistsManager:
 
         self.saveToFile(playlistFile, textFile)
         print("Create Top", numberOfSongs, "end\n")
+
+
+class PlaylistsManagerPlayer(PlaylistsManager):
+    """Intermediate manager for metadata and file integrity checks."""
+
+    def get_website(self, file_path):
+        if not os.path.isfile(file_path):
+            return ""
+
+        try:
+            audio = EasyID3(file_path)
+            #print(audio)
+            return audio.get("website", [""])[0].strip()
+        except Exception:
+            return ""
+
+    def check_missing_website(self):
+        """
+        Wypisuje wszystkie MP3, które nie mają tagu 'website'.
+        """
+        missing = []
+
+        for root, _, files in os.walk(self.dir):
+            for file in files:
+                if not file.lower().endswith(".mp3"):
+                    continue
+
+                path = os.path.join(root, file)
+                website = self.get_website(path)
+
+                if not website:
+                    missing.append(path)
+
+        if not missing:
+            return []
+
+        print(f"Brak 'website' w {len(missing)} plikach:\n")
+        for path in missing:
+            print(path)
+        return missing
+
+    def getTotalSize(self):
+        """
+        Zwraca łączny rozmiar wszystkich plików MP3 w MB.
+        """
+        total_size = 0
+
+        for root, dirs, files in os.walk(self.dir):
+            for file in files:
+                if not file.lower().endswith(".mp3"):
+                    continue
+
+                try:
+                    total_size += os.path.getsize(os.path.join(root, file))
+                except OSError as e:
+                    print(f"Cannot read size of {file}: {e}")
+
+        totalSizeMb = total_size / (1024 * 1024)
+        return round(totalSizeMb, 2)
+
+    def checkCovers(self, skip_dirs = []):
+        metadataMng = metadata_mp3.MetadataManager()
+        filesWithoutCovers = []
+
+        for root, dirs, files in os.walk(self.dir):
+            dirs[:] = [d for d in dirs if d not in skip_dirs]
+            for file in files:
+                if not file.lower().endswith(".mp3"):
+                    continue
+
+                file_path = os.path.join(root, file)
+
+                hasCover = metadataMng.isCoverOfMp3(file_path)
+                if not hasCover:
+                    filesWithoutCovers.append(file_path)
+                    print("No cover:", file_path)
+
+        return filesWithoutCovers
+
+# -------------------------------------------------------------------------
+    def removeCovers(self):
+        """
+        Remove all covers from all .mp3 files in all subdirectories of the given path.
+
+        :return: None
+        :rtype: None
+        """
+        print("Remove covers start")
+        metadataMng = metadata_mp3.MetadataManager()
+        folders = [f for f in os.listdir(self.dir) if os.path.isdir(os.path.join(self.dir, f))]
+        for folder in folders:
+            files = [g for g in os.listdir(os.path.join(self.dir, folder)) if os.path.isfile(os.path.join(self.dir,folder, g))]
+            for file in files:
+                if ".mp3" in file:
+                    metadataMng.removeCoverOfMp3(os.path.join(self.dir, folder, file))
+        print("Remove covers end\n")
+
+
+
+    def clean_filename(self, name):
+        """
+        Clean a filename by removing diacritics, combining characters, non-ASCII characters, and replacing spaces with underscores.
+
+        :param name: the filename to clean
+        :return: a cleaned filename
+        :rtype: str
+        """
+        new_name = unicodedata.normalize('NFKD', name)
+        # Usuń znaki diakrytyczne (łączone)
+        new_name = ''.join(c for c in new_name if not unicodedata.combining(c))
+        # Zamień znaki, które nie są rozkładane (np. ł → l)
+        new_name = new_name.replace('ł', 'l').replace('Ł', 'L')
+        # 2. Usuwanie niedozwolonych znaków
+        # Znaki zabronione w nazwach plików w Windows
+        invalid_chars = r'[^a-zA-Z0-9 _\-.,()]'
+        new_name = re.sub(invalid_chars, '', new_name)
+
+        # 3. Usuwanie nadmiarowych spacji
+        new_name = re.sub(r'\s+', ' ', new_name).strip()
+        return new_name
+
+    def removePolishChars(self):
+        """
+        Remove polish characters from all files and directories in the given path.
+
+        :return: None
+        :rtype: None
+        """
+        print("Remove polish chars start")
+        for root, dirs, files in os.walk(self.dir):
+            for name in files:
+                new_name = self.clean_filename(name)
+                if new_name != name:
+                    src = os.path.join(root, name)
+                    dst = os.path.join(root, new_name)
+                    try:
+                        os.rename(src, dst)
+                        print(f"Renamed: {name} -> {new_name}")
+                    except Exception as e:
+                        print(f"Error renaming {name}: {e}")
+            for name in dirs:
+                new_name = self.clean_filename(name)
+                if new_name != name:
+                    src = os.path.join(root, name)
+                    dst = os.path.join(root, new_name)
+                    try:
+                        os.rename(src, dst)
+                        print(f"Renamed folder: {name} -> {new_name}")
+                    except Exception as e:
+                        print(f"Error renaming folder {name}: {e}")
+        print("Remove polish chars end\n")
+
+
+
+    def syncFilesWithoutWebsite(self, sourceDir, destinationDir):
+        """
+        sourceDir      - katalog z poprawnymi plikami (np. Muzyka)
+        destinationDir - katalog do synchronizacji (np. Muzyka Sandisk)
+
+        Jeżeli plik w destination nie ma tagu website, zostaje
+        zastąpiony plikiem z source o tej samej nazwie.
+        """
+        print("Synchronizing files without website tag")
+
+        sourceFiles = {}
+        for root, dirs, files in os.walk(sourceDir):
+            for file in files:
+                if file.lower().endswith(".mp3"):
+                    sourceFiles[file.lower()] = os.path.join(root, file)
+
+        copied = 0
+        missing = 0
+
+        for root, dirs, files in os.walk(destinationDir):
+            for file in files:
+                if not file.lower().endswith(".mp3"):
+                    continue
+
+                dstPath = os.path.join(root, file)
+                website = self.get_website(dstPath)
+
+                if website:
+                    continue
+
+                srcPath = sourceFiles.get(file.lower())
+                if srcPath is None:
+                    print(f"Not found in source: {file}")
+                    missing += 1
+                    continue
+
+                try:
+                    shutil.copy2(srcPath, dstPath)
+                    copied += 1
+                    print(f"Copied: {srcPath} -> {dstPath}")
+                except Exception as e:
+                    print(f"Error copying {file}: {e}")
+
+        print(f"\nCopied: {copied}")
+        print(f"Missing: {missing}")
+
+    def checkDuplicates(self):
+        """
+        Sprawdza:
+          - duplikaty nazw plików,
+          - duplikaty tagu website,
+          - pliki bez tagu website.
+        """
+        filename_index = defaultdict(list)
+        website_index = defaultdict(list)
+
+        duplicate_filenames = {}
+        duplicate_websites = {}
+        missing_websites = []
+
+        for root, dirs, files in os.walk(self.dir):
+            for file in files:
+                if not file.lower().endswith(".mp3"):
+                    continue
+
+                fullpath = os.path.join(root, file)
+                filename_index[file.lower()].append(fullpath)
+
+                website = self.get_website(fullpath)
+                if website:
+                    website_index[website].append(fullpath)
+                else:
+                    missing_websites.append(fullpath)
+
+        for filename, paths in filename_index.items():
+            if len(paths) > 1:
+                duplicate_filenames[filename] = paths
+
+        for website, paths in website_index.items():
+            if len(paths) > 1:
+                duplicate_websites[website] = paths
+
+        if missing_websites:
+            print("\n========== FILES WITHOUT WEBSITE ==========")
+            for path in sorted(missing_websites):
+                print(path)
+
+        if duplicate_filenames:
+            print("\n========== DUPLICATE FILENAMES ==========")
+            for filename in sorted(duplicate_filenames):
+                print(f"\n{filename}")
+                for path in duplicate_filenames[filename]:
+                    print(f"    {path}")
+
+        if duplicate_websites:
+            print("\n========== DUPLICATE WEBSITE ==========")
+            for website in sorted(duplicate_websites):
+                print(f"\n{website}")
+                for path in duplicate_websites[website]:
+                    print(f"    {path}")
+
+        return duplicate_filenames, duplicate_websites, missing_websites
+
+
+class GarminPlaylistsManager(PlaylistsManagerPlayer):
+    """Garmin-specific playlist helpers extracted from PlaylistsManager."""
+
+    def __init__(self, playlistsDir, isCrLfNeeded=False, windowsSlash=False):
+        super().__init__(playlistsDir, isCrLfNeeded=isCrLfNeeded, windowsSlash=windowsSlash)
+
+    def createPlaylistsAsGarmin(self, garminRootDir):
+        count = 0
+
+        for root, dirs, files in os.walk(garminRootDir):
+            for file in files:
+                if not file.lower().endswith(".m3u"):
+                    continue
+
+                playlist = os.path.join(root, file)
+                print(f"\nProcessing: {playlist}")
+                self.createPlaylistAsGarmin(playlist)
+                count += 1
+
+        print(f"\nFinished. Recreated {count} playlists.")
+
+    def createPlaylistAsGarmin(self, sourcePlaylist):
+        """
+        Create a Garmin-compatible playlist from an existing M3U playlist.
+        """
+        print("Creating playlists according to:", sourcePlaylist)
+
+        songs = []
+        with codecs.open(sourcePlaylist, "r", "utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                songs.append(line)
+
+        print("Songs in playlist:", len(songs))
+        print("Indexing music...")
+
+        website_index = {}
+        filename_index = {}
+
+        for root, dirs, files in os.walk(self.dir):
+            for file in files:
+                if not file.lower().endswith(".mp3"):
+                    continue
+
+                fullpath = os.path.join(root, file)
+                website = self.get_website(fullpath)
+
+                if website:
+                    website_index[website] = fullpath
+
+                filename_index[file.lower()] = fullpath
+
+        print("Looking for te same songs...")
+        foundSongs = []
+
+        for song in songs:
+            oldSong = os.path.join(os.path.dirname(sourcePlaylist), song)
+            website = self.get_website(oldSong)
+
+            found = None
+            if website:
+                found = website_index.get(website)
+
+            if found is None:
+                found = filename_index.get(os.path.basename(song).lower())
+
+            if found:
+                rel = os.path.relpath(found, self.dir)
+                rel = rel.replace("\\", "/")
+                foundSongs.append(rel)
+            else:
+                print("NOT FOUND:", oldSong, self.showId3Data(oldSong))
+
+        text = self.generateHeaderOfM3u()
+        text += self.generateM3UList(foundSongs)
+
+        outputPlaylist = "Garmin_" + os.path.basename(sourcePlaylist)
+        self.saveToFile(outputPlaylist, text)
+        print("Created:", outputPlaylist)
+
 
 def test():
     manager = PlaylistsManager("/home/bartosz/Music/Sandisk_music_128", isCrLfNeeded=True)
