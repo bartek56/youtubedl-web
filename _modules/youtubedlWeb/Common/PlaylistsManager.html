@@ -113,140 +113,6 @@
         <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="PlaylistsManager.check_missing_website">
-<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.check_missing_website">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">check_missing_website</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Wypisuje wszystkie MP3, które nie mają tagu &#39;website&#39;</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">def</span><span class="w"> </span><span class="nf">get_website</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">audio</span> <span class="o">=</span> <span class="n">EasyID3</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;website&quot;</span><span class="p">,</span> <span class="p">[</span><span class="kc">None</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">None</span>
-
-
-        <span class="n">missing</span> <span class="o">=</span> <span class="p">[]</span>
-
-        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.mp3&quot;</span><span class="p">):</span>
-                    <span class="k">continue</span>
-
-                <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
-                <span class="n">website</span> <span class="o">=</span> <span class="n">get_website</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">website</span><span class="p">:</span>
-                    <span class="n">missing</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">missing</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[]</span>
-
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Brak &#39;website&#39; w </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2"> plikach:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">missing</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">missing</span></div>
-
-
-<div class="viewcode-block" id="PlaylistsManager.getTotalSize">
-<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.getTotalSize">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">getTotalSize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Zwraca łączny rozmiar wszystkich plików MP3 w MB.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">total_size</span> <span class="o">=</span> <span class="mi">0</span>
-
-        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.mp3&quot;</span><span class="p">):</span>
-                    <span class="k">continue</span>
-
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">total_size</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">))</span>
-                <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot read size of </span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">totalSizeMb</span> <span class="o">=</span> <span class="n">total_size</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">totalSizeMb</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="PlaylistsManager.syncFilesWithoutWebsite">
-<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.syncFilesWithoutWebsite">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">syncFilesWithoutWebsite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sourceDir</span><span class="p">,</span> <span class="n">destinationDir</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        sourceDir      - katalog z poprawnymi plikami (np. Muzyka)</span>
-<span class="sd">        destinationDir - katalog do synchronizacji (np. Muzyka Sandisk)</span>
-
-<span class="sd">        Jeżeli plik w destination nie ma tagu website, zostaje</span>
-<span class="sd">        zastąpiony plikiem z source o tej samej nazwie.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Synchronizing files without website tag&quot;</span><span class="p">)</span>
-
-        <span class="c1"># indeks plików źródłowych</span>
-        <span class="n">sourceFiles</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">sourceDir</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.mp3&quot;</span><span class="p">):</span>
-                    <span class="n">sourceFiles</span><span class="p">[</span><span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
-
-        <span class="n">copied</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">missing</span> <span class="o">=</span> <span class="mi">0</span>
-
-        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">destinationDir</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.mp3&quot;</span><span class="p">):</span>
-                    <span class="k">continue</span>
-
-                <span class="n">dstPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
-
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">audio</span> <span class="o">=</span> <span class="n">EasyID3</span><span class="p">(</span><span class="n">dstPath</span><span class="p">)</span>
-                    <span class="n">website</span> <span class="o">=</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;website&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                    <span class="n">website</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-
-                <span class="c1"># wszystko OK</span>
-                <span class="k">if</span> <span class="n">website</span><span class="p">:</span>
-                    <span class="k">continue</span>
-
-                <span class="n">srcPath</span> <span class="o">=</span> <span class="n">sourceFiles</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
-
-                <span class="k">if</span> <span class="n">srcPath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not found in source: </span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="n">missing</span> <span class="o">+=</span> <span class="mi">1</span>
-                    <span class="k">continue</span>
-
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">srcPath</span><span class="p">,</span> <span class="n">dstPath</span><span class="p">)</span>
-                    <span class="n">copied</span> <span class="o">+=</span> <span class="mi">1</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Copied: </span><span class="si">{</span><span class="n">srcPath</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">dstPath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error copying </span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Copied: </span><span class="si">{</span><span class="n">copied</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing: </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="PlaylistsManager.get_website">
-<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.get_website">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_website</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
-            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">audio</span> <span class="o">=</span> <span class="n">EasyID3</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
-            <span class="c1">#print(audio)</span>
-            <span class="k">return</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;website&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
-
-
 <div class="viewcode-block" id="PlaylistsManager.showId3Data">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.showId3Data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">showId3Data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">):</span>
@@ -260,206 +126,6 @@
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Excetpion to read id3 data&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
-
-
-<div class="viewcode-block" id="PlaylistsManager.createPlaylistsAsGarmin">
-<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createPlaylistsAsGarmin">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">createPlaylistsAsGarmin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">garminRootDir</span><span class="p">):</span>
-        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
-
-        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">garminRootDir</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.m3u&quot;</span><span class="p">):</span>
-                    <span class="k">continue</span>
-
-                <span class="n">playlist</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
-
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Processing: </span><span class="si">{</span><span class="n">playlist</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-                <span class="bp">self</span><span class="o">.</span><span class="n">createPlaylistAsGarmin</span><span class="p">(</span><span class="n">playlist</span><span class="p">)</span>
-
-                <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
-
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Finished. Recreated </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> playlists.&quot;</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="PlaylistsManager.checkDuplicates">
-<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.checkDuplicates">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">checkDuplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Sprawdza:</span>
-<span class="sd">          - duplikaty nazw plików,</span>
-<span class="sd">          - duplikaty tagu website,</span>
-<span class="sd">          - pliki bez tagu website.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">filename_index</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-        <span class="n">website_index</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-
-        <span class="n">duplicate_filenames</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">duplicate_websites</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">missing_websites</span> <span class="o">=</span> <span class="p">[]</span>
-
-        <span class="c1"># ------------------------------------------------------</span>
-        <span class="c1"># Indeksowanie plików</span>
-        <span class="c1"># ------------------------------------------------------</span>
-        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.mp3&quot;</span><span class="p">):</span>
-                    <span class="k">continue</span>
-
-                <span class="n">fullpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
-
-                <span class="n">filename_index</span><span class="p">[</span><span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fullpath</span><span class="p">)</span>
-
-                <span class="n">website</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_website</span><span class="p">(</span><span class="n">fullpath</span><span class="p">)</span>
-
-                <span class="k">if</span> <span class="n">website</span><span class="p">:</span>
-                    <span class="n">website_index</span><span class="p">[</span><span class="n">website</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fullpath</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">missing_websites</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fullpath</span><span class="p">)</span>
-
-        <span class="c1"># ------------------------------------------------------</span>
-        <span class="c1"># Wyszukanie duplikatów nazw plików</span>
-        <span class="c1"># ------------------------------------------------------</span>
-        <span class="k">for</span> <span class="n">filename</span><span class="p">,</span> <span class="n">paths</span> <span class="ow">in</span> <span class="n">filename_index</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">duplicate_filenames</span><span class="p">[</span><span class="n">filename</span><span class="p">]</span> <span class="o">=</span> <span class="n">paths</span>
-
-        <span class="c1"># ------------------------------------------------------</span>
-        <span class="c1"># Wyszukanie duplikatów website</span>
-        <span class="c1"># ------------------------------------------------------</span>
-        <span class="k">for</span> <span class="n">website</span><span class="p">,</span> <span class="n">paths</span> <span class="ow">in</span> <span class="n">website_index</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">duplicate_websites</span><span class="p">[</span><span class="n">website</span><span class="p">]</span> <span class="o">=</span> <span class="n">paths</span>
-
-        <span class="c1"># ------------------------------------------------------</span>
-        <span class="c1"># Wyświetlenie wyników</span>
-        <span class="c1"># ------------------------------------------------------</span>
-
-        <span class="k">if</span> <span class="n">missing_websites</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">========== FILES WITHOUT WEBSITE ==========&quot;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">missing_websites</span><span class="p">):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">duplicate_filenames</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">========== DUPLICATE FILENAMES ==========&quot;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">duplicate_filenames</span><span class="p">):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">duplicate_filenames</span><span class="p">[</span><span class="n">filename</span><span class="p">]:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">duplicate_websites</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">========== DUPLICATE WEBSITE ==========&quot;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">website</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">duplicate_websites</span><span class="p">):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">website</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">duplicate_websites</span><span class="p">[</span><span class="n">website</span><span class="p">]:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">duplicate_filenames</span><span class="p">,</span> <span class="n">duplicate_websites</span><span class="p">,</span> <span class="n">missing_websites</span></div>
-
-
-
-<div class="viewcode-block" id="PlaylistsManager.createPlaylistAsGarmin">
-<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.createPlaylistAsGarmin">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">createPlaylistAsGarmin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sourcePlaylist</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        sourcePlaylist - ścieżka do istniejącej playlisty m3u</span>
-<span class="sd">        musicDir       - katalog z całą muzyką</span>
-
-<span class="sd">        Tworzy nową playlistę w katalogu musicDir.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Creating playlists according to:&quot;</span><span class="p">,</span> <span class="n">sourcePlaylist</span><span class="p">)</span>
-
-        <span class="c1"># ---------------------------------------------------------</span>
-        <span class="c1"># 1. Odczyt playlisty</span>
-        <span class="c1"># ---------------------------------------------------------</span>
-        <span class="n">songs</span> <span class="o">=</span> <span class="p">[]</span>
-
-        <span class="k">with</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">sourcePlaylist</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
-                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
-                    <span class="k">continue</span>
-
-                <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
-                    <span class="k">continue</span>
-
-                <span class="n">songs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Songs in playlist:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">songs</span><span class="p">))</span>
-
-        <span class="c1"># ---------------------------------------------------------</span>
-        <span class="c1"># 2. Budowa indeksu muzyki</span>
-        <span class="c1"># ---------------------------------------------------------</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Indexing music...&quot;</span><span class="p">)</span>
-
-        <span class="n">website_index</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">filename_index</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.mp3&quot;</span><span class="p">):</span>
-                    <span class="k">continue</span>
-
-                <span class="n">fullpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
-
-                <span class="n">website</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_website</span><span class="p">(</span><span class="n">fullpath</span><span class="p">)</span>
-
-                <span class="k">if</span> <span class="n">website</span><span class="p">:</span>
-                    <span class="n">website_index</span><span class="p">[</span><span class="n">website</span><span class="p">]</span> <span class="o">=</span> <span class="n">fullpath</span>
-
-                <span class="n">filename_index</span><span class="p">[</span><span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">fullpath</span>
-
-
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Looking for te same songs...&quot;</span><span class="p">)</span>
-        <span class="c1"># ---------------------------------------------------------</span>
-        <span class="c1"># 3. Szukanie odpowiedników</span>
-        <span class="c1"># ---------------------------------------------------------</span>
-        <span class="n">foundSongs</span> <span class="o">=</span> <span class="p">[]</span>
-
-        <span class="k">for</span> <span class="n">song</span> <span class="ow">in</span> <span class="n">songs</span><span class="p">:</span>
-
-            <span class="n">oldSong</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">sourcePlaylist</span><span class="p">),</span> <span class="n">song</span><span class="p">)</span>
-
-            <span class="n">website</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_website</span><span class="p">(</span><span class="n">oldSong</span><span class="p">)</span>
-
-            <span class="n">found</span> <span class="o">=</span> <span class="kc">None</span>
-
-            <span class="c1"># najpierw website</span>
-            <span class="k">if</span> <span class="n">website</span><span class="p">:</span>
-                <span class="n">found</span> <span class="o">=</span> <span class="n">website_index</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">website</span><span class="p">)</span>
-
-            <span class="c1"># później nazwa pliku</span>
-            <span class="k">if</span> <span class="n">found</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">found</span> <span class="o">=</span> <span class="n">filename_index</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">song</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
-
-            <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
-                <span class="n">rel</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">found</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">)</span>
-                <span class="n">rel</span> <span class="o">=</span> <span class="n">rel</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">)</span>
-                <span class="n">foundSongs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rel</span><span class="p">)</span>
-                <span class="c1">#print(&quot;FOUND:&quot;, os.path.basename(song))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NOT FOUND:&quot;</span><span class="p">,</span> <span class="n">oldSong</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">showId3Data</span><span class="p">(</span><span class="n">oldSong</span><span class="p">))</span>
-
-        <span class="c1"># ---------------------------------------------------------</span>
-        <span class="c1"># 4. Zapis playlisty</span>
-        <span class="c1"># ---------------------------------------------------------</span>
-        <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generateHeaderOfM3u</span><span class="p">()</span>
-        <span class="n">text</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generateM3UList</span><span class="p">(</span><span class="n">foundSongs</span><span class="p">)</span>
-
-        <span class="n">outputPlaylist</span> <span class="o">=</span> <span class="s2">&quot;Garmin_&quot;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">sourcePlaylist</span><span class="p">)</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span>
-            <span class="n">outputPlaylist</span>
-        <span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">saveToFile</span><span class="p">(</span><span class="n">outputPlaylist</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
-
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Created:&quot;</span><span class="p">,</span> <span class="n">outputPlaylist</span><span class="p">)</span></div>
-
 
 
 <div class="viewcode-block" id="PlaylistsManager.generateHeaderOfM3u">
@@ -654,108 +320,6 @@
 
 
 <span class="c1"># -------------------------------------------------------------------------</span>
-<div class="viewcode-block" id="PlaylistsManager.removeCovers">
-<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.removeCovers">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">removeCovers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Remove all covers from all .mp3 files in all subdirectories of the given path.</span>
-
-<span class="sd">        :return: None</span>
-<span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Remove covers start&quot;</span><span class="p">)</span>
-        <span class="n">metadataMng</span> <span class="o">=</span> <span class="n">metadata_mp3</span><span class="o">.</span><span class="n">MetadataManager</span><span class="p">()</span>
-        <span class="n">folders</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))]</span>
-        <span class="k">for</span> <span class="n">folder</span> <span class="ow">in</span> <span class="n">folders</span><span class="p">:</span>
-            <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">folder</span><span class="p">))</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span><span class="n">folder</span><span class="p">,</span> <span class="n">g</span><span class="p">))]</span>
-            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
-                <span class="k">if</span> <span class="s2">&quot;.mp3&quot;</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
-                    <span class="n">metadataMng</span><span class="o">.</span><span class="n">removeCoverOfMp3</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">folder</span><span class="p">,</span> <span class="n">file</span><span class="p">))</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Remove covers end</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="PlaylistsManager.checkCovers">
-<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.checkCovers">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">checkCovers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">skip_dirs</span> <span class="o">=</span> <span class="p">[]):</span>
-        <span class="n">metadataMng</span> <span class="o">=</span> <span class="n">metadata_mp3</span><span class="o">.</span><span class="n">MetadataManager</span><span class="p">()</span>
-        <span class="n">filesWithoutCovers</span> <span class="o">=</span> <span class="p">[]</span>
-
-        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">):</span>
-            <span class="n">dirs</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dirs</span> <span class="k">if</span> <span class="n">d</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">skip_dirs</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.mp3&quot;</span><span class="p">):</span>
-                    <span class="k">continue</span>
-
-                <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
-
-                <span class="n">hasCover</span> <span class="o">=</span> <span class="n">metadataMng</span><span class="o">.</span><span class="n">isCoverOfMp3</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">hasCover</span><span class="p">:</span>
-                    <span class="n">filesWithoutCovers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No cover:&quot;</span><span class="p">,</span> <span class="n">file_path</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">filesWithoutCovers</span></div>
-
-
-<div class="viewcode-block" id="PlaylistsManager.clean_filename">
-<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.clean_filename">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">clean_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Clean a filename by removing diacritics, combining characters, non-ASCII characters, and replacing spaces with underscores.</span>
-
-<span class="sd">        :param name: the filename to clean</span>
-<span class="sd">        :return: a cleaned filename</span>
-<span class="sd">        :rtype: str</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">new_name</span> <span class="o">=</span> <span class="n">unicodedata</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="s1">&#39;NFKD&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-        <span class="c1"># Usuń znaki diakrytyczne (łączone)</span>
-        <span class="n">new_name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">new_name</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">unicodedata</span><span class="o">.</span><span class="n">combining</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
-        <span class="c1"># Zamień znaki, które nie są rozkładane (np. ł → l)</span>
-        <span class="n">new_name</span> <span class="o">=</span> <span class="n">new_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;ł&#39;</span><span class="p">,</span> <span class="s1">&#39;l&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;Ł&#39;</span><span class="p">,</span> <span class="s1">&#39;L&#39;</span><span class="p">)</span>
-        <span class="c1"># 2. Usuwanie niedozwolonych znaków</span>
-        <span class="c1"># Znaki zabronione w nazwach plików w Windows</span>
-        <span class="n">invalid_chars</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;[^a-zA-Z0-9 _\-.,()]&#39;</span>
-        <span class="n">new_name</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">invalid_chars</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">new_name</span><span class="p">)</span>
-
-        <span class="c1"># 3. Usuwanie nadmiarowych spacji</span>
-        <span class="n">new_name</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\s+&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">new_name</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">new_name</span></div>
-
-
-<div class="viewcode-block" id="PlaylistsManager.removePolishChars">
-<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.removePolishChars">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">removePolishChars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Remove polish characters from all files and directories in the given path.</span>
-
-<span class="sd">        :return: None</span>
-<span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Remove polish chars start&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
-                <span class="n">new_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clean_filename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">new_name</span> <span class="o">!=</span> <span class="n">name</span><span class="p">:</span>
-                    <span class="n">src</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-                    <span class="n">dst</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">new_name</span><span class="p">)</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Renamed: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">new_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error renaming </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">dirs</span><span class="p">:</span>
-                <span class="n">new_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clean_filename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">new_name</span> <span class="o">!=</span> <span class="n">name</span><span class="p">:</span>
-                    <span class="n">src</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-                    <span class="n">dst</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">new_name</span><span class="p">)</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Renamed folder: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">new_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error renaming folder </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Remove polish chars end</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
-
-
-<span class="c1"># -------------------------------------------------------------------------</span>
 <div class="viewcode-block" id="PlaylistsManager.collectAndGenerateGroupOfPlaylists">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManager.collectAndGenerateGroupOfPlaylists">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">collectAndGenerateGroupOfPlaylists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folders</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span> <span class="n">limitOfSongs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -854,6 +418,385 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">saveToFile</span><span class="p">(</span><span class="n">playlistFile</span><span class="p">,</span> <span class="n">textFile</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Create Top&quot;</span><span class="p">,</span> <span class="n">numberOfSongs</span><span class="p">,</span> <span class="s2">&quot;end</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 </div>
+
+
+
+<div class="viewcode-block" id="PlaylistsManagerPlayer">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManagerPlayer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PlaylistsManagerPlayer</span><span class="p">(</span><span class="n">PlaylistsManager</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Intermediate manager for metadata and file integrity checks.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PlaylistsManagerPlayer.get_website">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManagerPlayer.get_website">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_website</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">audio</span> <span class="o">=</span> <span class="n">EasyID3</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+            <span class="c1">#print(audio)</span>
+            <span class="k">return</span> <span class="n">audio</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;website&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="PlaylistsManagerPlayer.check_missing_website">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManagerPlayer.check_missing_website">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_missing_website</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Wypisuje wszystkie MP3, które nie mają tagu &#39;website&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.mp3&quot;</span><span class="p">):</span>
+                    <span class="k">continue</span>
+
+                <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+                <span class="n">website</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_website</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">website</span><span class="p">:</span>
+                    <span class="n">missing</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Brak &#39;website&#39; w </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2"> plikach:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">missing</span></div>
+
+
+<div class="viewcode-block" id="PlaylistsManagerPlayer.getTotalSize">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManagerPlayer.getTotalSize">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getTotalSize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Zwraca łączny rozmiar wszystkich plików MP3 w MB.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">total_size</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.mp3&quot;</span><span class="p">):</span>
+                    <span class="k">continue</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">total_size</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">))</span>
+                <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot read size of </span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">totalSizeMb</span> <span class="o">=</span> <span class="n">total_size</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">totalSizeMb</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PlaylistsManagerPlayer.checkCovers">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManagerPlayer.checkCovers">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">checkCovers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">skip_dirs</span> <span class="o">=</span> <span class="p">[]):</span>
+        <span class="n">metadataMng</span> <span class="o">=</span> <span class="n">metadata_mp3</span><span class="o">.</span><span class="n">MetadataManager</span><span class="p">()</span>
+        <span class="n">filesWithoutCovers</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">):</span>
+            <span class="n">dirs</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dirs</span> <span class="k">if</span> <span class="n">d</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">skip_dirs</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.mp3&quot;</span><span class="p">):</span>
+                    <span class="k">continue</span>
+
+                <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+
+                <span class="n">hasCover</span> <span class="o">=</span> <span class="n">metadataMng</span><span class="o">.</span><span class="n">isCoverOfMp3</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">hasCover</span><span class="p">:</span>
+                    <span class="n">filesWithoutCovers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No cover:&quot;</span><span class="p">,</span> <span class="n">file_path</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">filesWithoutCovers</span></div>
+
+
+<span class="c1"># -------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="PlaylistsManagerPlayer.removeCovers">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManagerPlayer.removeCovers">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">removeCovers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove all covers from all .mp3 files in all subdirectories of the given path.</span>
+
+<span class="sd">        :return: None</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Remove covers start&quot;</span><span class="p">)</span>
+        <span class="n">metadataMng</span> <span class="o">=</span> <span class="n">metadata_mp3</span><span class="o">.</span><span class="n">MetadataManager</span><span class="p">()</span>
+        <span class="n">folders</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))]</span>
+        <span class="k">for</span> <span class="n">folder</span> <span class="ow">in</span> <span class="n">folders</span><span class="p">:</span>
+            <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">folder</span><span class="p">))</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span><span class="n">folder</span><span class="p">,</span> <span class="n">g</span><span class="p">))]</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;.mp3&quot;</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+                    <span class="n">metadataMng</span><span class="o">.</span><span class="n">removeCoverOfMp3</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">folder</span><span class="p">,</span> <span class="n">file</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Remove covers end</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="PlaylistsManagerPlayer.clean_filename">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManagerPlayer.clean_filename">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clean_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clean a filename by removing diacritics, combining characters, non-ASCII characters, and replacing spaces with underscores.</span>
+
+<span class="sd">        :param name: the filename to clean</span>
+<span class="sd">        :return: a cleaned filename</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_name</span> <span class="o">=</span> <span class="n">unicodedata</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="s1">&#39;NFKD&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="c1"># Usuń znaki diakrytyczne (łączone)</span>
+        <span class="n">new_name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">new_name</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">unicodedata</span><span class="o">.</span><span class="n">combining</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+        <span class="c1"># Zamień znaki, które nie są rozkładane (np. ł → l)</span>
+        <span class="n">new_name</span> <span class="o">=</span> <span class="n">new_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;ł&#39;</span><span class="p">,</span> <span class="s1">&#39;l&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;Ł&#39;</span><span class="p">,</span> <span class="s1">&#39;L&#39;</span><span class="p">)</span>
+        <span class="c1"># 2. Usuwanie niedozwolonych znaków</span>
+        <span class="c1"># Znaki zabronione w nazwach plików w Windows</span>
+        <span class="n">invalid_chars</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;[^a-zA-Z0-9 _\-.,()]&#39;</span>
+        <span class="n">new_name</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">invalid_chars</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">new_name</span><span class="p">)</span>
+
+        <span class="c1"># 3. Usuwanie nadmiarowych spacji</span>
+        <span class="n">new_name</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\s+&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">new_name</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">new_name</span></div>
+
+
+<div class="viewcode-block" id="PlaylistsManagerPlayer.removePolishChars">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManagerPlayer.removePolishChars">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">removePolishChars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove polish characters from all files and directories in the given path.</span>
+
+<span class="sd">        :return: None</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Remove polish chars start&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                <span class="n">new_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clean_filename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">new_name</span> <span class="o">!=</span> <span class="n">name</span><span class="p">:</span>
+                    <span class="n">src</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+                    <span class="n">dst</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">new_name</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Renamed: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">new_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error renaming </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">dirs</span><span class="p">:</span>
+                <span class="n">new_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clean_filename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">new_name</span> <span class="o">!=</span> <span class="n">name</span><span class="p">:</span>
+                    <span class="n">src</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+                    <span class="n">dst</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">new_name</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Renamed folder: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">new_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error renaming folder </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Remove polish chars end</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="PlaylistsManagerPlayer.syncFilesWithoutWebsite">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManagerPlayer.syncFilesWithoutWebsite">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">syncFilesWithoutWebsite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sourceDir</span><span class="p">,</span> <span class="n">destinationDir</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        sourceDir      - katalog z poprawnymi plikami (np. Muzyka)</span>
+<span class="sd">        destinationDir - katalog do synchronizacji (np. Muzyka Sandisk)</span>
+
+<span class="sd">        Jeżeli plik w destination nie ma tagu website, zostaje</span>
+<span class="sd">        zastąpiony plikiem z source o tej samej nazwie.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Synchronizing files without website tag&quot;</span><span class="p">)</span>
+
+        <span class="n">sourceFiles</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">sourceDir</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.mp3&quot;</span><span class="p">):</span>
+                    <span class="n">sourceFiles</span><span class="p">[</span><span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+
+        <span class="n">copied</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">destinationDir</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.mp3&quot;</span><span class="p">):</span>
+                    <span class="k">continue</span>
+
+                <span class="n">dstPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+                <span class="n">website</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_website</span><span class="p">(</span><span class="n">dstPath</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">website</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">srcPath</span> <span class="o">=</span> <span class="n">sourceFiles</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">srcPath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not found in source: </span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">missing</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">continue</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">srcPath</span><span class="p">,</span> <span class="n">dstPath</span><span class="p">)</span>
+                    <span class="n">copied</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Copied: </span><span class="si">{</span><span class="n">srcPath</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">dstPath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error copying </span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Copied: </span><span class="si">{</span><span class="n">copied</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing: </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PlaylistsManagerPlayer.checkDuplicates">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.PlaylistsManagerPlayer.checkDuplicates">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">checkDuplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sprawdza:</span>
+<span class="sd">          - duplikaty nazw plików,</span>
+<span class="sd">          - duplikaty tagu website,</span>
+<span class="sd">          - pliki bez tagu website.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">filename_index</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="n">website_index</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+
+        <span class="n">duplicate_filenames</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">duplicate_websites</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">missing_websites</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.mp3&quot;</span><span class="p">):</span>
+                    <span class="k">continue</span>
+
+                <span class="n">fullpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+                <span class="n">filename_index</span><span class="p">[</span><span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fullpath</span><span class="p">)</span>
+
+                <span class="n">website</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_website</span><span class="p">(</span><span class="n">fullpath</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">website</span><span class="p">:</span>
+                    <span class="n">website_index</span><span class="p">[</span><span class="n">website</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fullpath</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">missing_websites</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fullpath</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">filename</span><span class="p">,</span> <span class="n">paths</span> <span class="ow">in</span> <span class="n">filename_index</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">duplicate_filenames</span><span class="p">[</span><span class="n">filename</span><span class="p">]</span> <span class="o">=</span> <span class="n">paths</span>
+
+        <span class="k">for</span> <span class="n">website</span><span class="p">,</span> <span class="n">paths</span> <span class="ow">in</span> <span class="n">website_index</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">duplicate_websites</span><span class="p">[</span><span class="n">website</span><span class="p">]</span> <span class="o">=</span> <span class="n">paths</span>
+
+        <span class="k">if</span> <span class="n">missing_websites</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">========== FILES WITHOUT WEBSITE ==========&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">missing_websites</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">duplicate_filenames</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">========== DUPLICATE FILENAMES ==========&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">duplicate_filenames</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">duplicate_filenames</span><span class="p">[</span><span class="n">filename</span><span class="p">]:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">duplicate_websites</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">========== DUPLICATE WEBSITE ==========&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">website</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">duplicate_websites</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">website</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">duplicate_websites</span><span class="p">[</span><span class="n">website</span><span class="p">]:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">duplicate_filenames</span><span class="p">,</span> <span class="n">duplicate_websites</span><span class="p">,</span> <span class="n">missing_websites</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GarminPlaylistsManager">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.GarminPlaylistsManager">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GarminPlaylistsManager</span><span class="p">(</span><span class="n">PlaylistsManagerPlayer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Garmin-specific playlist helpers extracted from PlaylistsManager.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">playlistsDir</span><span class="p">,</span> <span class="n">isCrLfNeeded</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">windowsSlash</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">playlistsDir</span><span class="p">,</span> <span class="n">isCrLfNeeded</span><span class="o">=</span><span class="n">isCrLfNeeded</span><span class="p">,</span> <span class="n">windowsSlash</span><span class="o">=</span><span class="n">windowsSlash</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GarminPlaylistsManager.createPlaylistsAsGarmin">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.GarminPlaylistsManager.createPlaylistsAsGarmin">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">createPlaylistsAsGarmin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">garminRootDir</span><span class="p">):</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">garminRootDir</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.m3u&quot;</span><span class="p">):</span>
+                    <span class="k">continue</span>
+
+                <span class="n">playlist</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Processing: </span><span class="si">{</span><span class="n">playlist</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">createPlaylistAsGarmin</span><span class="p">(</span><span class="n">playlist</span><span class="p">)</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Finished. Recreated </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> playlists.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GarminPlaylistsManager.createPlaylistAsGarmin">
+<a class="viewcode-back" href="../../../youtubedlWeb.Common.PlaylistsManager.html#youtubedlWeb.Common.PlaylistsManager.GarminPlaylistsManager.createPlaylistAsGarmin">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">createPlaylistAsGarmin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sourcePlaylist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a Garmin-compatible playlist from an existing M3U playlist.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Creating playlists according to:&quot;</span><span class="p">,</span> <span class="n">sourcePlaylist</span><span class="p">)</span>
+
+        <span class="n">songs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">sourcePlaylist</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span> <span class="ow">or</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="n">songs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Songs in playlist:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">songs</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Indexing music...&quot;</span><span class="p">)</span>
+
+        <span class="n">website_index</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">filename_index</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.mp3&quot;</span><span class="p">):</span>
+                    <span class="k">continue</span>
+
+                <span class="n">fullpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+                <span class="n">website</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_website</span><span class="p">(</span><span class="n">fullpath</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">website</span><span class="p">:</span>
+                    <span class="n">website_index</span><span class="p">[</span><span class="n">website</span><span class="p">]</span> <span class="o">=</span> <span class="n">fullpath</span>
+
+                <span class="n">filename_index</span><span class="p">[</span><span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">fullpath</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Looking for te same songs...&quot;</span><span class="p">)</span>
+        <span class="n">foundSongs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">song</span> <span class="ow">in</span> <span class="n">songs</span><span class="p">:</span>
+            <span class="n">oldSong</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">sourcePlaylist</span><span class="p">),</span> <span class="n">song</span><span class="p">)</span>
+            <span class="n">website</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_website</span><span class="p">(</span><span class="n">oldSong</span><span class="p">)</span>
+
+            <span class="n">found</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">website</span><span class="p">:</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="n">website_index</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">website</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">found</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="n">filename_index</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">song</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+
+            <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+                <span class="n">rel</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">found</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">)</span>
+                <span class="n">rel</span> <span class="o">=</span> <span class="n">rel</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">)</span>
+                <span class="n">foundSongs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rel</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NOT FOUND:&quot;</span><span class="p">,</span> <span class="n">oldSong</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">showId3Data</span><span class="p">(</span><span class="n">oldSong</span><span class="p">))</span>
+
+        <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generateHeaderOfM3u</span><span class="p">()</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generateM3UList</span><span class="p">(</span><span class="n">foundSongs</span><span class="p">)</span>
+
+        <span class="n">outputPlaylist</span> <span class="o">=</span> <span class="s2">&quot;Garmin_&quot;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">sourcePlaylist</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saveToFile</span><span class="p">(</span><span class="n">outputPlaylist</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Created:&quot;</span><span class="p">,</span> <span class="n">outputPlaylist</span><span class="p">)</span></div>
+</div>
+
 
 
 <div class="viewcode-block" id="test">
