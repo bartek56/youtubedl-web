@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
-from PlaylistsManager import PlaylistsManager
+from PlaylistsManager import PlaylistsManagerPlayer, GarminPlaylistsManager
 
 def test():
-    manager = PlaylistsManager(os.getcwd(), isCrLfNeeded=True)
+    manager = PlaylistsManagerPlayer(os.getcwd(), isCrLfNeeded=True)
     manager.removeCovers()
     manager.removePolishChars()
     manager.createPlaylists()
@@ -19,7 +18,7 @@ def test():
     manager.createTopOfMusic(30)
 
 def main():
-    manager = PlaylistsManager(os.getcwd(), isCrLfNeeded=True)
+    manager = PlaylistsManagerPlayer(os.getcwd(), isCrLfNeeded=True)
     manager.check_missing_website()
     manager.removeCovers()
     manager.removePolishChars()
@@ -143,6 +142,7 @@ def main():
     manager.createTopOfMusic(100)
     manager.createTopOfMusic(200)
 
+    manager = GarminPlaylistsManager(os.getcwd(), isCrLfNeeded=True)
     manager.createPlaylistsAsGarmin("/home/bartosz/Music/Garmin5_music_128")
     #manager.checkDuplicates()
 

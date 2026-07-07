@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import os
-from PlaylistsManager import PlaylistsManager
+from PlaylistsManager import PlaylistsManagerPlayer, GarminPlaylistsManager
 
 def main():
     path = os.path.abspath(os.getcwd())
-    manager = PlaylistsManager(path)
+    manager = PlaylistsManagerPlayer(path)
 
     manager.createTopOfMusic(100)
-    manager = PlaylistsManager(path)
+    manager = PlaylistsManagerPlayer(path)
     manager.removeCovers()
     manager.createPlaylists()
     manager.createPlaylist(".", "all")
@@ -35,7 +35,7 @@ def main():
         print("Warning, total size is greater than 1200Mb")
         return
 
-    manager = PlaylistsManager("/home/bartosz/Music/MediaServer/Youtube list")
+    manager = GarminPlaylistsManager("/home/bartosz/Music/MediaServer/Youtube list")
     manager.createPlaylistsAsGarmin("/home/bartosz/Music/Garmin5_music_128")
 
 if __name__ == '__main__':
