@@ -81,10 +81,10 @@
 <div class="viewcode-block" id="DownloadMediaRequest">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.SocketRequests.html#youtubedlWeb.Common.SocketRequests.DownloadMediaRequest">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DownloadMediaRequest</span><span class="p">:</span>
-    <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;downloadMedia&quot;</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="s2">"downloadMedia"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">downloadMedia</span> <span class="o">=</span> <span class="n">DownloadMedia</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s2">&quot;link&quot;</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">])</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">downloadMedia</span> <span class="o">=</span> <span class="n">DownloadMedia</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s2">"link"</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s2">"type"</span><span class="p">])</span></div>
 
 
 <span class="c1"># --------------------- downloadPlaylists ----------------------------</span>
@@ -99,9 +99,9 @@
 <div class="viewcode-block" id="DownloadPlaylistsRequest">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.SocketRequests.html#youtubedlWeb.Common.SocketRequests.DownloadPlaylistsRequest">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DownloadPlaylistsRequest</span><span class="p">:</span>
-    <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;downloadPlaylists&quot;</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="s2">"downloadPlaylists"</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">downloadPlaylists</span> <span class="o">=</span> <span class="n">DownloadPlaylists</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s2">&quot;link&quot;</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">downloadPlaylists</span> <span class="o">=</span> <span class="n">DownloadPlaylists</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s2">"link"</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s2">"name"</span><span class="p">])</span></div>
 
 
 <span class="c1"># ------------------------- downloadFile -------------------------</span>
@@ -115,10 +115,10 @@
 <div class="viewcode-block" id="DownloadFileRequest">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.SocketRequests.html#youtubedlWeb.Common.SocketRequests.DownloadFileRequest">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DownloadFileRequest</span><span class="p">:</span>
-    <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;downloadFile&quot;</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="s2">"downloadFile"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">downloadFile</span> <span class="o">=</span> <span class="n">DownloadFile</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s2">&quot;hash&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">downloadFile</span> <span class="o">=</span> <span class="n">DownloadFile</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s2">"hash"</span><span class="p">])</span>
         <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">downloadFile</span><span class="o">.</span><span class="n">hash</span><span class="p">)</span></div>
 
 
@@ -135,9 +135,9 @@
 <div class="viewcode-block" id="ArchiveSongRequest">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.SocketRequests.html#youtubedlWeb.Common.SocketRequests.ArchiveSongRequest">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ArchiveSongRequest</span><span class="p">:</span>
-    <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;archiveSong&quot;</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="s2">"archiveSong"</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">archiveSong</span> <span class="o">=</span> <span class="n">ArchiveSong</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s2">&quot;ytHash&quot;</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;index&quot;</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;playlistName&quot;</span><span class="p">])</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">archiveSong</span> <span class="o">=</span> <span class="n">ArchiveSong</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s2">"ytHash"</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s2">"index"</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s2">"playlistName"</span><span class="p">])</span></div>
 
 </pre></div>
 

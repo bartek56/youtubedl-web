@@ -72,33 +72,33 @@
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">flash</span><span class="p">,</span> <span class="n">request</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">current_app</span> <span class="k">as</span> <span class="n">app</span>
 
-<span class="n">mail_bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">&#39;mail&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
+<span class="n">mail_bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">'mail'</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
 
 <div class="viewcode-block" id="contactHTML">
 <a class="viewcode-back" href="../../../youtubedlWeb.routes.mail_routes.html#youtubedlWeb.routes.mail_routes.contactHTML">[docs]</a>
-<span class="nd">@mail_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/contact.html&#39;</span><span class="p">)</span>
+<span class="nd">@mail_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/contact.html'</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">contactHTML</span><span class="p">():</span>
     <span class="k">if</span> <span class="n">app</span><span class="o">.</span><span class="n">mailManager</span><span class="o">.</span><span class="n">initialize</span><span class="p">():</span>
-        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;contact.html&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">'contact.html'</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;alert.html&#39;</span><span class="p">,</span> <span class="n">alert</span><span class="o">=</span><span class="s2">&quot;Mail is not supported&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">'alert.html'</span><span class="p">,</span> <span class="n">alert</span><span class="o">=</span><span class="s2">"Mail is not supported"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="mail">
 <a class="viewcode-back" href="../../../youtubedlWeb.routes.mail_routes.html#youtubedlWeb.routes.mail_routes.mail">[docs]</a>
-<span class="nd">@mail_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/mail&#39;</span><span class="p">,</span> <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="nd">@mail_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/mail'</span><span class="p">,</span> <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'POST'</span><span class="p">,</span> <span class="s1">'GET'</span><span class="p">])</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">mail</span><span class="p">():</span>
-    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;POST&#39;</span><span class="p">:</span>
-        <span class="n">sender</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;sender&#39;</span><span class="p">]</span>
-        <span class="n">message</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">'POST'</span><span class="p">:</span>
+        <span class="n">sender</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s1">'sender'</span><span class="p">]</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="p">[</span><span class="s1">'message'</span><span class="p">]</span>
         <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sender</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">2</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">message</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">2</span><span class="p">):</span>
-            <span class="n">fullMessage</span> <span class="o">=</span> <span class="s2">&quot;You received message from &quot;</span> <span class="o">+</span> <span class="n">sender</span> <span class="o">+</span> <span class="s2">&quot;: &quot;</span> <span class="o">+</span> <span class="n">message</span>
-            <span class="n">app</span><span class="o">.</span><span class="n">mailManager</span><span class="o">.</span><span class="n">sendMail</span><span class="p">(</span><span class="s2">&quot;bartosz.brzozowski23@gmail.com&quot;</span><span class="p">,</span> <span class="s2">&quot;MediaServer&quot;</span><span class="p">,</span> <span class="n">fullMessage</span><span class="p">)</span>
-            <span class="n">flash</span><span class="p">(</span><span class="s2">&quot;Successfull send mail&quot;</span><span class="p">,</span><span class="s1">&#39;success&#39;</span><span class="p">)</span>
+            <span class="n">fullMessage</span> <span class="o">=</span> <span class="s2">"You received message from "</span> <span class="o">+</span> <span class="n">sender</span> <span class="o">+</span> <span class="s2">": "</span> <span class="o">+</span> <span class="n">message</span>
+            <span class="n">app</span><span class="o">.</span><span class="n">mailManager</span><span class="o">.</span><span class="n">sendMail</span><span class="p">(</span><span class="s2">"bartosz.brzozowski23@gmail.com"</span><span class="p">,</span> <span class="s2">"MediaServer"</span><span class="p">,</span> <span class="n">fullMessage</span><span class="p">)</span>
+            <span class="n">flash</span><span class="p">(</span><span class="s2">"Successfull send mail"</span><span class="p">,</span><span class="s1">'success'</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">flash</span><span class="p">(</span><span class="s2">&quot;You have to fill in the fields&quot;</span><span class="p">,</span> <span class="s1">&#39;danger&#39;</span><span class="p">)</span>
+            <span class="n">flash</span><span class="p">(</span><span class="s2">"You have to fill in the fields"</span><span class="p">,</span> <span class="s1">'danger'</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;contact.html&#39;</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">'contact.html'</span><span class="p">)</span></div>
 
 </pre></div>
 

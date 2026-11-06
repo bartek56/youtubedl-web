@@ -77,7 +77,7 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">YoutubeDatabase</span><span class="p">:</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s1">&#39;youtubeConfig.db&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s1">'youtubeConfig.db'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="YoutubeDatabase.createTable">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeDatabase.html#youtubedlWeb.Common.YoutubeDatabase.YoutubeDatabase.createTable">[docs]</a>
@@ -85,21 +85,21 @@
 
         <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
 
-        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">'''</span>
 <span class="s1">            CREATE TABLE IF NOT EXISTS playlists (</span>
 <span class="s1">                id INTEGER PRIMARY KEY,</span>
 <span class="s1">                name TEXT UNIQUE,</span>
 <span class="s1">                url TEXT</span>
 <span class="s1">            )</span>
-<span class="s1">        &#39;&#39;&#39;</span><span class="p">)</span>
+<span class="s1">        '''</span><span class="p">)</span>
 
-        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">'''</span>
 <span class="s1">            CREATE TABLE IF NOT EXISTS settings (</span>
 <span class="s1">                id INTEGER PRIMARY KEY,</span>
 <span class="s1">                parameter TEXT UNIQUE,</span>
 <span class="s1">                value TEXT</span>
 <span class="s1">            )</span>
-<span class="s1">        &#39;&#39;&#39;</span><span class="p">)</span>
+<span class="s1">        '''</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div>
 
@@ -112,7 +112,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="n">sqlCommand</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;exception of command:&quot;</span><span class="p">,</span> <span class="n">sqlCommand</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"exception of command:"</span><span class="p">,</span> <span class="n">sqlCommand</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div>
@@ -130,20 +130,20 @@
 <div class="viewcode-block" id="YoutubeDatabase.insertPlaylistsData">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeDatabase.html#youtubedlWeb.Common.YoutubeDatabase.YoutubeDatabase.insertPlaylistsData">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">insertPlaylistsData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">playlists</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">executeMany</span><span class="p">(</span><span class="s1">&#39;INSERT INTO playlists (name, url) VALUES (?, ?)&#39;</span><span class="p">,</span> <span class="n">playlists</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">executeMany</span><span class="p">(</span><span class="s1">'INSERT INTO playlists (name, url) VALUES (?, ?)'</span><span class="p">,</span> <span class="n">playlists</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="YoutubeDatabase.insertSettingsData">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeDatabase.html#youtubedlWeb.Common.YoutubeDatabase.YoutubeDatabase.insertSettingsData">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">insertSettingsData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">settings</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">executeMany</span><span class="p">(</span><span class="s1">&#39;INSERT INTO settings (parameter, value) VALUES (?, ?)&#39;</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">executeMany</span><span class="p">(</span><span class="s1">'INSERT INTO settings (parameter, value) VALUES (?, ?)'</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="YoutubeDatabase.getPlaylists">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeDatabase.html#youtubedlWeb.Common.YoutubeDatabase.YoutubeDatabase.getPlaylists">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">getPlaylists</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
-        <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;SELECT name, url FROM playlists&#39;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s1">'SELECT name, url FROM playlists'</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
 
@@ -153,7 +153,7 @@
 <div class="viewcode-block" id="YoutubeDatabase.getSettings">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeDatabase.html#youtubedlWeb.Common.YoutubeDatabase.YoutubeDatabase.getSettings">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">getSettings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;SELECT parameter, value FROM settings&#39;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s1">'SELECT parameter, value FROM settings'</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
 
@@ -164,9 +164,9 @@
 
 <span class="n">ytDatabase</span> <span class="o">=</span> <span class="n">YoutubeDatabase</span><span class="p">()</span>
 <span class="n">ytDatabase</span><span class="o">.</span><span class="n">createTable</span><span class="p">()</span>
-<span class="n">ytDatabase</span><span class="o">.</span><span class="n">insertSettingsData</span><span class="p">((</span><span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="s2">&quot;/mnt/TOSHIBA EXT/music&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;otherSetting&quot;</span><span class="p">,</span><span class="s2">&quot;test&quot;</span><span class="p">))</span>
+<span class="n">ytDatabase</span><span class="o">.</span><span class="n">insertSettingsData</span><span class="p">((</span><span class="s2">"path"</span><span class="p">,</span> <span class="s2">"/mnt/TOSHIBA EXT/music"</span><span class="p">),</span> <span class="p">(</span><span class="s2">"otherSetting"</span><span class="p">,</span><span class="s2">"test"</span><span class="p">))</span>
 <span class="n">ytDatabase</span><span class="o">.</span><span class="n">getPlaylists</span><span class="p">()</span>
-<span class="n">ytDatabase</span><span class="o">.</span><span class="n">insertPlaylistsData</span><span class="p">((</span><span class="s1">&#39;test2&#39;</span><span class="p">,</span><span class="s1">&#39;https://www.youtube.com/playlist?list=PL6uhlddQJkfh4YsbxgPE70a6KeFOCDgG_&#39;</span><span class="p">))</span>
+<span class="n">ytDatabase</span><span class="o">.</span><span class="n">insertPlaylistsData</span><span class="p">((</span><span class="s1">'test2'</span><span class="p">,</span><span class="s1">'https://www.youtube.com/playlist?list=PL6uhlddQJkfh4YsbxgPE70a6KeFOCDgG_'</span><span class="p">))</span>
 <span class="n">ytDatabase</span><span class="o">.</span><span class="n">getSettings</span><span class="p">()</span>
 </pre></div>
 

@@ -71,7 +71,7 @@
   <h1>Source code for youtubedlWeb.Common.AlarmEnums</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">string</span><span class="w"> </span><span class="kn">import</span> <span class="n">Template</span>
 
-<span class="n">ALARM_SYSTEMD_TIMER_TEMPLATE</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;[Unit]</span>
+<span class="n">ALARM_SYSTEMD_TIMER_TEMPLATE</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span><span class="s2">"""[Unit]</span>
 <span class="s2">Description=Alarm</span>
 
 <span class="s2">[Timer]</span>
@@ -79,64 +79,64 @@
 
 <span class="s2">[Install]</span>
 <span class="s2">WantedBy=multi-user.target</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">"""</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="AlarmConfigFlask">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmEnums.html#youtubedlWeb.Common.AlarmEnums.AlarmConfigFlask">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AlarmConfigFlask</span><span class="p">():</span>
-    <span class="n">ALARM_TIME</span> <span class="o">=</span>          <span class="s2">&quot;alarm_time&quot;</span>
-    <span class="n">ALARM_MODE</span> <span class="o">=</span>          <span class="s2">&quot;alarm_mode&quot;</span>
-    <span class="n">ALARM_MODE_NEWEST</span> <span class="o">=</span>   <span class="s2">&quot;newest_song&quot;</span>
-    <span class="n">ALARM_MODE_PLAYLIST</span> <span class="o">=</span> <span class="s2">&quot;playlist&quot;</span>
-    <span class="n">THE_NEWEST_SONG</span> <span class="o">=</span>     <span class="s2">&quot;theNewestSongChecked&quot;</span>
-    <span class="n">PLAYLIST_CHECKED</span> <span class="o">=</span>    <span class="s2">&quot;playlistChecked&quot;</span>
-    <span class="n">ALARM_PLAYLISTS</span> <span class="o">=</span>     <span class="s2">&quot;alarm_playlists&quot;</span>
-    <span class="n">ALARM_PLATLIST_NAME</span> <span class="o">=</span> <span class="s2">&quot;alarm_playlist_name&quot;</span>
-    <span class="n">ALARM_ACTIVE</span> <span class="o">=</span>        <span class="s2">&quot;alarm_active&quot;</span>
-    <span class="n">MONDAY</span> <span class="o">=</span>    <span class="s2">&quot;monday_checked&quot;</span>
-    <span class="n">TUESDAY</span> <span class="o">=</span>   <span class="s2">&quot;tuesday_checked&quot;</span>
-    <span class="n">WEDNESDEY</span> <span class="o">=</span> <span class="s2">&quot;wednesday_checked&quot;</span>
-    <span class="n">THURSDAY</span> <span class="o">=</span>  <span class="s2">&quot;thursday_checked&quot;</span>
-    <span class="n">FRIDAY</span> <span class="o">=</span>    <span class="s2">&quot;friday_checked&quot;</span>
-    <span class="n">SATURDAY</span> <span class="o">=</span>  <span class="s2">&quot;saturday_checked&quot;</span>
-    <span class="n">SUNDAY</span> <span class="o">=</span>    <span class="s2">&quot;sunday_checked&quot;</span>
-    <span class="n">MIN_VOLUME</span> <span class="o">=</span> <span class="s2">&quot;min_volume&quot;</span>
-    <span class="n">MAX_VOLUME</span> <span class="o">=</span> <span class="s2">&quot;max_volume&quot;</span>
-    <span class="n">DEFAULT_VOLUME</span> <span class="o">=</span> <span class="s2">&quot;default_volume&quot;</span>
-    <span class="n">GROWING_VOLUME</span> <span class="o">=</span> <span class="s2">&quot;growing_volume&quot;</span>
-    <span class="n">GROWING_SPEED</span> <span class="o">=</span>  <span class="s2">&quot;growing_speed&quot;</span>
-    <span class="n">NEXT_ALARM</span> <span class="o">=</span> <span class="s2">&quot;next_alarm&quot;</span>
-    <span class="n">NEXT_SNOOZE</span> <span class="o">=</span> <span class="s2">&quot;next_snooze&quot;</span></div>
+    <span class="n">ALARM_TIME</span> <span class="o">=</span>          <span class="s2">"alarm_time"</span>
+    <span class="n">ALARM_MODE</span> <span class="o">=</span>          <span class="s2">"alarm_mode"</span>
+    <span class="n">ALARM_MODE_NEWEST</span> <span class="o">=</span>   <span class="s2">"newest_song"</span>
+    <span class="n">ALARM_MODE_PLAYLIST</span> <span class="o">=</span> <span class="s2">"playlist"</span>
+    <span class="n">THE_NEWEST_SONG</span> <span class="o">=</span>     <span class="s2">"theNewestSongChecked"</span>
+    <span class="n">PLAYLIST_CHECKED</span> <span class="o">=</span>    <span class="s2">"playlistChecked"</span>
+    <span class="n">ALARM_PLAYLISTS</span> <span class="o">=</span>     <span class="s2">"alarm_playlists"</span>
+    <span class="n">ALARM_PLATLIST_NAME</span> <span class="o">=</span> <span class="s2">"alarm_playlist_name"</span>
+    <span class="n">ALARM_ACTIVE</span> <span class="o">=</span>        <span class="s2">"alarm_active"</span>
+    <span class="n">MONDAY</span> <span class="o">=</span>    <span class="s2">"monday_checked"</span>
+    <span class="n">TUESDAY</span> <span class="o">=</span>   <span class="s2">"tuesday_checked"</span>
+    <span class="n">WEDNESDEY</span> <span class="o">=</span> <span class="s2">"wednesday_checked"</span>
+    <span class="n">THURSDAY</span> <span class="o">=</span>  <span class="s2">"thursday_checked"</span>
+    <span class="n">FRIDAY</span> <span class="o">=</span>    <span class="s2">"friday_checked"</span>
+    <span class="n">SATURDAY</span> <span class="o">=</span>  <span class="s2">"saturday_checked"</span>
+    <span class="n">SUNDAY</span> <span class="o">=</span>    <span class="s2">"sunday_checked"</span>
+    <span class="n">MIN_VOLUME</span> <span class="o">=</span> <span class="s2">"min_volume"</span>
+    <span class="n">MAX_VOLUME</span> <span class="o">=</span> <span class="s2">"max_volume"</span>
+    <span class="n">DEFAULT_VOLUME</span> <span class="o">=</span> <span class="s2">"default_volume"</span>
+    <span class="n">GROWING_VOLUME</span> <span class="o">=</span> <span class="s2">"growing_volume"</span>
+    <span class="n">GROWING_SPEED</span> <span class="o">=</span>  <span class="s2">"growing_speed"</span>
+    <span class="n">NEXT_ALARM</span> <span class="o">=</span> <span class="s2">"next_alarm"</span>
+    <span class="n">NEXT_SNOOZE</span> <span class="o">=</span> <span class="s2">"next_snooze"</span></div>
 
 
 <div class="viewcode-block" id="AlarmConfigLinux">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmEnums.html#youtubedlWeb.Common.AlarmEnums.AlarmConfigLinux">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AlarmConfigLinux</span><span class="p">():</span>
-    <span class="n">THE_NEWEST_SONG</span> <span class="o">=</span>     <span class="s2">&quot;the_newest_songs&quot;</span>
-    <span class="n">PLAYLIST</span> <span class="o">=</span>            <span class="s2">&quot;playlist&quot;</span>
-    <span class="n">MIN_VOLUME</span> <span class="o">=</span>   <span class="s2">&quot;min_volume&quot;</span>
-    <span class="n">MAX_VOLUME</span> <span class="o">=</span>   <span class="s2">&quot;max_volume&quot;</span>
-    <span class="n">DEFAULT_VOLUME</span> <span class="o">=</span> <span class="s2">&quot;default_volume&quot;</span>
-    <span class="n">GROWING_VOLUME</span> <span class="o">=</span> <span class="s2">&quot;growing_volume&quot;</span>
-    <span class="n">GROWING_SPEED</span> <span class="o">=</span>  <span class="s2">&quot;growing_speed&quot;</span></div>
+    <span class="n">THE_NEWEST_SONG</span> <span class="o">=</span>     <span class="s2">"the_newest_songs"</span>
+    <span class="n">PLAYLIST</span> <span class="o">=</span>            <span class="s2">"playlist"</span>
+    <span class="n">MIN_VOLUME</span> <span class="o">=</span>   <span class="s2">"min_volume"</span>
+    <span class="n">MAX_VOLUME</span> <span class="o">=</span>   <span class="s2">"max_volume"</span>
+    <span class="n">DEFAULT_VOLUME</span> <span class="o">=</span> <span class="s2">"default_volume"</span>
+    <span class="n">GROWING_VOLUME</span> <span class="o">=</span> <span class="s2">"growing_volume"</span>
+    <span class="n">GROWING_SPEED</span> <span class="o">=</span>  <span class="s2">"growing_speed"</span></div>
 
 
 <div class="viewcode-block" id="SystemdCommand">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.AlarmEnums.html#youtubedlWeb.Common.AlarmEnums.SystemdCommand">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SystemdCommand</span><span class="p">():</span>
-    <span class="n">START_ALARM_TIMER</span> <span class="o">=</span>     <span class="s2">&quot;sudo /bin/systemctl start alarm.timer&quot;</span>
-    <span class="n">START_ALARM_SERVICE</span> <span class="o">=</span>   <span class="s2">&quot;sudo /bin/systemctl start alarm.service&quot;</span>
-    <span class="n">STOP_ALARM_TIMER</span> <span class="o">=</span>      <span class="s2">&quot;sudo /bin/systemctl stop alarm.timer&quot;</span>
-    <span class="n">STOP_ALARM_SNOOZE_TIMER</span> <span class="o">=</span>      <span class="s2">&quot;sudo /bin/systemctl stop alarm_snooze.timer&quot;</span>
-    <span class="n">STATUS_ALARM_TIMER</span> <span class="o">=</span>    <span class="s2">&quot;sudo /bin/systemctl status alarm.timer&quot;</span>
-    <span class="n">STATUS_ALARM_SNOOZE_TIMER</span> <span class="o">=</span>    <span class="s2">&quot;sudo /bin/systemctl status alarm_snooze.timer&quot;</span>
-    <span class="n">STOP_ALARM_SERVICE</span> <span class="o">=</span>    <span class="s2">&quot;sudo /bin/systemctl stop alarm.service&quot;</span>
-    <span class="n">ENABLE_ALARM_TIMER</span> <span class="o">=</span>    <span class="s2">&quot;sudo /bin/systemctl enable alarm.timer&quot;</span>
-    <span class="n">DISABLE_ALARM_TIMER</span> <span class="o">=</span>   <span class="s2">&quot;sudo /bin/systemctl disable alarm.timer&quot;</span>
-    <span class="n">DAEMON_RELOAD</span> <span class="o">=</span>         <span class="s2">&quot;sudo /bin/systemctl daemon-reload&quot;</span>
-    <span class="n">IS_ACTIVE_ALARM_TIMER</span> <span class="o">=</span> <span class="s2">&quot;systemctl is-active alarm.timer&quot;</span>
-    <span class="n">IS_ACTIVE_ALARM_SNOOZE_TIMER</span> <span class="o">=</span> <span class="s2">&quot;systemctl is-active alarm_snooze.timer&quot;</span></div>
+    <span class="n">START_ALARM_TIMER</span> <span class="o">=</span>     <span class="s2">"sudo /bin/systemctl start alarm.timer"</span>
+    <span class="n">START_ALARM_SERVICE</span> <span class="o">=</span>   <span class="s2">"sudo /bin/systemctl start alarm.service"</span>
+    <span class="n">STOP_ALARM_TIMER</span> <span class="o">=</span>      <span class="s2">"sudo /bin/systemctl stop alarm.timer"</span>
+    <span class="n">STOP_ALARM_SNOOZE_TIMER</span> <span class="o">=</span>      <span class="s2">"sudo /bin/systemctl stop alarm_snooze.timer"</span>
+    <span class="n">STATUS_ALARM_TIMER</span> <span class="o">=</span>    <span class="s2">"sudo /bin/systemctl status alarm.timer"</span>
+    <span class="n">STATUS_ALARM_SNOOZE_TIMER</span> <span class="o">=</span>    <span class="s2">"sudo /bin/systemctl status alarm_snooze.timer"</span>
+    <span class="n">STOP_ALARM_SERVICE</span> <span class="o">=</span>    <span class="s2">"sudo /bin/systemctl stop alarm.service"</span>
+    <span class="n">ENABLE_ALARM_TIMER</span> <span class="o">=</span>    <span class="s2">"sudo /bin/systemctl enable alarm.timer"</span>
+    <span class="n">DISABLE_ALARM_TIMER</span> <span class="o">=</span>   <span class="s2">"sudo /bin/systemctl disable alarm.timer"</span>
+    <span class="n">DAEMON_RELOAD</span> <span class="o">=</span>         <span class="s2">"sudo /bin/systemctl daemon-reload"</span>
+    <span class="n">IS_ACTIVE_ALARM_TIMER</span> <span class="o">=</span> <span class="s2">"systemctl is-active alarm.timer"</span>
+    <span class="n">IS_ACTIVE_ALARM_SNOOZE_TIMER</span> <span class="o">=</span> <span class="s2">"systemctl is-active alarm_snooze.timer"</span></div>
 
 </pre></div>
 

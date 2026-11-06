@@ -82,18 +82,18 @@
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeConfig.html#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">YoutubeConfig</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initializes a YoutubeConfig object.</span>
 
 <span class="sd">        YoutubeConfig is a class that manages the configuration file of the program.</span>
 <span class="sd">        It loads the configuration file, reads the settings from it and saves the changes.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="YoutubeConfig.initialize">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeConfig.html#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.initialize">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configFile</span><span class="p">,</span> <span class="n">parser</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initializes a YoutubeConfig object with the given configuration file.</span>
 
 <span class="sd">        Args:</span>
@@ -105,9 +105,9 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">configFile</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Config file </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> doesn&#39;t exist&quot;</span><span class="p">,</span> <span class="n">configFile</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Config file </span><span class="se">\"</span><span class="si">%s</span><span class="se">\"</span><span class="s2"> doesn't exist"</span><span class="p">,</span> <span class="n">configFile</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">CONFIG_FILE</span> <span class="o">=</span> <span class="n">configFile</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">parser</span></div>
 
@@ -115,24 +115,24 @@
 <div class="viewcode-block" id="YoutubeConfig.getPath">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeConfig.html#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.getPath">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">getPath</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Gets the path to the directory where the program saves the downloaded songs.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            str: The path to the directory where the program saves the downloaded songs.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">path</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CONFIG_FILE</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s2">&quot;GLOBAL&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">sections</span><span class="p">():</span>
-            <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;GLOBAL&quot;</span><span class="p">][</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">"GLOBAL"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">sections</span><span class="p">():</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">"GLOBAL"</span><span class="p">][</span><span class="s1">'path'</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">path</span></div>
 
 
 <div class="viewcode-block" id="YoutubeConfig.setPath">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeConfig.html#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.setPath">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">setPath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Sets the path to the directory where the program saves the downloaded songs.</span>
 
 <span class="sd">        Args:</span>
@@ -140,57 +140,57 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CONFIG_FILE</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s2">&quot;GLOBAL&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">add_section</span><span class="p">(</span><span class="s2">&quot;GLOBAL&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;GLOBAL&quot;</span><span class="p">][</span><span class="s2">&quot;path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="k">if</span> <span class="s2">"GLOBAL"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">add_section</span><span class="p">(</span><span class="s2">"GLOBAL"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">"GLOBAL"</span><span class="p">][</span><span class="s2">"path"</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="YoutubeConfig.getPlaylists">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeConfig.html#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.getPlaylists">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">getPlaylists</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">PlaylistConfig</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Gets the list of playlists to download.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            List[PlaylistConfig]: A list of PlaylistConfig objects, each containing the name and link of a playlist.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CONFIG_FILE</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">for</span> <span class="n">section_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">sections</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">section_name</span> <span class="o">!=</span> <span class="s2">&quot;GLOBAL&quot;</span><span class="p">:</span>
-                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">PlaylistConfig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">section_name</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">section_name</span><span class="p">][</span><span class="s1">&#39;link&#39;</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">section_name</span> <span class="o">!=</span> <span class="s2">"GLOBAL"</span><span class="p">:</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">PlaylistConfig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">section_name</span><span class="p">][</span><span class="s1">'name'</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">section_name</span><span class="p">][</span><span class="s1">'link'</span><span class="p">]))</span>
         <span class="k">return</span> <span class="n">data</span></div>
 
 
 <div class="viewcode-block" id="YoutubeConfig.getPlaylistsName">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeConfig.html#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.getPlaylistsName">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">getPlaylistsName</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Gets the list of names of playlists to download.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            List[str]: A list of names of playlists to download.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CONFIG_FILE</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">for</span> <span class="n">section_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">sections</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">section_name</span> <span class="o">!=</span> <span class="s2">&quot;GLOBAL&quot;</span><span class="p">:</span>
-                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">section_name</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">section_name</span> <span class="o">!=</span> <span class="s2">"GLOBAL"</span><span class="p">:</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">section_name</span><span class="p">][</span><span class="s1">'name'</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">data</span></div>
 
 
 <div class="viewcode-block" id="YoutubeConfig.addPlaylist">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeConfig.html#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.addPlaylist">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">addPlaylist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">playlist</span><span class="p">:</span><span class="nb">dict</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Adds a new playlist to download.</span>
 
 <span class="sd">        Args:</span>
@@ -198,17 +198,17 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True if the playlist was added successfully, False otherwise.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">keys</span> <span class="o">=</span> <span class="n">playlist</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;name&quot;</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">or</span> <span class="ow">not</span> <span class="s2">&quot;link&quot;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="s2">"name"</span> <span class="ow">in</span> <span class="n">keys</span> <span class="ow">or</span> <span class="ow">not</span> <span class="s2">"link"</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CONFIG_FILE</span><span class="p">)</span>
-        <span class="n">playlistName</span> <span class="o">=</span> <span class="n">playlist</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
-        <span class="n">playlistLink</span> <span class="o">=</span> <span class="n">playlist</span><span class="p">[</span><span class="s2">&quot;link&quot;</span><span class="p">]</span>
+        <span class="n">playlistName</span> <span class="o">=</span> <span class="n">playlist</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span>
+        <span class="n">playlistLink</span> <span class="o">=</span> <span class="n">playlist</span><span class="p">[</span><span class="s2">"link"</span><span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">playlistName</span><span class="p">]</span><span class="o">=</span><span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">playlistName</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">playlistName</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">playlistName</span><span class="p">][</span><span class="s2">&quot;link&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">playlistLink</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">playlistName</span><span class="p">][</span><span class="s2">"name"</span><span class="p">]</span><span class="o">=</span><span class="n">playlistName</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">playlistName</span><span class="p">][</span><span class="s2">"link"</span><span class="p">]</span><span class="o">=</span><span class="n">playlistLink</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
@@ -216,7 +216,7 @@
 <div class="viewcode-block" id="YoutubeConfig.removePlaylist">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeConfig.html#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.removePlaylist">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">removePlaylist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Removes a playlist from the list of playlists to download.</span>
 
 <span class="sd">        Args:</span>
@@ -224,7 +224,7 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True if the playlist was removed successfully, False otherwise.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CONFIG_FILE</span><span class="p">)</span>
@@ -240,22 +240,22 @@
 <div class="viewcode-block" id="YoutubeConfig.getUrlOfPlaylist">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeConfig.html#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.getUrlOfPlaylist">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">getUrlOfPlaylist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">playlistName</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Gets the URL of the playlist with the given name.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            playlistName (str): The name of the playlist.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            str: The URL of the playlist, or None if the playlist doesn&#39;t exist.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            str: The URL of the playlist, or None if the playlist doesn't exist.</span>
+<span class="sd">        """</span>
         <span class="n">playlistUrl</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CONFIG_FILE</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">section_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">sections</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">section_name</span> <span class="o">!=</span> <span class="s2">&quot;GLOBAL&quot;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">section_name</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">playlistName</span><span class="p">:</span>
-                    <span class="n">playlistUrl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">section_name</span><span class="p">][</span><span class="s2">&quot;link&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">section_name</span> <span class="o">!=</span> <span class="s2">"GLOBAL"</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">section_name</span><span class="p">][</span><span class="s1">'name'</span><span class="p">]</span> <span class="o">==</span> <span class="n">playlistName</span><span class="p">:</span>
+                    <span class="n">playlistUrl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">section_name</span><span class="p">][</span><span class="s2">"link"</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">playlistUrl</span></div>
 
@@ -263,13 +263,13 @@
 <div class="viewcode-block" id="YoutubeConfig.save">
 <a class="viewcode-back" href="../../../youtubedlWeb.Common.YoutubeConfig.html#youtubedlWeb.Common.YoutubeConfig.YoutubeConfig.save">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="c1"># pragma: no cover</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Saves the configuration to the config file.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CONFIG_FILE</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+<span class="sd">        """</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CONFIG_FILE</span><span class="p">,</span><span class="s1">'w'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span></div>
 </div>
 
