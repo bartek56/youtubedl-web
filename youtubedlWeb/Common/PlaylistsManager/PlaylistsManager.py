@@ -3,6 +3,7 @@ import sys
 import os
 import getopt
 import codecs
+import configparser
 from collections import defaultdict
 from mutagen.easyid3 import EasyID3
 from mutagen.mp3 import MP3
@@ -11,16 +12,155 @@ import unicodedata
 import re
 import shutil
 
+class PlaylistGenerationConfig:
+    """Read global settings and playlist definitions for one target."""
+
+    GLOBAL_SECTION = "GLOBAL"
+    GROUPS_SECTION = "PLAYLIST_GROUPS"
+    TOP_PLAYLISTS_SECTION = "TOP_PLAYLISTS"
+
+    def __init__(self, config_file):
+        if not os.path.isfile(config_file):
+            raise FileNotFoundError(
+                'playlist configuration file "%s" does not exist' % config_file
+            )
+
+        parser = configparser.ConfigParser()
+        parser.optionxform = str
+        parser.read(config_file)
+        self._parser = parser
+
+    def get_global_settings(self):
+        """Return global PlaylistsManager settings from the INI file."""
+        if self.GLOBAL_SECTION not in self._parser:
+            return {
+                "removeCovers": False,
+                "isCrLfNeeded": False,
+                "checkMissingWebsite": False,
+                "removePolishChars": False,
+                "checkCovers": False,
+                "checkDuplicates": False,
+                "checkTotalSize": False,
+                "maxTotalSizeMb": None,
+                "windowsSlash": False,
+                "garminRootDir": None,
+            }
+
+        values = {
+            key.lower().replace("_", ""): value
+            for key, value in self._parser[self.GLOBAL_SECTION].items()
+        }
+
+        max_total_size = values.get("maxtotalsizemb", "").strip()
+        try:
+            max_total_size = float(max_total_size) if max_total_size else None
+        except ValueError:
+            max_total_size = None
+
+        return {
+            "removeCovers": self._parse_boolean(values.get("removecovers", "false")),
+            "isCrLfNeeded": self._parse_boolean(values.get("crlf", "false")),
+            "checkMissingWebsite": self._parse_boolean(
+                values.get("checkmissingwebsite", "false")
+            ),
+            "removePolishChars": self._parse_boolean(
+                values.get("removepolishchars", "false")
+            ),
+            "checkCovers": self._parse_boolean(values.get("checkcovers", "false")),
+            "checkDuplicates": self._parse_boolean(
+                values.get("checkduplicates", "false")
+            ),
+            "checkTotalSize": self._parse_boolean(
+                values.get("checktotalsize", "false")
+            ),
+            "maxTotalSizeMb": max_total_size,
+            "windowsSlash": self._parse_boolean(
+                values.get("windowsslash", "false")
+            ),
+            "garminRootDir": values.get("garminrootdir", "").strip() or None,
+        }
+
+    @staticmethod
+    def _parse_boolean(value):
+        return str(value).strip().lower() in ("1", "yes", "true", "on")
+
+    def get_groups(self):
+        """Return ``(playlist_name, folders)`` pairs in configuration order."""
+        if self.GROUPS_SECTION not in self._parser:
+            return []
+
+        groups = []
+        for playlist_name, folders_value in self._parser[self.GROUPS_SECTION].items():
+            folders = [folder.strip() for folder in folders_value.split(",")]
+            folders = [folder for folder in folders if folder]
+            if folders:
+                playlist_name = playlist_name.strip()
+                limited_name = re.match(
+                    r"^(.*)\s+(\d+)\s+hits$", playlist_name, re.IGNORECASE
+                )
+                if limited_name:
+                    groups.append(
+                        (
+                            limited_name.group(1).strip(),
+                            folders,
+                            int(limited_name.group(2)),
+                        )
+                    )
+                else:
+                    groups.append((playlist_name, folders))
+        return groups
+
+    def get_top_playlist_sizes(self):
+        """Return positive integer sizes configured for top playlists."""
+        if self.TOP_PLAYLISTS_SECTION not in self._parser:
+            return []
+
+        sizes = []
+        sizes_value = self._parser[self.TOP_PLAYLISTS_SECTION].get("sizes", "")
+        for size_value in sizes_value.split(","):
+            try:
+                size = int(size_value.strip())
+            except ValueError:
+                continue
+            if size > 0:
+                sizes.append(size)
+        return sizes
+
 
 class PlaylistsManager:
 
-    def __init__(self, playlistsDir, isCrLfNeeded=False, windowsSlash=False):
-        self.dir = playlistsDir
-        self.isCrLfNeeded = isCrLfNeeded
+    def __init__(self, musicDir, playlistsDir=None, windowsSlash=False,
+                 playlistsConfigFile=None):
+        self.musicDir = musicDir
+        self.playlistsDir = musicDir if playlistsDir is None else playlistsDir
+        self.isCrLfNeeded = False
         self.windowsSlash = windowsSlash
+        self.removeCoversEnabled = False
+        self.checkMissingWebsiteEnabled = False
+        self.removePolishCharsEnabled = False
+        self.checkCoversEnabled = False
+        self.checkDuplicatesEnabled = False
+        self.checkTotalSizeEnabled = False
+        self.maxTotalSizeMb = None
+        self.garminRootDir = None
+        self.playlistsConfig = None
+
+        if playlistsConfigFile is not None:
+            self.playlistsConfig = PlaylistGenerationConfig(playlistsConfigFile)
+            settings = self.playlistsConfig.get_global_settings()
+            self.isCrLfNeeded = settings["isCrLfNeeded"]
+            self.windowsSlash = settings["windowsSlash"]
+            self.removeCoversEnabled = settings["removeCovers"]
+            self.checkMissingWebsiteEnabled = settings["checkMissingWebsite"]
+            self.removePolishCharsEnabled = settings["removePolishChars"]
+            self.checkCoversEnabled = settings["checkCovers"]
+            self.checkDuplicatesEnabled = settings["checkDuplicates"]
+            self.checkTotalSizeEnabled = settings["checkTotalSize"]
+            self.maxTotalSizeMb = settings["maxTotalSizeMb"]
+            self.garminRootDir = settings["garminRootDir"]
 
         #print("isCrLf:", self.isCrLfNeeded)
-        #print("root dir:", self.dir, "\n")
+        #print("music root dir:", self.musicDir, "\n")
 
     def saveToFile(self, fileName, text):
         """
@@ -33,7 +173,8 @@ class PlaylistsManager:
         """
         if self.isCrLfNeeded:
             text = text.replace('\n', '\r\n')
-        f = codecs.open(os.path.join(self.dir, fileName),"wb","utf-8")
+        os.makedirs(self.playlistsDir, exist_ok=True)
+        f = codecs.open(os.path.join(self.playlistsDir, fileName),"wb","utf-8")
         f.write(text)
         f.close()
 
@@ -114,7 +255,7 @@ class PlaylistsManager:
         :rtype: list
         """
         filesNameWithPath = []
-        fullPath = os.path.join(self.dir, path)
+        fullPath = os.path.join(self.musicDir, path)
         if not os.path.isdir(fullPath):
             print("Wrong path to collect songs:", fullPath, " It was skipped")
             return filesNameWithPath
@@ -123,7 +264,9 @@ class PlaylistsManager:
             for file in files:
                 if file.lower().endswith('.mp3'):
                     #print("root", root)
-                    fileNameWithPath=os.path.join(root,file).replace(self.dir+"/", "")
+                    fileNameWithPath = os.path.relpath(
+                        os.path.join(root, file), self.musicDir
+                    )
                     #print("root2", fileNameWithPath)
                     filesNameWithPath.append(fileNameWithPath)
 
@@ -154,7 +297,7 @@ class PlaylistsManager:
         """
         textFile = ""
         for fileName in files:
-            fileNameWithFullPath="%s/%s"%(self.dir, fileName)
+            fileNameWithFullPath = os.path.join(self.musicDir, fileName)
             if not os.path.isfile(fileNameWithFullPath):
                 print("File", fileNameWithFullPath, "doesn't exist !")
                 continue
@@ -183,7 +326,7 @@ class PlaylistsManager:
         filesNameWithPath = self.collectSongs(path)
         # one kind of playlist so sort only by track number
         filesNameWithPath = sorted(filesNameWithPath, key= lambda f: (
-                self.get_tracknumber(os.path.join(self.dir, f))
+                self.get_tracknumber(os.path.join(self.musicDir, f))
                 ), reverse=True)
 
         textFile = self.generateM3UList(filesNameWithPath)
@@ -208,7 +351,7 @@ class PlaylistsManager:
         :rtype: None
         """
         print("Create playlists for dirs start")
-        folders = [f for f in os.listdir(self.dir) if os.path.isdir(os.path.join(self.dir, f))]
+        folders = [f for f in os.listdir(self.musicDir) if os.path.isdir(os.path.join(self.musicDir, f))]
         for i in folders:
             self.createPlaylist(i)
         print("Create playlists for dirs end\n")
@@ -229,8 +372,8 @@ class PlaylistsManager:
         songs = self.collectSongsFromDirs(folders)
 
         songs = sorted(songs, key= lambda f: (
-                self.get_date(os.path.join(self.dir, f)),
-                self.get_tracknumber(os.path.join(self.dir,f))
+                self.get_date(os.path.join(self.musicDir, f)),
+                self.get_tracknumber(os.path.join(self.musicDir,f))
                 ), reverse=True)
 
         if limitOfSongs is not None:
@@ -276,15 +419,15 @@ class PlaylistsManager:
         """
         mp3_files = []
 
-        for dirpath, dirnames, filenames in os.walk(self.dir):
+        for dirpath, dirnames, filenames in os.walk(self.musicDir):
             for file in filenames:
                 if file.lower().endswith('.mp3'):
                     fileNameWithPath = os.path.join(dirpath, file)
-                    mp3_files.append(fileNameWithPath.replace(self.dir+"/", ""))
+                    mp3_files.append(os.path.relpath(fileNameWithPath, self.musicDir))
 
 
-        mp3_files = sorted(mp3_files, key= lambda f: (self.get_date(os.path.join(self.dir, f)),
-                                                      self.get_tracknumber(os.path.join(self.dir, f))
+        mp3_files = sorted(mp3_files, key= lambda f: (self.get_date(os.path.join(self.musicDir, f)),
+                                                      self.get_tracknumber(os.path.join(self.musicDir, f))
                                                       ),
                            reverse=True)
 
@@ -301,6 +444,30 @@ class PlaylistsManager:
         self.saveToFile(playlistFile, textFile)
         print("Create Top", numberOfSongs, "end\n")
 
+    def createPlaylistsFromConfig(self, updatedFolders=None):
+        """Create configured group and top playlists.
+
+        :param updatedFolders: optional folders changed in the current run;
+            only groups containing one of them are generated
+        """
+        if self.playlistsConfig is None:
+            raise ValueError("playlistsConfigFile is required to create configured playlists")
+
+        generationConfig = self.playlistsConfig
+        updatedFoldersSet = None if updatedFolders is None else set(updatedFolders)
+
+        for numberOfSongs in generationConfig.get_top_playlist_sizes():
+            self.createTopOfMusic(numberOfSongs)
+
+        for group in generationConfig.get_groups():
+            playlistName, folders = group[:2]
+            limitOfSongs = group[2] if len(group) > 2 else None
+            if updatedFoldersSet is not None and not updatedFoldersSet.intersection(folders):
+                continue
+            if limitOfSongs is None:
+                self.createGroupOfPlaylists(playlistName, folders)
+            else:
+                self.createGroupOfPlaylists(playlistName, folders, limitOfSongs)
 
 class PlaylistsManagerPlayer(PlaylistsManager):
     """Intermediate manager for metadata and file integrity checks."""
@@ -322,7 +489,7 @@ class PlaylistsManagerPlayer(PlaylistsManager):
         """
         missing = []
 
-        for root, _, files in os.walk(self.dir):
+        for root, _, files in os.walk(self.musicDir):
             for file in files:
                 if not file.lower().endswith(".mp3"):
                     continue
@@ -347,7 +514,7 @@ class PlaylistsManagerPlayer(PlaylistsManager):
         """
         total_size = 0
 
-        for root, dirs, files in os.walk(self.dir):
+        for root, dirs, files in os.walk(self.musicDir):
             for file in files:
                 if not file.lower().endswith(".mp3"):
                     continue
@@ -364,7 +531,7 @@ class PlaylistsManagerPlayer(PlaylistsManager):
         metadataMng = metadata_mp3.MetadataManager()
         filesWithoutCovers = []
 
-        for root, dirs, files in os.walk(self.dir):
+        for root, dirs, files in os.walk(self.musicDir):
             dirs[:] = [d for d in dirs if d not in skip_dirs]
             for file in files:
                 if not file.lower().endswith(".mp3"):
@@ -389,12 +556,12 @@ class PlaylistsManagerPlayer(PlaylistsManager):
         """
         print("Remove covers start")
         metadataMng = metadata_mp3.MetadataManager()
-        folders = [f for f in os.listdir(self.dir) if os.path.isdir(os.path.join(self.dir, f))]
+        folders = [f for f in os.listdir(self.musicDir) if os.path.isdir(os.path.join(self.musicDir, f))]
         for folder in folders:
-            files = [g for g in os.listdir(os.path.join(self.dir, folder)) if os.path.isfile(os.path.join(self.dir,folder, g))]
+            files = [g for g in os.listdir(os.path.join(self.musicDir, folder)) if os.path.isfile(os.path.join(self.musicDir,folder, g))]
             for file in files:
                 if ".mp3" in file:
-                    metadataMng.removeCoverOfMp3(os.path.join(self.dir, folder, file))
+                    metadataMng.removeCoverOfMp3(os.path.join(self.musicDir, folder, file))
         print("Remove covers end\n")
 
 
@@ -429,7 +596,7 @@ class PlaylistsManagerPlayer(PlaylistsManager):
         :rtype: None
         """
         print("Remove polish chars start")
-        for root, dirs, files in os.walk(self.dir):
+        for root, dirs, files in os.walk(self.musicDir):
             for name in files:
                 new_name = self.clean_filename(name)
                 if new_name != name:
@@ -514,7 +681,7 @@ class PlaylistsManagerPlayer(PlaylistsManager):
         duplicate_websites = {}
         missing_websites = []
 
-        for root, dirs, files in os.walk(self.dir):
+        for root, dirs, files in os.walk(self.musicDir):
             for file in files:
                 if not file.lower().endswith(".mp3"):
                     continue
@@ -561,8 +728,11 @@ class PlaylistsManagerPlayer(PlaylistsManager):
 class GarminPlaylistsManager(PlaylistsManagerPlayer):
     """Garmin-specific playlist helpers extracted from PlaylistsManager."""
 
-    def __init__(self, playlistsDir, isCrLfNeeded=False, windowsSlash=False):
-        super().__init__(playlistsDir, isCrLfNeeded=isCrLfNeeded, windowsSlash=windowsSlash)
+    def __init__(self, musicDir, playlistsDir=None, windowsSlash=False,
+                 playlistsConfigFile=None):
+        super().__init__(musicDir, playlistsDir=playlistsDir,
+                         windowsSlash=windowsSlash,
+                         playlistsConfigFile=playlistsConfigFile)
 
     def createPlaylistsAsGarmin(self, garminRootDir):
         count = 0
@@ -599,7 +769,7 @@ class GarminPlaylistsManager(PlaylistsManagerPlayer):
         website_index = {}
         filename_index = {}
 
-        for root, dirs, files in os.walk(self.dir):
+        for root, dirs, files in os.walk(self.musicDir):
             for file in files:
                 if not file.lower().endswith(".mp3"):
                     continue
@@ -616,7 +786,12 @@ class GarminPlaylistsManager(PlaylistsManagerPlayer):
         foundSongs = []
 
         for song in songs:
-            oldSong = os.path.join(os.path.dirname(sourcePlaylist), song)
+            # Playlist entries are relative to musicDir. Fall back to the
+            # source playlist directory for older playlists created before
+            # musicDir and playlistsDir were separated.
+            oldSong = os.path.join(self.musicDir, song)
+            if not os.path.isfile(oldSong):
+                oldSong = os.path.join(os.path.dirname(sourcePlaylist), song)
             website = self.get_website(oldSong)
 
             found = None
@@ -627,7 +802,7 @@ class GarminPlaylistsManager(PlaylistsManagerPlayer):
                 found = filename_index.get(os.path.basename(song).lower())
 
             if found:
-                rel = os.path.relpath(found, self.dir)
+                rel = os.path.relpath(found, self.musicDir)
                 rel = rel.replace("\\", "/")
                 foundSongs.append(rel)
             else:
@@ -641,18 +816,9 @@ class GarminPlaylistsManager(PlaylistsManagerPlayer):
         print("Created:", outputPlaylist)
 
 
-def test():
-    manager = PlaylistsManager("/home/bartosz/Music/Sandisk_music_128", isCrLfNeeded=True)
-#    manager.removeCovers()
-#    manager.createPlaylists()
-#    manager.createPlaylistAsGarmin("/home/bartosz/Music/Garmin5_music_128/Bachata.m3u")
-
-    folders=["UrbanKiz"]
-    manager.createGroupOfPlaylists("taniec", folders)
-
-    manager.createTopOfMusic(30)
-    manager.createTopOfMusic(100)
-#    manager.syncFilesWithoutWebsite("/home/bartosz/Music/MediaServer", "/home/bartosz/Music/Sandisk_music")
+def test(configFile, musicPath):
+    manager = PlaylistsManager(musicPath, playlistsConfigFile=configFile)
+    manager.createPlaylistsFromConfig()
 
 def testCover():
     manager = PlaylistsManager("/media/bartosz/MB57/Music")
@@ -670,70 +836,69 @@ def testCover():
 
 
 def main(argv):
-    isSandisk = False
-    isGarmin = False
-    isMediaserver = False
-    HELP = "createPlaylists.py --garmin/--sandisk/--mediaserver"
+    configFile = None
+    musicDirArgument = None
+    HELP = "createPlaylists.py --config FILE --music-dir DIR"
 
     try:
-        opts, args = getopt.getopt(argv,"hgs",["garmin","sandisk", "mediaserver"])
+        opts, args = getopt.getopt(
+            argv,
+            "hc:d:",
+            ["help", "config=", "musicDir=", "music-dir="],
+        )
     except getopt.GetoptError:
         print (HELP)
         sys.exit(2)
     for opt, arg in opts:
-        if opt == '-h':
+        if opt in ("-h", "--help"):
             print (HELP)
             sys.exit()
-        elif opt in ("-g", "--garmin"):
-            isGarmin=True
-            print ("garmin")
-        elif opt in ("-s", "--sandisk"):
-            isSandisk = True
-            print("sandisk")
-        elif opt in ("-m", "--mediaserver"):
-            isMediaserver = True
-            print("MediaServer")
-    path = os.path.abspath(os.getcwd())
+        elif opt in ("-c", "--config"):
+            configFile = arg
+        elif opt in ("-d", "--musicDir", "--music-dir"):
+            musicDirArgument = arg
+    if configFile is None:
+        print("--config is required")
+        sys.exit(2)
+    if musicDirArgument is None:
+        print("--music-dir is required")
+        sys.exit(2)
+    if not os.path.isfile(configFile):
+        print("configuration file does not exist:", configFile)
+        sys.exit(2)
 
-    if isMediaserver:
-        manager = PlaylistsManager(path)
-        manager.createPlaylists()
-
-        folders=["imprezka","techno","Rock-Electronic","relaks","stare hity"]
-        manager.createGroupOfPlaylists("trening", folders)
-
-        folders=["relaks","chillout","spokojne-sad","cafe","chillout"]
-        manager.createGroupOfPlaylists("praca", folders)
-
-        folders=["Bachata","Bachata Dominikana","Kizomba","latino","Semba"]
-        manager.createGroupOfPlaylists("taniec", folders)
-
-        manager.createTopOfMusic(100)
-
-    if isSandisk:
-        manager = PlaylistsManager(path, isCrLfNeeded=True)
+    manager = PlaylistsManagerPlayer(
+        musicDirArgument,
+        playlistsConfigFile=configFile,
+    )
+    if manager.checkMissingWebsiteEnabled:
+        manager.check_missing_website()
+    if manager.checkCoversEnabled:
+        manager.checkCovers()
+    if manager.removeCoversEnabled:
         manager.removeCovers()
-        manager.createPlaylists()
-
-        folders=["UrbanKiz"]
-        manager.createGroupOfPlaylists("taniec", folders)
-
-        manager.createTopOfMusic(30)
-        manager.createTopOfMusic(100)
-        manager.createTopOfMusic(200)
-
-    if isGarmin:
-        manager = PlaylistsManager(path)
-        manager.removeCovers()
-        manager.createPlaylists()
-
-        folders=["imprezka","techno","Rock-Electronic", "relaks"]
-        manager.createGroupOfPlaylists("trening", folders)
-
-        folders=["relaks","chillout","spokojne-sad"]
-        manager.createGroupOfPlaylists("praca", folders)
-
-        manager.createTopOfMusic(30)
+    if manager.removePolishCharsEnabled:
+        manager.removePolishChars()
+    manager.createPlaylists()
+    manager.createPlaylistsFromConfig()
+    if manager.checkDuplicatesEnabled:
+        manager.checkDuplicates()
+    if manager.checkTotalSizeEnabled:
+        totalSize = manager.getTotalSize()
+        print("Total size:", totalSize, "Mb")
+        if manager.maxTotalSizeMb is not None and totalSize > manager.maxTotalSizeMb:
+            print(
+                "Warning, total size is greater than",
+                manager.maxTotalSizeMb,
+                "Mb",
+            )
+            return
+    if manager.garminRootDir:
+        garminManager = GarminPlaylistsManager(
+            musicDirArgument,
+            playlistsConfigFile=configFile,
+        )
+        garminManager.createPlaylistsAsGarmin(manager.garminRootDir)
 
 
 if __name__ == '__main__':
