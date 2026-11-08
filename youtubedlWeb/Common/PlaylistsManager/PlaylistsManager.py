@@ -1,10 +1,11 @@
 from __future__ import unicode_literals
 import sys
 import os
-import getopt
+import argparse
 import codecs
 import configparser
 from collections import defaultdict
+from textwrap import dedent
 from mutagen.easyid3 import EasyID3
 from mutagen.mp3 import MP3
 import metadata_mp3
@@ -816,6 +817,64 @@ class GarminPlaylistsManager(PlaylistsManagerPlayer):
         print("Created:", outputPlaylist)
 
 
+CONFIG_HELP = dedent(
+    """
+    FORMAT PLIKU KONFIGURACYJNEGO
+    =============================
+
+    Przykładowy kompletny plik playlists.ini:
+
+    # Ustawienia wspólne dla generatora playlist.
+    [GLOBAL]
+    # Usuń osadzone okładki z plików MP3.
+    removeCovers = false
+    # Zapisuj pliki M3U z zakończeniami linii CRLF.
+    CrLf = false
+    # Wyświetl pliki MP3 bez tagu "website".
+    checkMissingWebsite = false
+    # Usuń polskie znaki i niedozwolone znaki z nazw plików i katalogów.
+    removePolishChars = false
+    # Wyświetl pliki MP3 bez okładek.
+    checkCovers = false
+    # Sprawdź duplikaty nazw plików i tagów "website".
+    checkDuplicates = false
+    # Sprawdź łączny rozmiar plików MP3.
+    checkTotalSize = false
+    # Maksymalny rozmiar w MB; działa razem z checkTotalSize = true.
+    maxTotalSizeMb =
+    # Używaj ukośników Windows (\\) w ścieżkach playlist M3U.
+    windowsSlash = false
+    # Katalog z playlistami źródłowymi dla generatora playlist Garmin.
+    # Pozostaw pusty, jeśli playlisty Garmin nie mają być tworzone.
+    garminRootDir =
+
+    # Każdy wpis tworzy playlistę z plików MP3 z wymienionych katalogów.
+    # Katalogi oddziel przecinkami; nazwa po lewej stronie jest nazwą playlisty.
+    [PLAYLIST_GROUPS]
+    trening = imprezka, techno, relaks
+    praca = relaks, chillout
+    # Sufiks "N hits" ogranicza playlistę do N utworów.
+    trening 40 hits = imprezka, techno, relaks
+
+    # Twórz playlisty Top z N najnowszych/najwyżej sklasyfikowanych utworów.
+    [TOP_PLAYLISTS]
+    sizes = 20, 100, 200
+
+    URUCHOMIENIE
+    ============
+
+    playlists-manager \\
+      --config /ścieżka/playlists.ini \\
+      --music-dir /ścieżka/muzyka
+
+    Więcej informacji o formacie:
+    - [GLOBAL] zawiera ustawienia kontroli, czyszczenia i formatowania playlist,
+    - [PLAYLIST_GROUPS] mapuje nazwę playlisty na listę katalogów z muzyką,
+    - [TOP_PLAYLISTS] definiuje rozmiary playlist Top.
+    """
+).strip()
+
+
 def test(configFile, musicPath):
     manager = PlaylistsManager(musicPath, playlistsConfigFile=configFile)
     manager.createPlaylistsFromConfig()
@@ -835,37 +894,59 @@ def testCover():
 #            print("File:", x, "Website:", website)
 
 
-def main(argv):
-    configFile = None
-    musicDirArgument = None
-    HELP = "createPlaylists.py --config FILE --music-dir DIR"
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        prog="playlists-manager",
+        description=(
+            "Generuje playlisty M3U na podstawie plików MP3 oraz konfiguracji INI. "
+            "Może również wykonać kontrole plików, przygotować playlisty Top "
+            "i utworzyć playlisty zgodne z Garminem."
+        ),
+        epilog=(
+            "Przykład:\n"
+            "  playlists-manager --config /ścieżka/playlists.ini "
+            "--music-dir /ścieżka/muzyka\n\n"
+            "Plik INI może zawierać sekcje [GLOBAL], [PLAYLIST_GROUPS] "
+            "i [TOP_PLAYLISTS]."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "-c",
+        "--config",
+        metavar="FILE",
+        help="ścieżka do pliku konfiguracyjnego INI",
+    )
+    parser.add_argument(
+        "-d",
+        "--musicDir",
+        "--music-dir",
+        dest="music_dir",
+        metavar="DIR",
+        help="główny katalog z plikami MP3",
+    )
+    parser.add_argument(
+        "--config-help",
+        action="store_true",
+        help="wyświetl szczegółowy opis formatu INI i kompletny przykład konfiguracji",
+    )
 
-    try:
-        opts, args = getopt.getopt(
-            argv,
-            "hc:d:",
-            ["help", "config=", "musicDir=", "music-dir="],
-        )
-    except getopt.GetoptError:
-        print (HELP)
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt in ("-h", "--help"):
-            print (HELP)
-            sys.exit()
-        elif opt in ("-c", "--config"):
-            configFile = arg
-        elif opt in ("-d", "--musicDir", "--music-dir"):
-            musicDirArgument = arg
-    if configFile is None:
-        print("--config is required")
-        sys.exit(2)
-    if musicDirArgument is None:
-        print("--music-dir is required")
-        sys.exit(2)
+    args = parser.parse_args(argv)
+
+    if args.config_help:
+        print(CONFIG_HELP)
+        return
+
+    if args.config is None:
+        parser.error("argument -c/--config jest wymagany")
+    if args.music_dir is None:
+        parser.error("argument -d/--music-dir jest wymagany")
+
+    configFile = args.config
+    musicDirArgument = args.music_dir
+
     if not os.path.isfile(configFile):
-        print("configuration file does not exist:", configFile)
-        sys.exit(2)
+        parser.error("plik konfiguracyjny nie istnieje: %s" % configFile)
 
     manager = PlaylistsManagerPlayer(
         musicDirArgument,

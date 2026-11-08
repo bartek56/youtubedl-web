@@ -14,6 +14,17 @@ source env/bin/activate
 pip3 install -r requirementsEnv.txt
 flask --app youtubedlWeb run
 
+Po zainstalowaniu paczki poleceniem `pip install .` dostępne są dwa polecenia:
+
+```bash
+youtubedlWeb
+playlists-manager --config /ścieżka/playlists.ini --music-dir /ścieżka/muzyka
+playlists-manager --config-help
+```
+
+Opcja --config-help wyświetla szczegółowy opis formatu pliku INI oraz
+kompletny przykład konfiguracji ze wszystkimi obsługiwanymi opcjami.
+
 W kodzie można rozdzielić źródło muzyki i miejsce zapisu playlist:
 
 ```python
