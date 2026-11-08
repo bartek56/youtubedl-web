@@ -1237,23 +1237,25 @@
                        <span class="n">help</span><span class="o">=</span><span class="s1">'download all playlists from config file'</span><span class="p">)</span>
 
     <span class="n">my_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'-p'</span><span class="p">,</span><span class="s1">'--playlists-config'</span><span class="p">,</span>
-                       <span class="n">action</span><span class="o">=</span><span class="s1">'store'</span><span class="p">,</span>
-                       <span class="n">dest</span><span class="o">=</span><span class="s1">'playlistsConfigFile'</span><span class="p">,</span>
-                       <span class="n">help</span><span class="o">=</span><span class="s1">'configuration file used to create M3U playlists'</span><span class="p">)</span>
+                       <span class="n">action</span><span class="o">=</span><span class="s1">'append'</span><span class="p">,</span>
+                       <span class="n">nargs</span><span class="o">=</span><span class="s1">'+'</span><span class="p">,</span>
+                       <span class="n">dest</span><span class="o">=</span><span class="s1">'playlistsConfigFiles'</span><span class="p">,</span>
+                       <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
+                       <span class="n">help</span><span class="o">=</span><span class="s1">'configuration file(s) used to create M3U playlists'</span><span class="p">)</span>
 
     <span class="n">args</span> <span class="o">=</span> <span class="n">my_parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">playlistsConfigFile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">configFile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">playlistsConfigFiles</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">playlistsConfigFiles</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">configGroup</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">playlistsConfigFiles</span><span class="p">:</span>
+            <span class="n">playlistsConfigFiles</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">configGroup</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">playlistsConfigFiles</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">configFile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">my_parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">'--playlists-config requires --config'</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">playlistUpdate</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">configFile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"non arguments"</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">configFile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">configFile</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"configuration file </span><span class="si">%s</span><span class="s2"> doesn't exists"</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">configFile</span><span class="p">)</span>
-            <span class="n">exit</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">playlistsConfigFile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">my_parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">'--playlists-config is required with --config'</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">playlistsConfigFile</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"playlist configuration file </span><span class="si">%s</span><span class="s2"> doesn't exists"</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">playlistsConfigFile</span><span class="p">)</span>
             <span class="n">exit</span><span class="p">()</span>
         <span class="n">yt</span> <span class="o">=</span> <span class="n">MediaServerDownloader</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">configFile</span><span class="p">)</span>
         <span class="n">downloadedFiles</span><span class="p">:</span><span class="nb">list</span> <span class="o">=</span> <span class="n">yt</span><span class="o">.</span><span class="n">download_playlists</span><span class="p">()</span>
@@ -1262,20 +1264,27 @@
             <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">downloadedFiles</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">playlistsConfigFiles</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Updating playlists"</span><span class="p">)</span>
-            <span class="n">playlistsCreator</span> <span class="o">=</span> <span class="n">PlaylistsManager</span><span class="p">(</span>
-                <span class="n">yt</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">getPath</span><span class="p">(),</span>
-                <span class="n">playlistsConfigFile</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">playlistsConfigFile</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="k">if</span> <span class="n">playlistsCreator</span><span class="o">.</span><span class="n">removeCoversEnabled</span><span class="p">:</span>
-                <span class="n">playlistsCreator</span><span class="o">.</span><span class="n">removeCovers</span><span class="p">()</span>
-            <span class="n">updatedPlaylists</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">downloadedFiles</span><span class="p">:</span>
-                <span class="n">downloadedFile</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">playlistDir</span> <span class="o">=</span> <span class="n">downloadedFile</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
-                <span class="n">playlistsCreator</span><span class="o">.</span><span class="n">createPlaylist</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">)</span>
-                <span class="n">updatedPlaylists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">)</span>
-            <span class="n">playlistsCreator</span><span class="o">.</span><span class="n">createPlaylistsFromConfig</span><span class="p">(</span><span class="n">updatedPlaylists</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">playlistsConfigFile</span> <span class="ow">in</span> <span class="n">playlistsConfigFiles</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">playlistsConfigFile</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"playlist configuration file </span><span class="si">%s</span><span class="s2"> doesn't exists"</span><span class="p">,</span> <span class="n">playlistsConfigFile</span><span class="p">)</span>
+                    <span class="n">exit</span><span class="p">()</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Applying playlist config: </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">playlistsConfigFile</span><span class="p">)</span>
+                <span class="n">playlistsCreator</span> <span class="o">=</span> <span class="n">PlaylistsManager</span><span class="p">(</span>
+                    <span class="n">yt</span><span class="o">.</span><span class="n">ytConfig</span><span class="o">.</span><span class="n">getPath</span><span class="p">(),</span>
+                    <span class="n">playlistsConfigFile</span><span class="o">=</span><span class="n">playlistsConfigFile</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">playlistsCreator</span><span class="o">.</span><span class="n">removeCoversEnabled</span><span class="p">:</span>
+                    <span class="n">playlistsCreator</span><span class="o">.</span><span class="n">removeCovers</span><span class="p">()</span>
+                <span class="n">updatedPlaylists</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">downloadedFiles</span><span class="p">:</span>
+                    <span class="n">downloadedFile</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">playlistDir</span> <span class="o">=</span> <span class="n">downloadedFile</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="n">playlistsCreator</span><span class="o">.</span><span class="n">createPlaylist</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">)</span>
+                    <span class="n">updatedPlaylists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">playlistDir</span><span class="p">)</span>
+                <span class="n">playlistsCreator</span><span class="o">.</span><span class="n">createPlaylistsFromConfig</span><span class="p">(</span><span class="n">updatedPlaylists</span><span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">playlistUpdate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
