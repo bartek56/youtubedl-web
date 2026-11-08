@@ -3,7 +3,10 @@ from setuptools import setup, find_packages
 setup(
     name='youtubedl-web',
     version='1.0',
-    packages=find_packages(),
+    packages=find_packages(exclude=[
+      "tests",
+      "tests.*",
+    ]),
     include_package_data=True,
     install_requires=[
         'Flask',
