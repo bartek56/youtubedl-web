@@ -145,10 +145,30 @@ class PlaylistGenerationConfig:
 
 class PlaylistsManager:
 
+    def _resolve_playlists_dir(self, playlists_dir):
+        """Return a safe output directory under musicDir."""
+        if playlists_dir is None or str(playlists_dir).strip() == "":
+            return os.path.abspath(self.musicDir)
+
+        music_root = os.path.abspath(self.musicDir)
+        candidate = playlists_dir
+        if not os.path.isabs(candidate):
+            candidate = os.path.abspath(os.path.join(music_root, candidate))
+        else:
+            candidate = os.path.abspath(candidate)
+
+        try:
+            if os.path.commonpath([music_root, candidate]) != music_root:
+                return music_root
+        except ValueError:
+            return music_root
+
+        return candidate
+
     def __init__(self, musicDir, playlistsDir=None, windowsSlash=False,
                  playlistsConfigFile=None):
         self.musicDir = musicDir
-        self.playlistsDir = musicDir if playlistsDir is None else playlistsDir
+        self.playlistsDir = self._resolve_playlists_dir(playlistsDir)
         self.isCrLfNeeded = False
         self.windowsSlash = windowsSlash
         self.removeCoversEnabled = False
@@ -179,7 +199,7 @@ class PlaylistsManager:
             self.createPlaylistsOfDirsEnabled = settings["createPlaylistsOfDirs"]
             self.topPlaylistRootDir = self.playlistsConfig.get_top_playlist_root_dir()
             if playlistsDir is None and settings.get("playlistsDir"):
-                self.playlistsDir = settings["playlistsDir"]
+                self.playlistsDir = self._resolve_playlists_dir(settings["playlistsDir"])
 
         #print("isCrLf:", self.isCrLfNeeded)
         #print("music root dir:", self.musicDir, "\n")

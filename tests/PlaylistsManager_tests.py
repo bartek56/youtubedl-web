@@ -32,10 +32,30 @@ class PlaylistsManagerTestCase(unittest.TestCase):
             with open(saved_path, "r", encoding="utf-8") as handle:
                 self.assertEqual(handle.read(), "#EXTM3U\n")
 
-    def test_music_and_playlist_directories_can_be_separated(self):
+    def test_playlists_dir_must_stay_inside_music_dir(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             music_dir = os.path.join(temp_dir, "music")
-            playlists_dir = os.path.join(temp_dir, "playlists")
+            os.makedirs(music_dir)
+            outside_dir = os.path.join(temp_dir, "outside")
+            config_text = """
+[GLOBAL]
+playlistsDir = %s
+""" % outside_dir
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".ini", delete=False) as handle:
+                handle.write(config_text)
+                config_path = handle.name
+
+            try:
+                manager = PlaylistsManager(music_dir, playlistsConfigFile=config_path)
+                self.assertEqual(manager.playlistsDir, music_dir)
+                self.assertTrue(os.path.commonpath([music_dir, manager.playlistsDir]) == music_dir)
+            finally:
+                os.unlink(config_path)
+
+    def test_music_and_playlist_directories_can_be_separated_only_inline(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            music_dir = os.path.join(temp_dir, "music")
+            playlists_dir = os.path.join(music_dir, "playlists")
             os.makedirs(music_dir)
 
             manager = PlaylistsManager(music_dir, playlists_dir)

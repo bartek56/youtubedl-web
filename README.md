@@ -38,7 +38,8 @@ PlaylistsManager(
 
 Ścieżki utworów w M3U są względne względem `musicDir` i zawierają wszystkie
 katalogi pośrednie. Gdy `playlistsDir` nie jest podany, pliki `.m3u` trafiają
-do `musicDir`.
+do `musicDir`. Zmiana katalogu wyjściowego poza `musicDir` jest blokowana, aby
+skrypt nie zapisywał playlist poza katalogiem podanym przez `--music-dir`.
 
 Definicje grup playlist, playlist Top oraz ustawienia globalne są w osobnym
 pliku INI dla każdego targetu. Przykładowe pliki to
@@ -103,7 +104,8 @@ enabled.
 `createPlaylistsOfDirs` enables generation of one `.m3u` file per top-level folder in
 `musicDir`. This is optional and defaults to `false`.
 `playlistsDir` is the output directory for generated `.m3u` files. When omitted,
-the generator uses `musicDir` as the destination.
+the generator uses `musicDir` as the destination. Any configured value must remain
+inside `musicDir`; otherwise the generator falls back to `musicDir`.
 `rootDir` inside `[TOP_PLAYLISTS]` scopes the Top playlists to a selected
 subdirectory inside `musicDir`. The default is `.` which means the whole
 `musicDir`.
