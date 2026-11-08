@@ -56,6 +56,8 @@ checkDuplicates = false
 checkTotalSize = false
 maxTotalSizeMb =
 windowsSlash = false
+playlistsDir = /ścieżka/do/playlist
+createPlaylistsOfDirs = false
 garminRootDir =
 checkCovers = false
 checkDuplicates = false
@@ -97,6 +99,10 @@ directory names and also defaults to `false`.
 `checkCovers`, `checkDuplicates` and `checkTotalSize` enable the corresponding
 diagnostic steps. `maxTotalSizeMb` limits the total size check when it is
 enabled.
+`createPlaylistsOfDirs` enables generation of one `.m3u` file per top-level folder in
+`musicDir`. This is optional and defaults to `false`.
+`playlistsDir` is the output directory for generated `.m3u` files. When omitted,
+the generator uses `musicDir` as the destination.
 `garminRootDir` can point to a directory with source M3U playlists; when it is
 set, the generator also creates Garmin-compatible playlists. A group name in
 the form `trening 40 hits` creates a playlist limited to 40 songs.

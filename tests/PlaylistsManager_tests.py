@@ -92,6 +92,8 @@ crlf = true
                     "maxTotalSizeMb": None,
                     "windowsSlash": False,
                     "garminRootDir": None,
+                    "playlistsDir": None,
+                    "createPlaylistsOfDirs": False,
                 },
             )
             manager = PlaylistsManager("/tmp/music", playlistsConfigFile=config_path)
@@ -113,8 +115,37 @@ crlf = true
             self.assertFalse(config_only_manager.checkDuplicatesEnabled)
             self.assertFalse(config_only_manager.checkTotalSizeEnabled)
             self.assertIsNone(config_only_manager.garminRootDir)
+            self.assertFalse(config_only_manager.createPlaylistsOfDirsEnabled)
         finally:
             os.unlink(config_path)
+
+    def test_directory_playlist_generation_is_configured_in_ini(self):
+        config_text = """
+[GLOBAL]
+createPlaylistsOfDirs = true
+
+[PLAYLIST_GROUPS]
+training = techno, relaks
+"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".ini", delete=False) as handle:
+            handle.write(config_text)
+            config_path = handle.name
+
+        try:
+            config = PlaylistGenerationConfig(config_path)
+            self.assertTrue(config.get_global_settings()["createPlaylistsOfDirs"])
+
+            manager = PlaylistsManager("/tmp/music", playlistsConfigFile=config_path)
+            self.assertTrue(manager.createPlaylistsOfDirsEnabled)
+
+            with patch.object(manager, "createPlaylists") as create_playlists:
+                if manager.createPlaylistsOfDirsEnabled:
+                    manager.createPlaylists()
+
+            create_playlists.assert_called_once_with()
+        finally:
+            os.unlink(config_path)
+
 
     def test_create_playlists_from_config_uses_only_changed_groups(self):
         config_text = """

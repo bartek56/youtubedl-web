@@ -46,6 +46,7 @@ class PlaylistGenerationConfig:
                 "windowsSlash": False,
                 "garminRootDir": None,
                 "playlistsDir": None,
+                "createPlaylistsOfDirs": False,
             }
 
         values = {
@@ -81,6 +82,9 @@ class PlaylistGenerationConfig:
             ),
             "garminRootDir": values.get("garminrootdir", "").strip() or None,
             "playlistsDir": values.get("playlistsdir", "").strip() or None,
+            "createPlaylistsOfDirs": self._parse_boolean(
+                values.get("createplaylistsofdirs", "false")
+            ),
         }
 
     @staticmethod
@@ -146,6 +150,7 @@ class PlaylistsManager:
         self.checkTotalSizeEnabled = False
         self.maxTotalSizeMb = None
         self.garminRootDir = None
+        self.createPlaylistsOfDirsEnabled = False
         self.playlistsConfig = None
 
         if playlistsConfigFile is not None:
@@ -161,6 +166,7 @@ class PlaylistsManager:
             self.checkTotalSizeEnabled = settings["checkTotalSize"]
             self.maxTotalSizeMb = settings["maxTotalSizeMb"]
             self.garminRootDir = settings["garminRootDir"]
+            self.createPlaylistsOfDirsEnabled = settings["createPlaylistsOfDirs"]
             if playlistsDir is None and settings.get("playlistsDir"):
                 self.playlistsDir = settings["playlistsDir"]
 
@@ -848,6 +854,10 @@ CONFIG_HELP = dedent(
     maxTotalSizeMb =
     # Używaj ukośników Windows (\\) w ścieżkach playlist M3U.
     windowsSlash = false
+    # Twórz playlisty z nazw katalogów (po jednym pliku .m3u na katalog).
+    # Wymagane tylko wtedy, gdy chcesz generować playlisty typu folder/
+    # katalog-muzyka.
+    createPlaylistsOfDirs = false
     # Katalog, do którego zapisane będą wygenerowane playlisty.
     # Domyślnie używany jest ten sam katalog co musicDir.
     playlistsDir = /ścieżka/do/playlist
@@ -875,6 +885,7 @@ CONFIG_HELP = dedent(
       --music-dir /ścieżka/muzyka
 
     Wartości globalne z [GLOBAL] mogą zawierać m.in.:
+    - createPlaylistsOfDirs — gdy ustawione na true, tworzy osobne playlisty dla każdego katalogu w musicDir,
     - playlistsDir — miejsce zapisu wygenerowanych playlist M3U,
     - garminRootDir — katalog z playlistami źródłowymi Garmin,
     - windowsSlash, CrLf i inne flagi formatowania oraz kontroli.
@@ -972,7 +983,8 @@ def main(argv=None):
         manager.removeCovers()
     if manager.removePolishCharsEnabled:
         manager.removePolishChars()
-    manager.createPlaylists()
+    if manager.createPlaylistsOfDirsEnabled:
+        manager.createPlaylists()
     manager.createPlaylistsFromConfig()
     if manager.checkDuplicatesEnabled:
         manager.checkDuplicates()
