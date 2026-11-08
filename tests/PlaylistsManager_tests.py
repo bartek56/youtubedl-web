@@ -102,6 +102,7 @@ crlf = true
             self.assertEqual(
                 config.get_global_settings(),
                 {
+                    "musicDir": None,
                     "removeCovers": True,
                     "isCrLfNeeded": True,
                     "checkMissingWebsite": False,
@@ -268,7 +269,24 @@ trening 40 hits = techno, relaks
         finally:
             os.unlink(config_path)
 
-    def test_music_dir_cli_argument_is_required(self):
+    def test_music_dir_can_be_read_from_config_file(self):
+        config_text = """
+[GLOBAL]
+musicDir = /tmp/music-from-config
+removeCovers = false
+CrLf = false
+"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".ini", delete=False) as handle:
+            handle.write(config_text)
+            config_path = handle.name
+
+        try:
+            manager = PlaylistsManager(None, playlistsConfigFile=config_path)
+            self.assertEqual(manager.musicDir, "/tmp/music-from-config")
+        finally:
+            os.unlink(config_path)
+
+    def test_music_dir_cli_argument_is_required_when_missing_everywhere(self):
         config_text = """
 [GLOBAL]
 removeCovers = false
@@ -298,6 +316,21 @@ CrLf = false
                 with self.assertRaises(SystemExit) as error:
                     playlists_manager_module.main(["--config", config_path])
                 self.assertEqual(error.exception.code, 2)
+        finally:
+            os.unlink(config_path)
+
+    def test_music_dir_cli_argument_overrides_config_value(self):
+        config_text = """
+[GLOBAL]
+musicDir = /tmp/music-from-config
+"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".ini", delete=False) as handle:
+            handle.write(config_text)
+            config_path = handle.name
+
+        try:
+            manager = PlaylistsManager("/tmp/music-from-arg", playlistsConfigFile=config_path)
+            self.assertEqual(manager.musicDir, "/tmp/music-from-arg")
         finally:
             os.unlink(config_path)
 

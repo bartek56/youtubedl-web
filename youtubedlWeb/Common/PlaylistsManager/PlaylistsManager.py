@@ -35,6 +35,7 @@ class PlaylistGenerationConfig:
         """Return global PlaylistsManager settings from the INI file."""
         if self.GLOBAL_SECTION not in self._parser:
             return {
+                "musicDir": None,
                 "removeCovers": False,
                 "isCrLfNeeded": False,
                 "checkMissingWebsite": False,
@@ -61,6 +62,7 @@ class PlaylistGenerationConfig:
             max_total_size = None
 
         return {
+            "musicDir": values.get("musicdir", "").strip() or None,
             "removeCovers": self._parse_boolean(values.get("removecovers", "false")),
             "isCrLfNeeded": self._parse_boolean(values.get("crlf", "false")),
             "checkMissingWebsite": self._parse_boolean(
@@ -168,7 +170,7 @@ class PlaylistsManager:
     def __init__(self, musicDir, playlistsDir=None, windowsSlash=False,
                  playlistsConfigFile=None):
         self.musicDir = musicDir
-        self.playlistsDir = self._resolve_playlists_dir(playlistsDir)
+        self.playlistsDir = None
         self.isCrLfNeeded = False
         self.windowsSlash = windowsSlash
         self.removeCoversEnabled = False
@@ -186,6 +188,8 @@ class PlaylistsManager:
         if playlistsConfigFile is not None:
             self.playlistsConfig = PlaylistGenerationConfig(playlistsConfigFile)
             settings = self.playlistsConfig.get_global_settings()
+            if self.musicDir is None:
+                self.musicDir = settings.get("musicDir")
             self.isCrLfNeeded = settings["isCrLfNeeded"]
             self.windowsSlash = settings["windowsSlash"]
             self.removeCoversEnabled = settings["removeCovers"]
@@ -200,6 +204,11 @@ class PlaylistsManager:
             self.topPlaylistRootDir = self.playlistsConfig.get_top_playlist_root_dir()
             if playlistsDir is None and settings.get("playlistsDir"):
                 self.playlistsDir = self._resolve_playlists_dir(settings["playlistsDir"])
+
+        if self.musicDir is None:
+            raise ValueError("musicDir is required: pass --music-dir or set musicDir in [GLOBAL]")
+        if self.playlistsDir is None:
+            self.playlistsDir = self._resolve_playlists_dir(playlistsDir)
 
         #print("isCrLf:", self.isCrLfNeeded)
         #print("music root dir:", self.musicDir, "\n")
@@ -876,6 +885,8 @@ CONFIG_HELP = dedent(
 
     # Ustawienia wspólne dla generatora playlist.
     [GLOBAL]
+    # Główny katalog z plikami MP3. Można podać tutaj albo w argumencie --music-dir.
+    musicDir = /ścieżka/muzyka
     # Usuń osadzone okładki z plików MP3.
     removeCovers = false
     # Zapisuj pliki M3U z zakończeniami linii CRLF.
@@ -900,6 +911,7 @@ CONFIG_HELP = dedent(
     createPlaylistsOfDirs = false
     # Katalog, do którego zapisane będą wygenerowane playlisty.
     # Domyślnie używany jest ten sam katalog co musicDir.
+    # Dopuszczalny jest tylko katalog wewnątrz musicDir.
     playlistsDir = /ścieżka/do/playlist
     # Katalog z playlistami źródłowymi dla generatora playlist Garmin.
     # Pozostaw pusty, jeśli playlisty Garmin nie mają być tworzone.
@@ -1005,14 +1017,17 @@ def main(argv=None):
 
     if args.config is None:
         parser.error("argument -c/--config jest wymagany")
-    if args.music_dir is None:
-        parser.error("argument -d/--music-dir jest wymagany")
 
     configFile = args.config
-    musicDirArgument = args.music_dir
-
     if not os.path.isfile(configFile):
         parser.error("plik konfiguracyjny nie istnieje: %s" % configFile)
+
+    config_values = PlaylistGenerationConfig(configFile).get_global_settings()
+    musicDirArgument = args.music_dir or config_values.get("musicDir")
+    if musicDirArgument is None:
+        parser.error(
+            "argument -d/--music-dir jest wymagany albo musi być ustawiony w [GLOBAL] musicDir"
+        )
 
     manager = PlaylistsManagerPlayer(
         musicDirArgument,

@@ -48,6 +48,7 @@ pliku INI dla każdego targetu. Przykładowe pliki to
 
 ```ini
 [GLOBAL]
+musicDir = /ścieżka/muzyka
 removeCovers = false
 CrLf = false
 checkMissingWebsite = false
@@ -101,6 +102,8 @@ directory names and also defaults to `false`.
 `checkCovers`, `checkDuplicates` and `checkTotalSize` enable the corresponding
 diagnostic steps. `maxTotalSizeMb` limits the total size check when it is
 enabled.
+`musicDir` can be set in `[GLOBAL]` as a fallback for `--music-dir`. If neither is
+provided, the program exits with an error.
 `createPlaylistsOfDirs` enables generation of one `.m3u` file per top-level folder in
 `musicDir`. This is optional and defaults to `false`.
 `playlistsDir` is the output directory for generated `.m3u` files. When omitted,
