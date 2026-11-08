@@ -180,6 +180,29 @@ sizes = 20, 100
         finally:
             os.unlink(config_path)
 
+    def test_top_playlist_root_dir_is_used_from_config(self):
+        config_text = """
+[TOP_PLAYLISTS]
+sizes = 30, 50
+rootDir = jazz
+"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".ini", delete=False) as handle:
+            handle.write(config_text)
+            config_path = handle.name
+
+        try:
+            config = PlaylistGenerationConfig(config_path)
+            self.assertEqual(config.get_top_playlist_sizes(), [30, 50])
+            self.assertEqual(config.get_top_playlist_root_dir(), "jazz")
+
+            manager = PlaylistsManager("/tmp/music", playlistsConfigFile=config_path)
+            with patch.object(manager, "createTopOfMusic") as create_top:
+                manager.createPlaylistsFromConfig()
+
+            create_top.assert_has_calls([call(30, rootDir="jazz"), call(50, rootDir="jazz")])
+        finally:
+            os.unlink(config_path)
+
     def test_extended_target_options_are_read_from_config(self):
         config_text = """
 [GLOBAL]

@@ -69,6 +69,7 @@ trening = imprezka, techno, relaks
 praca = relaks, chillout
 
 [TOP_PLAYLISTS]
+rootDir = .
 sizes = 20, 100, 200
 ```
 
@@ -103,6 +104,9 @@ enabled.
 `musicDir`. This is optional and defaults to `false`.
 `playlistsDir` is the output directory for generated `.m3u` files. When omitted,
 the generator uses `musicDir` as the destination.
+`rootDir` inside `[TOP_PLAYLISTS]` scopes the Top playlists to a selected
+subdirectory inside `musicDir`. The default is `.` which means the whole
+`musicDir`.
 `garminRootDir` can point to a directory with source M3U playlists; when it is
 set, the generator also creates Garmin-compatible playlists. A group name in
 the form `trening 40 hits` creates a playlist limited to 40 songs.

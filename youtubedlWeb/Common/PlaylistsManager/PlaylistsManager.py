@@ -133,6 +133,15 @@ class PlaylistGenerationConfig:
                 sizes.append(size)
         return sizes
 
+    def get_top_playlist_root_dir(self):
+        """Return the root directory used for Top playlists, defaulting to the music root."""
+        if self.TOP_PLAYLISTS_SECTION not in self._parser:
+            return "."
+
+        root_dir = self._parser[self.TOP_PLAYLISTS_SECTION].get("rootDir", ".")
+        root_dir = str(root_dir).strip().replace("\\", "/")
+        return root_dir or "."
+
 
 class PlaylistsManager:
 
@@ -151,6 +160,7 @@ class PlaylistsManager:
         self.maxTotalSizeMb = None
         self.garminRootDir = None
         self.createPlaylistsOfDirsEnabled = False
+        self.topPlaylistRootDir = "."
         self.playlistsConfig = None
 
         if playlistsConfigFile is not None:
@@ -167,6 +177,7 @@ class PlaylistsManager:
             self.maxTotalSizeMb = settings["maxTotalSizeMb"]
             self.garminRootDir = settings["garminRootDir"]
             self.createPlaylistsOfDirsEnabled = settings["createPlaylistsOfDirs"]
+            self.topPlaylistRootDir = self.playlistsConfig.get_top_playlist_root_dir()
             if playlistsDir is None and settings.get("playlistsDir"):
                 self.playlistsDir = settings["playlistsDir"]
 
@@ -419,23 +430,28 @@ class PlaylistsManager:
         print("Create group", playlistName, "end\n")
 
 # -------------------------------------------------------------------------
-    def generateTopOfM3UList(self, numberOfSongs):
+    def generateTopOfM3UList(self, numberOfSongs, rootDir="."):
         """
-        Generate a M3U list from the top numberOfSongs songs in the music directory sorted by date and track number.
+        Generate a M3U list from the top numberOfSongs songs in the selected root directory
+        sorted by date and track number.
 
         :param numberOfSongs: maximum number of songs to include in the M3U list
         :type numberOfSongs: int
+        :param rootDir: subdirectory under musicDir to scan; default is the whole musicDir
+        :type rootDir: str
         :return: M3U list as a string
         :rtype: str
         """
         mp3_files = []
+        root_path = self.musicDir if not rootDir or rootDir == "." else os.path.join(self.musicDir, rootDir)
+        if not os.path.isdir(root_path):
+            return self.generateHeaderOfM3u()
 
-        for dirpath, dirnames, filenames in os.walk(self.musicDir):
+        for dirpath, dirnames, filenames in os.walk(root_path):
             for file in filenames:
                 if file.lower().endswith('.mp3'):
                     fileNameWithPath = os.path.join(dirpath, file)
                     mp3_files.append(os.path.relpath(fileNameWithPath, self.musicDir))
-
 
         mp3_files = sorted(mp3_files, key= lambda f: (self.get_date(os.path.join(self.musicDir, f)),
                                                       self.get_tracknumber(os.path.join(self.musicDir, f))
@@ -447,9 +463,9 @@ class PlaylistsManager:
 
         return textFile
 
-    def createTopOfMusic(self, numberOfSongs, isCrLfNeeded=False):
+    def createTopOfMusic(self, numberOfSongs, isCrLfNeeded=False, rootDir="."):
         print("Create Top", numberOfSongs, "start")
-        textFile = self.generateTopOfM3UList(numberOfSongs)
+        textFile = self.generateTopOfM3UList(numberOfSongs, rootDir=rootDir)
         playlistFile = "%s Top.m3u"%(str(numberOfSongs))
 
         self.saveToFile(playlistFile, textFile)
@@ -467,8 +483,12 @@ class PlaylistsManager:
         generationConfig = self.playlistsConfig
         updatedFoldersSet = None if updatedFolders is None else set(updatedFolders)
 
+        root_dir = generationConfig.get_top_playlist_root_dir()
         for numberOfSongs in generationConfig.get_top_playlist_sizes():
-            self.createTopOfMusic(numberOfSongs)
+            if root_dir == ".":
+                self.createTopOfMusic(numberOfSongs)
+            else:
+                self.createTopOfMusic(numberOfSongs, rootDir=root_dir)
 
         for group in generationConfig.get_groups():
             playlistName, folders = group[:2]
@@ -874,8 +894,11 @@ CONFIG_HELP = dedent(
     trening 40 hits = imprezka, techno, relaks
 
     # Twórz playlisty Top z N najnowszych/najwyżej sklasyfikowanych utworów.
+    # rootDir ogranicza skanowanie do wybranego katalogu wewnątrz musicDir.
+    # Domyślnie rootDir = . (cały musicDir).
     [TOP_PLAYLISTS]
     sizes = 20, 100, 200
+    rootDir = .
 
     URUCHOMIENIE
     ============
@@ -893,7 +916,7 @@ CONFIG_HELP = dedent(
     Więcej informacji o formacie:
     - [GLOBAL] zawiera ustawienia kontroli, czyszczenia, katalogu docelowego i formatowania playlist,
     - [PLAYLIST_GROUPS] mapuje nazwę playlisty na listę katalogów z muzyką,
-    - [TOP_PLAYLISTS] definiuje rozmiary playlist Top.
+    - [TOP_PLAYLISTS] definiuje rozmiary playlist Top oraz opcjonalny rootDir do ograniczenia skanowania do jednego katalogu wewnątrz musicDir.
     """
 ).strip()
 
