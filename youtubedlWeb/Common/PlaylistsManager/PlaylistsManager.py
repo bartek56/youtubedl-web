@@ -45,6 +45,7 @@ class PlaylistGenerationConfig:
                 "maxTotalSizeMb": None,
                 "windowsSlash": False,
                 "garminRootDir": None,
+                "playlistsDir": None,
             }
 
         values = {
@@ -79,6 +80,7 @@ class PlaylistGenerationConfig:
                 values.get("windowsslash", "false")
             ),
             "garminRootDir": values.get("garminrootdir", "").strip() or None,
+            "playlistsDir": values.get("playlistsdir", "").strip() or None,
         }
 
     @staticmethod
@@ -159,6 +161,8 @@ class PlaylistsManager:
             self.checkTotalSizeEnabled = settings["checkTotalSize"]
             self.maxTotalSizeMb = settings["maxTotalSizeMb"]
             self.garminRootDir = settings["garminRootDir"]
+            if playlistsDir is None and settings.get("playlistsDir"):
+                self.playlistsDir = settings["playlistsDir"]
 
         #print("isCrLf:", self.isCrLfNeeded)
         #print("music root dir:", self.musicDir, "\n")
@@ -844,6 +848,9 @@ CONFIG_HELP = dedent(
     maxTotalSizeMb =
     # Używaj ukośników Windows (\\) w ścieżkach playlist M3U.
     windowsSlash = false
+    # Katalog, do którego zapisane będą wygenerowane playlisty.
+    # Domyślnie używany jest ten sam katalog co musicDir.
+    playlistsDir = /ścieżka/do/playlist
     # Katalog z playlistami źródłowymi dla generatora playlist Garmin.
     # Pozostaw pusty, jeśli playlisty Garmin nie mają być tworzone.
     garminRootDir =
@@ -867,8 +874,13 @@ CONFIG_HELP = dedent(
       --config /ścieżka/playlists.ini \\
       --music-dir /ścieżka/muzyka
 
+    Wartości globalne z [GLOBAL] mogą zawierać m.in.:
+    - playlistsDir — miejsce zapisu wygenerowanych playlist M3U,
+    - garminRootDir — katalog z playlistami źródłowymi Garmin,
+    - windowsSlash, CrLf i inne flagi formatowania oraz kontroli.
+
     Więcej informacji o formacie:
-    - [GLOBAL] zawiera ustawienia kontroli, czyszczenia i formatowania playlist,
+    - [GLOBAL] zawiera ustawienia kontroli, czyszczenia, katalogu docelowego i formatowania playlist,
     - [PLAYLIST_GROUPS] mapuje nazwę playlisty na listę katalogów z muzyką,
     - [TOP_PLAYLISTS] definiuje rozmiary playlist Top.
     """
