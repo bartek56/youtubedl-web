@@ -1,0 +1,22 @@
+# Configuration for one PlaylistsManager target.
+# Keep a separate copy of this file for each target.
+
+[GLOBAL]
+removeCovers = false
+CrLf = false
+checkMissingWebsite = false
+removePolishChars = false
+checkCovers = false
+checkDuplicates = false
+checkTotalSize = false
+maxTotalSizeMb =
+windowsSlash = false
+garminRootDir =
+
+[PLAYLIST_GROUPS]
+trening = imprezka, techno, Rock-Electronic, relaks, stare hity
+praca = relaks, chillout, spokojne-sad, cafe, positive chill, polskie hity, muzyka filmowa
+taniec = Bachata, Bachata Dominikana, Kizomba, latino, Semba
+
+[TOP_PLAYLISTS]
+sizes = 20, 100, 200

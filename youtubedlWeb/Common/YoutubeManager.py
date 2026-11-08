@@ -1070,12 +1070,24 @@ def main(): # pragma: no cover
                        dest='configFile',
                        help='download all playlists from config file')
 
+    my_parser.add_argument('-p','--playlists-config',
+                       action='store',
+                       dest='playlistsConfigFile',
+                       help='configuration file used to create M3U playlists')
+
     args = my_parser.parse_args()
+    if args.playlistsConfigFile is not None and args.configFile is None:
+        my_parser.error('--playlists-config requires --config')
     if args.mode is None and args.playlistUpdate is None and args.configFile is None:
         print("non arguments")
     elif args.configFile is not None:
         if not os.path.isfile(args.configFile):
             logger.error("configuration file %s doesn't exists", args.configFile)
+            exit()
+        if args.playlistsConfigFile is None:
+            my_parser.error('--playlists-config is required with --config')
+        if not os.path.isfile(args.playlistsConfigFile):
+            logger.error("playlist configuration file %s doesn't exists", args.playlistsConfigFile)
             exit()
         yt = MediaServerDownloader(args.configFile)
         downloadedFiles:list = yt.download_playlists()
@@ -1085,32 +1097,19 @@ def main(): # pragma: no cover
                 for y in x:
                     logger.info(y)
             logger.info("Updating playlists")
-            playlistsCreator = PlaylistsManager(yt.ytConfig.getPath())
+            playlistsCreator = PlaylistsManager(
+                yt.ytConfig.getPath(),
+                playlistsConfigFile=args.playlistsConfigFile,
+            )
+            if playlistsCreator.removeCoversEnabled:
+                playlistsCreator.removeCovers()
             updatedPlaylists = []
             for x in downloadedFiles:
                 downloadedFile = x[0]
                 playlistDir = downloadedFile.split("/")[-2]
                 playlistsCreator.createPlaylist(playlistDir)
                 updatedPlaylists.append(playlistDir)
-            playlistsCreator.createTopOfMusic(30)
-            playlistsCreator.createTopOfMusic(100)
-            playlistsCreator.createTopOfMusic(200)
-
-
-            folders=["imprezka","techno","Rock-Electronic","relaks","stare hity"]
-            common = (set(folders) & set(updatedPlaylists))
-            if len(common) > 0:
-                playlistsCreator.createGroupOfPlaylists("trening", folders)
-
-            folders=["relaks","chillout","spokojne-sad","cafe","positive chill","polskie hity","muzyka filmowa"]
-            common = (set(folders) & set(updatedPlaylists))
-            if len(common) > 0:
-                playlistsCreator.createGroupOfPlaylists("praca", folders)
-
-            folders=["Bachata","Bachata Dominikana","Kizomba","latino","Semba"]
-            common = (set(folders) & set(updatedPlaylists))
-            if len(common) > 0:
-                playlistsCreator.createGroupOfPlaylists("taniec", folders)
+            playlistsCreator.createPlaylistsFromConfig(updatedPlaylists)
 
     else:
         if args.mode is not None and args.playlistUpdate is not None:

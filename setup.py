@@ -9,11 +9,15 @@ setup(
         'Flask',
         'yt-dlp',
         'flask_socketio',
-        'flask_session'
+        'flask_session',
+        'mutagen',
+        'metadata_mp3 @ git+https://github.com/bartek56/metadata_mp3.git',
     ],
     entry_points={
         'console_scripts': [
             'youtubedlWeb=youtubedlWeb.youtubedl:main',
+            'playlists-manager=youtubedlWeb.Common.PlaylistsManager.PlaylistsManager:main',
+            'youtube-manager=youtubedlWeb.Common.YoutubeManager:main',
         ],
     },
     author='Bartosz Brzozowski',
