@@ -1,3 +1,5 @@
+import importlib
+import sys
 import unittest
 import unittest.mock as mock
 from unittest.mock import MagicMock
@@ -1498,6 +1500,40 @@ class MediaServerDownloaderTestCase(unittest.TestCase, YoutubeTestParams):
         mock_extract_info.assert_called_once_with(self.ytLink, download=False)
         self.assertTrue(result.IsFailed())
         self.assertEqual(result.error(), "download failed: "+errorMessage)
+
+
+class YoutubeManagerCliTestCase(unittest.TestCase):
+    @mock.patch("youtubedlWeb.Common.YoutubeManager.PlaylistsManager")
+    @mock.patch("youtubedlWeb.Common.YoutubeManager.MediaServerDownloader")
+    @mock.patch("youtubedlWeb.Common.YoutubeManager.os.path.isfile")
+    def test_main_accepts_multiple_playlists_config_files(self, mock_isfile, mock_downloader_cls, mock_playlists_manager_cls):
+        youtube_manager_module = importlib.import_module("youtubedlWeb.Common.YoutubeManager")
+        mock_isfile.side_effect = lambda path: path in [
+            "/tmp/youtube.ini",
+            "/tmp/playlists-a.ini",
+            "/tmp/playlists-b.ini",
+        ]
+
+        mock_downloader_instance = mock_downloader_cls.return_value
+        mock_downloader_instance.ytConfig.getPath.return_value = "/tmp/media-root"
+        mock_downloader_instance.download_playlists.return_value = [["/tmp/song1.mp3"]]
+
+        with mock.patch.object(sys, "argv", [
+            "youtube-manager",
+            "--config",
+            "/tmp/youtube.ini",
+            "--playlists-config",
+            "/tmp/playlists-a.ini",
+            "/tmp/playlists-b.ini",
+        ]):
+            youtube_manager_module.main()
+
+        mock_downloader_cls.assert_called_once_with("/tmp/youtube.ini")
+        self.assertEqual(mock_playlists_manager_cls.call_count, 2)
+        self.assertEqual(mock_playlists_manager_cls.call_args_list[0].args[0], "/tmp/media-root")
+        self.assertEqual(mock_playlists_manager_cls.call_args_list[0].kwargs["playlistsConfigFile"], "/tmp/playlists-a.ini")
+        self.assertEqual(mock_playlists_manager_cls.call_args_list[1].args[0], "/tmp/media-root")
+        self.assertEqual(mock_playlists_manager_cls.call_args_list[1].kwargs["playlistsConfigFile"], "/tmp/playlists-b.ini")
 
 
 class MediaServerDownloaderPlaylistsTestCase(unittest.TestCase):

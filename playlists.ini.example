@@ -2,6 +2,9 @@
 # Keep a separate copy of this file for each target.
 
 [GLOBAL]
+# Required when not passed via CLI: musicDir = /path/to/music
+musicDir = /path/to/music
+playlistsDir = /path/to/playlists
 removeCovers = false
 CrLf = false
 checkMissingWebsite = false
@@ -11,12 +14,17 @@ checkDuplicates = false
 checkTotalSize = false
 maxTotalSizeMb =
 windowsSlash = false
+createPlaylistsOfDirs = false
 garminRootDir =
 
 [PLAYLIST_GROUPS]
+# Format: playlist_name = folder1, folder2, folder3
 trening = imprezka, techno, Rock-Electronic, relaks, stare hity
 praca = relaks, chillout, spokojne-sad, cafe, positive chill, polskie hity, muzyka filmowa
 taniec = Bachata, Bachata Dominikana, Kizomba, latino, Semba
 
 [TOP_PLAYLISTS]
+# rootDir is relative to musicDir; default is .
+rootDir = .
+# sizes = 20, 100, 200
 sizes = 20, 100, 200

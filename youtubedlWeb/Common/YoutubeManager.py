@@ -1071,23 +1071,25 @@ def main(): # pragma: no cover
                        help='download all playlists from config file')
 
     my_parser.add_argument('-p','--playlists-config',
-                       action='store',
-                       dest='playlistsConfigFile',
-                       help='configuration file used to create M3U playlists')
+                       action='append',
+                       nargs='+',
+                       dest='playlistsConfigFiles',
+                       default=[],
+                       help='configuration file(s) used to create M3U playlists')
 
     args = my_parser.parse_args()
-    if args.playlistsConfigFile is not None and args.configFile is None:
+    playlistsConfigFiles = []
+    if args.playlistsConfigFiles:
+        for configGroup in args.playlistsConfigFiles:
+            playlistsConfigFiles.extend(configGroup)
+
+    if len(playlistsConfigFiles) > 0 and args.configFile is None:
         my_parser.error('--playlists-config requires --config')
     if args.mode is None and args.playlistUpdate is None and args.configFile is None:
         print("non arguments")
     elif args.configFile is not None:
         if not os.path.isfile(args.configFile):
             logger.error("configuration file %s doesn't exists", args.configFile)
-            exit()
-        if args.playlistsConfigFile is None:
-            my_parser.error('--playlists-config is required with --config')
-        if not os.path.isfile(args.playlistsConfigFile):
-            logger.error("playlist configuration file %s doesn't exists", args.playlistsConfigFile)
             exit()
         yt = MediaServerDownloader(args.configFile)
         downloadedFiles:list = yt.download_playlists()
@@ -1096,20 +1098,27 @@ def main(): # pragma: no cover
             for x in downloadedFiles:
                 for y in x:
                     logger.info(y)
+
+        if len(playlistsConfigFiles) > 0:
             logger.info("Updating playlists")
-            playlistsCreator = PlaylistsManager(
-                yt.ytConfig.getPath(),
-                playlistsConfigFile=args.playlistsConfigFile,
-            )
-            if playlistsCreator.removeCoversEnabled:
-                playlistsCreator.removeCovers()
-            updatedPlaylists = []
-            for x in downloadedFiles:
-                downloadedFile = x[0]
-                playlistDir = downloadedFile.split("/")[-2]
-                playlistsCreator.createPlaylist(playlistDir)
-                updatedPlaylists.append(playlistDir)
-            playlistsCreator.createPlaylistsFromConfig(updatedPlaylists)
+            for playlistsConfigFile in playlistsConfigFiles:
+                if not os.path.isfile(playlistsConfigFile):
+                    logger.error("playlist configuration file %s doesn't exists", playlistsConfigFile)
+                    exit()
+                logger.info("Applying playlist config: %s", playlistsConfigFile)
+                playlistsCreator = PlaylistsManager(
+                    yt.ytConfig.getPath(),
+                    playlistsConfigFile=playlistsConfigFile,
+                )
+                if playlistsCreator.removeCoversEnabled:
+                    playlistsCreator.removeCovers()
+                updatedPlaylists = []
+                for x in downloadedFiles:
+                    downloadedFile = x[0]
+                    playlistDir = downloadedFile.split("/")[-2]
+                    playlistsCreator.createPlaylist(playlistDir)
+                    updatedPlaylists.append(playlistDir)
+                playlistsCreator.createPlaylistsFromConfig(updatedPlaylists)
 
     else:
         if args.mode is not None and args.playlistUpdate is not None:

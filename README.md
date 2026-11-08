@@ -14,7 +14,7 @@ source env/bin/activate
 pip3 install -r requirementsEnv.txt
 flask --app youtubedlWeb run
 
-Po zainstalowaniu paczki poleceniem `pip install .` dostępne są dwa polecenia:
+After installing the package with `pip install .`, the following commands are available:
 
 ```bash
 youtubedlWeb
@@ -22,10 +22,10 @@ playlists-manager --config /ścieżka/playlists.ini --music-dir /ścieżka/muzyk
 playlists-manager --config-help
 ```
 
-Opcja --config-help wyświetla szczegółowy opis formatu pliku INI oraz
-kompletny przykład konfiguracji ze wszystkimi obsługiwanymi opcjami.
+The `--config-help` option displays a detailed description of the INI file
+format and a complete example configuration covering all supported options.
 
-W kodzie można rozdzielić źródło muzyki i miejsce zapisu playlist:
+In code, the music source and the playlist output location can be separated:
 
 ```python
 PlaylistsManager(
@@ -36,15 +36,14 @@ PlaylistsManager(
 )
 ```
 
-Ścieżki utworów w M3U są względne względem `musicDir` i zawierają wszystkie
-katalogi pośrednie. Gdy `playlistsDir` nie jest podany, pliki `.m3u` trafiają
-do `musicDir`. Zmiana katalogu wyjściowego poza `musicDir` jest blokowana, aby
-skrypt nie zapisywał playlist poza katalogiem podanym przez `--music-dir`.
+M3U file paths are relative to `musicDir` and include all intermediate
+folders. When `playlistsDir` is not provided, the `.m3u` files are written to
+`musicDir`. Changing the output directory outside `musicDir` is blocked so the
+script does not write playlists outside the directory specified by `--music-dir`.
 
-Definicje grup playlist, playlist Top oraz ustawienia globalne są w osobnym
-pliku INI dla każdego targetu. Przykładowe pliki to
-`playlists-sandisk.ini.example`, `playlists-mb57.ini.example` oraz
-`playlists-garmin.ini.example`:
+The definitions for playlist groups, Top playlists, and global settings live in
+separate INI files for each target. The following example shows the full set of
+supported options:
 
 ```ini
 [GLOBAL]
@@ -75,12 +74,29 @@ rootDir = .
 sizes = 20, 100, 200
 ```
 
-Plik przekazuje się osobno do `YoutubeManager.py`:
+The file is passed separately to `YoutubeManager.py`:
 
 ```bash
 python3 -m youtubedlWeb.Common.YoutubeManager \
   --config /ścieżka/youtube.ini \
   --playlists-config /ścieżka/playlists.ini
+```
+
+The playlist regeneration step is tied to the download result. After a run,
+the downloader keeps track of which folders were updated and passes that
+information to the playlist generator. Only groups whose folders intersect the
+updated set are rebuilt; unrelated groups are skipped. This avoids regenerating
+all playlists from scratch after every download.
+
+Multiple playlist configuration files can be supplied in the same run. In that
+case, the same set of updated folders is applied to each configuration, and the
+playlist generation is repeated for every provided config file:
+
+```bash
+python3 -m youtubedlWeb.Common.YoutubeManager \
+  --config /ścieżka/youtube.ini \
+  --playlists-config /ścieżka/playlists-a.ini \
+  --playlists-config /ścieżka/playlists-b.ini
 ```
 
 Standalone generator receives one target-specific file. The options
