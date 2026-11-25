@@ -167,7 +167,7 @@ class PlaylistsManager:
 
         return candidate
 
-    def __init__(self, musicDir, playlistsDir=None, windowsSlash=False,
+    def __init__(self, musicDir=None, playlistsDir=None, windowsSlash=False,
                  playlistsConfigFile=None):
         self.musicDir = musicDir
         self.playlistsDir = None

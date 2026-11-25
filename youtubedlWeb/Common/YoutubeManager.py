@@ -1092,8 +1092,8 @@ def main(): # pragma: no cover
             logger.error("configuration file %s doesn't exists", args.configFile)
             exit()
         yt = MediaServerDownloader(args.configFile)
-        downloadedFiles:list = yt.download_playlists()
-        if len(downloadedFiles) > 0:
+        downloadedFiles:list = yt.download_playlists() or []
+        if downloadedFiles:
             logger.info("Downloaded songs:")
             for x in downloadedFiles:
                 for y in x:
@@ -1104,10 +1104,9 @@ def main(): # pragma: no cover
             for playlistsConfigFile in playlistsConfigFiles:
                 if not os.path.isfile(playlistsConfigFile):
                     logger.error("playlist configuration file %s doesn't exists", playlistsConfigFile)
-                    exit()
+                    continue
                 logger.info("Applying playlist config: %s", playlistsConfigFile)
                 playlistsCreator = PlaylistsManager(
-                    yt.ytConfig.getPath(),
                     playlistsConfigFile=playlistsConfigFile,
                 )
                 if playlistsCreator.removeCoversEnabled:
@@ -1115,10 +1114,18 @@ def main(): # pragma: no cover
                 updatedPlaylists = []
                 for x in downloadedFiles:
                     downloadedFile = x[0]
-                    playlistDir = downloadedFile.split("/")[-2]
-                    playlistsCreator.createPlaylist(playlistDir)
+                    downloadedDir = os.path.dirname(os.path.abspath(downloadedFile))
+                    playlistDir = os.path.relpath(
+                        downloadedDir,
+                        os.path.abspath(playlistsCreator.musicDir),
+                    )
                     updatedPlaylists.append(playlistDir)
-                playlistsCreator.createPlaylistsFromConfig(updatedPlaylists)
+                    if playlistsCreator.createPlaylistsOfDirsEnabled:
+                        playlistsCreator.createPlaylist(playlistDir)
+                if updatedPlaylists:
+                    playlistsCreator.createPlaylistsFromConfig(updatedPlaylists)
+                else:
+                    playlistsCreator.createPlaylistsFromConfig()
 
     else:
         if args.mode is not None and args.playlistUpdate is not None:

@@ -84,9 +84,11 @@ python3 -m youtubedlWeb.Common.YoutubeManager \
 
 The playlist regeneration step is tied to the download result. After a run,
 the downloader keeps track of which folders were updated and passes that
-information to the playlist generator. Only groups whose folders intersect the
-updated set are rebuilt; unrelated groups are skipped. This avoids regenerating
-all playlists from scratch after every download.
+information to the playlist generator. When folders were updated, only groups
+whose folders intersect the updated set are rebuilt; unrelated groups are
+skipped. If no new songs were downloaded, all configured groups are generated,
+which also makes the command usable for the initial creation or recovery of
+missing M3U files.
 
 Multiple playlist configuration files can be supplied in the same run. In that
 case, the same set of updated folders is applied to each configuration, and the

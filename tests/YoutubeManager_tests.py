@@ -1515,8 +1515,11 @@ class YoutubeManagerCliTestCase(unittest.TestCase):
         ]
 
         mock_downloader_instance = mock_downloader_cls.return_value
-        mock_downloader_instance.ytConfig.getPath.return_value = "/tmp/media-root"
-        mock_downloader_instance.download_playlists.return_value = [["/tmp/song1.mp3"]]
+        mock_downloader_instance.download_playlists.return_value = [
+            ["/tmp/media-root/Youtube list/Bachata/song1.mp3"]
+        ]
+        mock_playlists_manager_cls.return_value.musicDir = "/tmp/media-root"
+        mock_playlists_manager_cls.return_value.createPlaylistsOfDirsEnabled = False
 
         with mock.patch.object(sys, "argv", [
             "youtube-manager",
@@ -1530,10 +1533,41 @@ class YoutubeManagerCliTestCase(unittest.TestCase):
 
         mock_downloader_cls.assert_called_once_with("/tmp/youtube.ini")
         self.assertEqual(mock_playlists_manager_cls.call_count, 2)
-        self.assertEqual(mock_playlists_manager_cls.call_args_list[0].args[0], "/tmp/media-root")
+        self.assertEqual(mock_playlists_manager_cls.call_args_list[0].args, ())
         self.assertEqual(mock_playlists_manager_cls.call_args_list[0].kwargs["playlistsConfigFile"], "/tmp/playlists-a.ini")
-        self.assertEqual(mock_playlists_manager_cls.call_args_list[1].args[0], "/tmp/media-root")
+        self.assertEqual(mock_playlists_manager_cls.call_args_list[1].args, ())
         self.assertEqual(mock_playlists_manager_cls.call_args_list[1].kwargs["playlistsConfigFile"], "/tmp/playlists-b.ini")
+        mock_playlists_manager_cls.return_value.createPlaylistsFromConfig.assert_has_calls([
+            mock.call(["Youtube list/Bachata"]),
+            mock.call(["Youtube list/Bachata"]),
+        ])
+
+    @mock.patch("youtubedlWeb.Common.YoutubeManager.PlaylistsManager")
+    @mock.patch("youtubedlWeb.Common.YoutubeManager.MediaServerDownloader")
+    @mock.patch("youtubedlWeb.Common.YoutubeManager.os.path.isfile")
+    def test_main_regenerates_all_configured_playlists_when_nothing_is_downloaded(
+        self, mock_isfile, mock_downloader_cls, mock_playlists_manager_cls
+    ):
+        youtube_manager_module = importlib.import_module("youtubedlWeb.Common.YoutubeManager")
+        mock_isfile.side_effect = lambda path: path in [
+            "/tmp/youtube.ini",
+            "/tmp/playlists.ini",
+        ]
+
+        mock_downloader_instance = mock_downloader_cls.return_value
+        mock_downloader_instance.ytConfig.getPath.return_value = "/tmp/media-root"
+        mock_downloader_instance.download_playlists.return_value = []
+
+        with mock.patch.object(sys, "argv", [
+            "youtube-manager",
+            "--config",
+            "/tmp/youtube.ini",
+            "--playlists-config",
+            "/tmp/playlists.ini",
+        ]):
+            youtube_manager_module.main()
+
+        mock_playlists_manager_cls.return_value.createPlaylistsFromConfig.assert_called_once_with()
 
 
 class MediaServerDownloaderPlaylistsTestCase(unittest.TestCase):
